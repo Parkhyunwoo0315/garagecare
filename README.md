@@ -346,7 +346,7 @@ GarageCare는 **문서 중심(Document-Driven Development)** 으로 개발됩니
 
 ## ✅ Version 1.0 (MVP)
 
-- [ ] 프로젝트 기획
+- [x] 프로젝트 기획
 - [ ] 회원 기능
 - [ ] 차량 관리
 - [ ] 예약 기능
