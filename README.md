@@ -498,8 +498,21 @@ GarageCare는 **기능을 많이 만드는 프로젝트가 아니라, 실제 문
 
 ---
 
+## 👨‍💻 Author
+
+**PARK HUNWOO**
+
+Computer Science Student
+
+Backend Developer
+
+GitHub: Parkhyunwoo0315
+
+---
+
 # 📜 License
 
 This project is licensed under the MIT License.
 
 See the `LICENSE` file for details.
+
