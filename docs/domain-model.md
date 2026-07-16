@@ -62,6 +62,23 @@ GarageCare의 도메인 모델은 다음 원칙을 기준으로 설계한다.
 
 현재 요구사항을 명확하게 해결하면서 이후 확장 가능한 수준으로만 설계한다.
 
+### 2.6 Terminology
+
+GarageCare에서는 다음 용어를 기준으로 사용한다.
+
+| Term | Meaning |
+|---|---|
+| `Member` | GarageCare에 가입한 전체 회원 |
+| `Customer` | `CUSTOMER` 권한을 가진 회원 |
+| `Administrator` | `ADMIN` 권한을 가진 회원 |
+| `Vehicle` | 회원이 등록한 차량 |
+| `Reservation` | 고객이 신청한 정비 예약 |
+| `MaintenanceItem` | 정형화된 정비 항목 |
+| `Notice` | 관리자가 작성한 공지사항 |
+
+문서에서는 일반 설명에는 한국어 표현을 사용하고,
+클래스명과 도메인명은 영문 표기를 사용한다.
+
 ---
 
 ## 3. Domain Overview
@@ -73,8 +90,12 @@ GarageCare MVP의 핵심 도메인은 다음과 같다.
 | `Member` | 사용자 계정, 인증 정보 및 권한 관리 | ✅ |
 | `Vehicle` | 고객이 등록한 차량 정보 관리 | ✅ |
 | `Reservation` | 정비 예약 정보와 진행 상태 관리 | ✅ |
+| `ReservationItem` | 예약과 정비 항목의 연결 정보 관리 | ✅ |
 | `MaintenanceItem` | 정비소에서 제공하는 정비 항목 관리 | ✅ |
 | `Notice` | 정비소 공지사항 관리 | ✅ |
+
+`ReservationItem`은 사용자에게 독립적으로 노출되는 기능 도메인이 아니라,
+`Reservation`과 `MaintenanceItem`의 다대다 관계를 해소하기 위한 연결 도메인이다.
 
 ### Supporting Types
 
@@ -95,8 +116,9 @@ GarageCare의 핵심 관계는 다음과 같다.
 - 하나의 차량은 여러 예약에서 사용될 수 있다.
 - 한 명의 회원은 여러 예약을 신청할 수 있다.
 - 하나의 예약은 반드시 한 명의 회원과 한 대의 차량에 연결된다.
-- 하나의 예약에는 하나 이상의 정비 항목이 포함될 수 있다.
-- 하나의 정비 항목은 여러 예약에서 선택될 수 있다.
+- 하나의 예약은 하나 이상의 `ReservationItem`을 가진다.
+- 하나의 `ReservationItem`은 하나의 정비 항목을 참조한다.
+- 하나의 정비 항목은 여러 `ReservationItem`에서 사용될 수 있다.
 - 공지사항은 관리자 권한을 가진 회원이 작성하고 관리한다.
 
 ### Relationship Summary
@@ -106,7 +128,8 @@ GarageCare의 핵심 관계는 다음과 같다.
 | `Member` | 1:N | `Vehicle` | 한 회원이 여러 차량을 소유 |
 | `Member` | 1:N | `Reservation` | 한 회원이 여러 예약을 신청 |
 | `Vehicle` | 1:N | `Reservation` | 한 차량이 여러 예약에 사용 |
-| `Reservation` | N:M | `MaintenanceItem` | 예약에 여러 정비 항목 포함 가능 |
+| `Reservation` | 1:N | `ReservationItem` | 하나의 예약에 여러 정비 항목 연결 정보 포함 |
+| `MaintenanceItem` | 1:N | `ReservationItem` | 하나의 정비 항목이 여러 예약에서 선택됨 |
 | `Member` | 1:N | `Notice` | 관리자가 여러 공지사항 작성 |
 
 ---
@@ -174,10 +197,16 @@ classDiagram
         CANCELED
     }
 
+    class ReservationItem {
+        Long id
+        LocalDateTime createdAt
+    }
+    
     Member "1" --> "0..*" Vehicle : owns
     Member "1" --> "0..*" Reservation : requests
     Vehicle "1" --> "0..*" Reservation : used for
-    Reservation "0..*" --> "1..*" MaintenanceItem : includes
+    Reservation "1" --> "1..*" ReservationItem : contains
+    MaintenanceItem "1" --> "0..*" ReservationItem : selected as
     Member "1" --> "0..*" Notice : writes
 
     Member --> MemberRole
@@ -238,6 +267,13 @@ ADMIN
 - 관리자만 전체 예약과 공지사항 관리 기능에 접근할 수 있다.
 - 예약에 연결된 회원 정보는 예약의 소유권을 판단하는 기준이 된다.
 
+### Withdrawal Policy
+
+- 진행 중인 예약이 존재하는 회원은 즉시 탈퇴할 수 없다.
+- 회원 탈퇴 시 차량과 예약 이력을 함께 삭제하지 않는다.
+- 개인정보 처리 방식은 인증 기능 구현 전에 별도로 확정한다.
+- 초기 MVP에서는 회원 탈퇴 기능을 제외할 수 있다.
+
 ### Main Behaviors
 
 향후 도메인 또는 Service 계층에서 다음 행동을 제공할 수 있다.
@@ -286,6 +322,12 @@ hasAdminRole()
 - 주행거리는 음수일 수 없다.
 - 새로운 주행거리를 입력할 때 기존 주행거리보다 작은 값이 입력되는 경우 검증이 필요하다.
 
+### Deletion Policy
+
+- 진행 중인 예약이 있는 차량은 삭제할 수 없다.
+- 예약 이력이 존재하는 차량은 물리 삭제보다 비활성화를 우선 검토한다.
+- 차량 삭제 여부는 예약 이력 보존 정책과 함께 결정한다.
+
 ### Main Behaviors
 
 ```text
@@ -322,13 +364,23 @@ GarageCare의 핵심 도메인이며, 고객의 예약 신청부터 관리자의
 | `id` | 예약 식별자 | ✅ |
 | `member` | 예약을 신청한 회원 | ✅ |
 | `vehicle` | 정비 대상 차량 | ✅ |
-| `maintenanceItems` | 요청한 정비 항목 | ✅ |
+| `reservationItems` | 예약에 포함된 하나 이상의 정비 항목 | ✅ |
 | `reservationDate` | 예약 희망 날짜 | ✅ |
 | `reservationTime` | 예약 희망 시간 | ✅ |
 | `requestMessage` | 고객 요청사항 | 선택 |
 | `status` | 예약 진행 상태 | ✅ |
 | `createdAt` | 예약 생성 시각 | ✅ |
 | `updatedAt` | 예약 수정 시각 | ✅ |
+
+### Date and Time Decision
+
+GarageCare는 관리자 화면에서 날짜별 예약 현황을 조회하는 흐름이 중요하므로
+예약 날짜와 시간을 각각 `reservationDate`, `reservationTime`으로 분리한다.
+
+중복 예약 검사와 정렬 시에는 두 값을 함께 사용한다.
+
+향후 시간대 기반 검색이나 외부 캘린더 연동이 필요해질 경우
+`LocalDateTime` 기반 구조로의 변경을 검토한다.
 
 ### ReservationStatus
 
@@ -359,11 +411,25 @@ stateDiagram-v2
     CANCELED --> [*]
 ```
 
+### Status Transition Rules
+
+| Current Status | Next Status | Actor | Allowed |
+|---|---|---|:---:|
+| `REQUESTED` | `CONFIRMED` | Administrator | ✅ |
+| `REQUESTED` | `CANCELED` | Customer / Administrator | ✅ |
+| `CONFIRMED` | `COMPLETED` | Administrator | ✅ |
+| `CONFIRMED` | `CANCELED` | Administrator | ✅ |
+| `COMPLETED` | `CANCELED` | Customer / Administrator | ❌ |
+| `CANCELED` | `REQUESTED` | Customer / Administrator | ❌ |
+
+정의되지 않은 상태 전이는 허용하지 않는다.
+
 ### Relationships
 
 - 하나의 예약은 반드시 한 명의 회원과 연결된다.
 - 하나의 예약은 반드시 한 대의 차량과 연결된다.
-- 하나의 예약에는 하나 이상의 정비 항목이 포함될 수 있다.
+- 하나의 예약은 하나 이상의 `ReservationItem`을 가진다.
+- 정비 항목은 `ReservationItem`을 통해 예약에 연결된다.
 - 한 회원과 차량은 여러 예약을 가질 수 있다.
 
 ### Business Rules
@@ -374,7 +440,9 @@ stateDiagram-v2
 - 예약은 반드시 고객이 소유한 차량으로 신청해야 한다.
 - 예약 날짜는 현재 날짜보다 이전일 수 없다.
 - 예약 시간은 정비소가 운영하는 예약 가능 시간 안에서 선택해야 한다.
-- 하나 이상의 정비 항목을 선택해야 한다.
+- 하나의 예약에는 최소 한 개 이상의 `ReservationItem`이 필요하다.
+- 동일한 정비 항목을 하나의 예약에 중복 추가할 수 없다.
+- 비활성화된 정비 항목은 새로운 예약에 추가할 수 없다.
 - 새 예약의 초기 상태는 `REQUESTED`이다.
 
 #### Reservation Ownership
@@ -407,6 +475,14 @@ stateDiagram-v2
 
 정비소가 같은 시간대에 여러 차량을 처리할 수 있는지는 실제 운영자 의견을 확인한 뒤 예약 수용량 정책으로 확정한다.
 
+#### Reservation Availability
+
+- 예약은 정비소 영업시간 내에서만 생성할 수 있다.
+- 초기 MVP의 예약 시간 단위는 1시간으로 설정한다.
+- 동일 시간대 예약 가능 수량은 초기에는 1건으로 제한한다.
+- 휴무일과 특정 날짜 예약 차단 기능은 MVP 이후 확장한다.
+- 실제 운영 환경에서 동시간대 여러 차량을 받을 수 있는 경우 수용량 정책을 조정한다.
+
 ### Main Behaviors
 
 ```text
@@ -416,6 +492,9 @@ cancel()
 isCancelableBy(member)
 validateVehicleOwner()
 changeSchedule()
+addMaintenanceItem()
+removeMaintenanceItem()
+containsMaintenanceItem()
 ```
 
 ### Design Decision
@@ -432,13 +511,54 @@ changeSchedule()
 
 ---
 
-## 6.4 MaintenanceItem
+## 6.4 ReservationItem
 
 ### Responsibility
 
-`MaintenanceItem`은 정비소가 고객에게 제공하는 정비 서비스의 종류를 관리한다.
+`ReservationItem`은 예약과 정비 항목의 연결 정보를 관리한다.
 
-예약마다 정비 항목을 문자열로 직접 입력하지 않고 별도 도메인으로 관리하여 명칭과 활성 상태를 일관되게 유지한다.
+초기 MVP에서는 예약과 정비 항목의 관계를 표현하는 역할만 담당하지만,
+향후 항목별 예상 금액, 작업 여부 및 정비 결과를 확장할 수 있다.
+
+### Core Attributes
+
+| Attribute | Description | Required |
+|---|---|:---:|
+| `id` | 연결 정보 식별자 | ✅ |
+| `reservation` | 연결된 예약 | ✅ |
+| `maintenanceItem` | 선택된 정비 항목 | ✅ |
+| `createdAt` | 생성 시각 | ✅ |
+
+### Relationships
+
+- 하나의 예약은 여러 `ReservationItem`을 가질 수 있다.
+- 하나의 정비 항목은 여러 `ReservationItem`에서 사용될 수 있다.
+
+### Business Rules
+
+- 하나의 예약에는 최소 한 개 이상의 `ReservationItem`이 필요하다.
+- 동일한 예약에 같은 정비 항목을 중복 추가할 수 없다.
+- 비활성화된 정비 항목은 새로운 예약에 추가할 수 없다.
+
+### Future Extension
+
+향후 다음 속성을 추가할 수 있다.
+
+- 예상 금액
+- 실제 작업 여부
+- 작업 결과
+- 항목별 고객 요청사항
+
+---
+
+## 6.5 MaintenanceItem
+
+### Responsibility
+
+`MaintenanceItem`은 고객이 선택하는 정형화된 정비 항목을 나타낸다.
+
+고객의 증상, 특이사항 또는 추가 요청은
+`Reservation.requestMessage`에 자유롭게 입력한다.
 
 ### Core Attributes
 
@@ -464,8 +584,8 @@ changeSchedule()
 
 ### Relationships
 
-- 하나의 정비 항목은 여러 예약에서 선택될 수 있다.
-- 하나의 예약에는 하나 이상의 정비 항목이 포함될 수 있다.
+- 하나의 정비 항목은 여러 `ReservationItem`에서 참조될 수 있다.
+- 정비 항목은 `ReservationItem`을 통해 예약과 연결된다.
 
 ### Business Rules
 
@@ -485,15 +605,15 @@ isAvailable()
 
 ### Design Decision
 
-초기에는 예약에 하나의 정비 항목만 연결하는 방식이 더 단순할 수 있다.
+`Reservation`과 `MaintenanceItem`의 다대다 관계를 직접 매핑하지 않고,
+`ReservationItem` 연결 엔티티를 통해 표현한다.
 
-그러나 실제 고객은 엔진오일 교환과 브레이크 점검처럼 여러 요청을 동시에 할 수 있으므로 `Reservation`과 `MaintenanceItem`은 다대다 관계로 설계한다.
-
-실제 ERD에서는 연결 테이블 또는 연결 엔티티를 사용한다.
+이를 통해 관계를 명시적으로 관리하고,
+향후 항목별 예상 금액, 작업 상태 및 정비 결과를 확장할 수 있다.
 
 ---
 
-## 6.5 Notice
+## 6.6 Notice
 
 ### Responsibility
 
@@ -558,10 +678,11 @@ Member
 ## Reservation Aggregate
 
 ```text
-Reservation
+Reservtion
 ├── Member reference
 ├── Vehicle reference
-└── MaintenanceItem references
+└── ReservationItem
+    └── MaintenanceItem reference
 ```
 
 - 예약 상태 변경은 Reservation을 중심으로 수행한다.
@@ -600,10 +721,10 @@ Notice
 
 ## 8.3 Data Integrity
 
-- 예약은 회원, 차량 및 정비 항목 없이 생성될 수 없다.
-- 차량은 회원 없이 생성될 수 없다.
-- 예약 상태는 정의된 값만 사용할 수 있다.
-- 도메인 간 참조 무결성이 유지되어야 한다.
+- 예약은 최소 한 개 이상의 `ReservationItem`을 가져야 한다.
+- `ReservationItem`은 예약과 정비 항목 없이 생성될 수 없다.
+- 동일 예약에 같은 정비 항목을 중복 연결할 수 없다.
+- 비활성화된 정비 항목은 새로운 `ReservationItem`에 연결할 수 없다.
 
 ## 8.4 Audit Information
 
@@ -634,7 +755,7 @@ deletedAt
 |---|---|
 | `MemberService` | 회원가입, 중복 검사, 계정 조회 |
 | `VehicleService` | 차량 등록, 소유권 검증, 차량 정보 수정 |
-| `ReservationService` | 예약 생성, 중복 검증, 상태 변경, 취소 |
+| `ReservationService` | 예약 생성, 정비 항목 연결, 중복 예약 검증, 상태 변경 및 취소 |
 | `MaintenanceItemService` | 정비 항목 관리 및 활성 상태 검증 |
 | `NoticeService` | 공지사항 등록·수정·삭제와 관리자 권한 검증 |
 
@@ -642,6 +763,8 @@ deletedAt
 
 Entity 내부에서 처리하기 적절한 행동:
 
+- 예약 내 정비 항목 중복 여부 판단
+- 예약 정비 항목 추가 및 제거
 - 예약 상태 전이
 - 예약 취소 가능 여부 판단
 - 차량 주행거리 갱신
@@ -657,6 +780,8 @@ Service에서 처리하기 적절한 행동:
 - 동일 시간 예약 중복 검사
 - 관리자 권한 확인
 - 여러 도메인을 조합한 예약 생성
+- 선택한 `MaintenanceItem` 조회 및 활성 상태 확인
+- `ReservationItem` 생성과 예약 연결
 
 ---
 
@@ -694,6 +819,15 @@ reservation date must not be in the past
 reservation time must be available
 at least one maintenance item is required
 status must not be null
+```
+
+## ReservationItem
+
+```text
+reservation must not be null
+maintenanceItem must not be null
+maintenanceItem must be active
+the same maintenance item must not be duplicated within one reservation
 ```
 
 ## MaintenanceItem
@@ -777,6 +911,9 @@ Reservation 1:0..1 MaintenanceHistory
 | 정비 항목 가격 관리 | MVP 제외, 추후 검토 |
 | 공지사항 논리 삭제 | 초기 물리 삭제, 운영 단계에서 재검토 |
 | 회원 탈퇴 시 예약·차량 처리 | 구현 전 정책 확정 필요 |
+| `ReservationItem`의 가격 정보 | MVP 제외, 가격 기능 도입 시 추가 |
+| 예약 당시 정비 항목명 보존 | 항목명 변경 가능성을 고려해 추후 검토 |
+| 항목별 작업 결과 기록 | 정비 이력 기능 도입 시 추가 |
 
 확정된 내용은 이 문서와 관련 Issue에 결정 근거를 함께 기록한다.
 
@@ -808,7 +945,8 @@ Vehicle
 └── is used in Reservation
 
 Reservation
-└── includes MaintenanceItem
+└── contains ReservationItem
+    └── references MaintenanceItem
 ```
 
 가장 중요한 비즈니스 흐름은 다음과 같다.
