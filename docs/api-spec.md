@@ -3287,3 +3287,3045 @@ Reservation API는 GarageCare의 핵심 기능으로, 예약 생성부터 조회
 
 예약 데이터는 삭제하지 않고 상태를 변경하여 이력을 보존하며, 상태 전이 규칙과 권한 정책을 통해 데이터의 무결성과 비즈니스 규칙을 유지한다.
 
+---
+
+# 51. MaintenanceItem API Overview
+
+MaintenanceItem API는 예약 시 선택할 수 있는 정비 항목을 조회하고, 관리자가 정비 항목을 등록·수정·활성화하는 기능을 제공한다.
+
+정비 항목은 `ReservationItem`을 통해 예약과 연결된다.
+
+```text
+Reservation
+    │
+    ▼
+ReservationItem
+    │
+    ▼
+MaintenanceItem
+```
+
+고객은 활성화된 정비 항목만 조회할 수 있다.
+
+관리자는 활성 상태와 관계없이 전체 정비 항목을 조회하고 관리할 수 있다.
+
+---
+
+# 52. MaintenanceItem Design Principles
+
+## 52.1 직접 삭제하지 않는다
+
+정비 항목은 기존 예약 이력에서 참조될 수 있다.
+
+따라서 정비 항목을 물리적으로 삭제하지 않고 `active` 상태를 변경한다.
+
+```text
+active = true
+```
+
+예약 시 선택 가능
+
+```text
+active = false
+```
+
+신규 예약에서 선택 불가
+
+기존 예약 내역에서는 계속 조회 가능
+
+---
+
+## 52.2 활성 정비 항목만 고객에게 노출한다
+
+고객용 API는 `active=true`인 정비 항목만 반환한다.
+
+비활성화된 정비 항목은 관리자 API에서만 조회할 수 있다.
+
+---
+
+## 52.3 정비 항목 이름은 중복할 수 없다
+
+동일한 이름의 정비 항목이 여러 개 생성되면 예약 화면과 관리자 화면에서 혼란이 발생할 수 있다.
+
+따라서 정비 항목 이름은 전체 시스템에서 중복되지 않도록 관리한다.
+
+MVP 기준으로 이름 비교 시 앞뒤 공백을 제거하고, 대소문자를 구분하지 않는 정책을 적용한다.
+
+예시:
+
+```text
+엔진오일 교환
+엔진오일 교환 
+ENGINE OIL
+engine oil
+```
+
+정규화 후 동일한 이름이면 중복으로 판단한다.
+
+---
+
+## 52.4 가격은 확정 금액이 아닌 예상 금액이다
+
+`estimatedPrice`는 고객에게 안내하기 위한 예상 가격이다.
+
+실제 정비 비용은 차량 상태와 부품 가격 등에 따라 달라질 수 있다.
+
+따라서 화면에는 다음과 같이 안내한다.
+
+```text
+표시된 금액은 예상 가격이며 실제 정비 비용과 다를 수 있습니다.
+```
+
+MVP에서 가격 기능을 제외하는 경우 `estimatedPrice`는 nullable로 둘 수 있다.
+
+---
+
+## 52.5 정비 항목 수정은 기존 예약 이력에 영향을 주지 않아야 한다
+
+현재 구조에서는 기존 예약이 `MaintenanceItem`을 참조한다.
+
+따라서 정비 항목 이름이나 가격이 변경되면 과거 예약 화면에도 변경된 값이 표시될 수 있다.
+
+MVP에서는 이를 허용한다.
+
+향후에는 `ReservationItem`에 다음 스냅샷 필드를 추가할 수 있다.
+
+```text
+maintenanceItemNameSnapshot
+estimatedPriceSnapshot
+```
+
+---
+
+# 53. MaintenanceItem API Summary
+
+## Customer API
+
+| Method | URL | Description | Authorization |
+|--------|-----|-------------|---------------|
+| GET | `/maintenance-items` | 활성 정비 항목 목록 조회 | CUSTOMER |
+
+## Admin API
+
+| Method | URL | Description | Authorization |
+|--------|-----|-------------|---------------|
+| GET | `/admin/maintenance-items` | 전체 정비 항목 조회 | ADMIN |
+| POST | `/admin/maintenance-items` | 정비 항목 등록 | ADMIN |
+| PUT | `/admin/maintenance-items/{maintenanceItemId}` | 정비 항목 수정 | ADMIN |
+| PATCH | `/admin/maintenance-items/{maintenanceItemId}/active` | 활성 상태 변경 | ADMIN |
+
+---
+
+# 54. GET /maintenance-items
+
+## Purpose
+
+고객이 예약 신청 화면에서 선택 가능한 정비 항목을 조회한다.
+
+활성화된 정비 항목만 반환한다.
+
+---
+
+## Authorization
+
+```text
+CUSTOMER
+```
+
+---
+
+## URL
+
+```http
+GET /maintenance-items
+```
+
+---
+
+## Query Parameters
+
+없음
+
+향후 카테고리 기능을 추가할 경우 다음 파라미터를 지원할 수 있다.
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| category | String | No | 정비 항목 카테고리 |
+| keyword | String | No | 정비 항목 이름 검색 |
+
+---
+
+## Processing Rules
+
+1. 로그인 상태를 확인한다.
+2. `active=true`인 정비 항목을 조회한다.
+3. 표시 순서에 따라 정렬한다.
+4. 고객용 응답 DTO로 변환한다.
+
+기본 정렬 기준:
+
+```text
+displayOrder ASC
+maintenanceItemId ASC
+```
+
+`displayOrder`를 MVP에서 사용하지 않는 경우 다음 기준을 적용한다.
+
+```text
+name ASC
+```
+
+---
+
+## Success Response
+
+### HTTP Status
+
+```http
+200 OK
+```
+
+### Response Body
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "maintenanceItemId": 1,
+      "name": "엔진오일 교환",
+      "description": "엔진오일과 오일 필터를 점검하고 교환합니다.",
+      "estimatedPrice": 80000
+    },
+    {
+      "maintenanceItemId": 2,
+      "name": "브레이크 점검",
+      "description": "브레이크 패드와 디스크 상태를 점검합니다.",
+      "estimatedPrice": null
+    }
+  ],
+  "message": null
+}
+```
+
+---
+
+## Empty Response
+
+활성화된 정비 항목이 없는 경우 빈 배열을 반환한다.
+
+```json
+{
+  "success": true,
+  "data": [],
+  "message": null
+}
+```
+
+빈 목록은 오류로 처리하지 않는다.
+
+---
+
+## Response Fields
+
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| maintenanceItemId | Long | No | 정비 항목 ID |
+| name | String | No | 정비 항목 이름 |
+| description | String | Yes | 정비 항목 설명 |
+| estimatedPrice | Long | Yes | 예상 가격 |
+
+---
+
+## Error Responses
+
+### 로그인하지 않은 경우
+
+```http
+401 Unauthorized
+```
+
+```json
+{
+  "success": false,
+  "code": "AUTH_001",
+  "message": "로그인이 필요합니다."
+}
+```
+
+---
+
+## Related Screen
+
+- 예약 신청 화면
+- 정비 항목 선택 영역
+
+---
+
+## Related Domain
+
+- MaintenanceItem
+- Reservation
+- ReservationItem
+
+---
+
+## Related DTO
+
+```text
+MaintenanceItemResponse
+```
+
+예상 필드:
+
+```java
+Long maintenanceItemId;
+String name;
+String description;
+Long estimatedPrice;
+```
+
+---
+
+## Related Service
+
+```text
+MaintenanceItemService#getActiveMaintenanceItems()
+```
+
+---
+
+## Related Repository
+
+```text
+MaintenanceItemRepository
+```
+
+예상 Repository 메서드:
+
+```java
+List<MaintenanceItem> findAllByActiveTrueOrderByNameAsc();
+```
+
+`displayOrder`를 사용하는 경우:
+
+```java
+List<MaintenanceItem> findAllByActiveTrueOrderByDisplayOrderAscIdAsc();
+```
+
+---
+
+## Related Test
+
+- `MaintenanceItemServiceTest#getActiveMaintenanceItems`
+- `MaintenanceItemControllerTest#getMaintenanceItems`
+- 비활성 정비 항목 제외 테스트
+- 활성 항목이 없는 경우 빈 배열 반환 테스트
+
+---
+
+# 55. GET /admin/maintenance-items
+
+## Purpose
+
+관리자가 활성화 여부와 관계없이 전체 정비 항목을 조회한다.
+
+정비 항목 관리 화면에서 사용한다.
+
+---
+
+## Authorization
+
+```text
+ADMIN
+```
+
+---
+
+## URL
+
+```http
+GET /admin/maintenance-items
+```
+
+---
+
+## Query Parameters
+
+| Name | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| page | Integer | No | 0 | 페이지 번호 |
+| size | Integer | No | 20 | 페이지 크기 |
+| active | Boolean | No | 전체 | 활성 상태 필터 |
+| keyword | String | No | 없음 | 정비 항목 이름 검색 |
+| sort | String | No | name,asc | 정렬 기준 |
+
+---
+
+## Query Examples
+
+전체 조회:
+
+```http
+GET /admin/maintenance-items
+```
+
+활성 항목 조회:
+
+```http
+GET /admin/maintenance-items?active=true
+```
+
+비활성 항목 조회:
+
+```http
+GET /admin/maintenance-items?active=false
+```
+
+이름 검색:
+
+```http
+GET /admin/maintenance-items?keyword=엔진오일
+```
+
+---
+
+## Processing Rules
+
+1. 관리자 권한을 확인한다.
+2. 검색 조건을 적용한다.
+3. 페이지네이션을 적용한다.
+4. 관리자용 응답 DTO로 변환한다.
+
+검색어 앞뒤 공백은 제거한다.
+
+빈 검색어는 검색 조건이 없는 것으로 처리한다.
+
+---
+
+## Success Response
+
+```http
+200 OK
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "content": [
+      {
+        "maintenanceItemId": 1,
+        "name": "엔진오일 교환",
+        "description": "엔진오일과 오일 필터를 점검하고 교환합니다.",
+        "estimatedPrice": 80000,
+        "active": true,
+        "createdAt": "2026-08-01T10:00:00",
+        "updatedAt": "2026-08-03T15:30:00"
+      },
+      {
+        "maintenanceItemId": 5,
+        "name": "에어컨 필터 교환",
+        "description": "실내 공기 필터를 점검하고 교환합니다.",
+        "estimatedPrice": 30000,
+        "active": false,
+        "createdAt": "2026-07-15T09:00:00",
+        "updatedAt": "2026-08-02T11:20:00"
+      }
+    ],
+    "page": 0,
+    "size": 20,
+    "totalElements": 2,
+    "totalPages": 1
+  },
+  "message": null
+}
+```
+
+---
+
+## Response Fields
+
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| maintenanceItemId | Long | No | 정비 항목 ID |
+| name | String | No | 정비 항목 이름 |
+| description | String | Yes | 정비 항목 설명 |
+| estimatedPrice | Long | Yes | 예상 가격 |
+| active | Boolean | No | 활성 상태 |
+| createdAt | LocalDateTime | No | 생성 일시 |
+| updatedAt | LocalDateTime | No | 수정 일시 |
+
+---
+
+## Error Responses
+
+### 로그인하지 않은 경우
+
+```http
+401 Unauthorized
+```
+
+### 관리자 권한이 없는 경우
+
+```http
+403 Forbidden
+```
+
+```json
+{
+  "success": false,
+  "code": "AUTH_003",
+  "message": "접근 권한이 없습니다."
+}
+```
+
+---
+
+## Related Screen
+
+- 관리자 정비 항목 목록
+- 관리자 정비 항목 검색
+- 관리자 정비 항목 활성 상태 필터
+
+---
+
+## Related DTO
+
+```text
+AdminMaintenanceItemResponse
+MaintenanceItemSearchCondition
+```
+
+---
+
+## Related Service
+
+```text
+MaintenanceItemService#getMaintenanceItemsForAdmin()
+```
+
+---
+
+## Related Repository
+
+```text
+MaintenanceItemRepository
+MaintenanceItemQueryRepository
+```
+
+검색 조건이 단순한 MVP에서는 Spring Data JPA 메서드 또는 Specification을 사용할 수 있다.
+
+---
+
+## Related Test
+
+- 관리자 전체 목록 조회
+- 활성 상태 필터 테스트
+- 이름 검색 테스트
+- 페이지네이션 테스트
+- CUSTOMER 접근 차단 테스트
+
+---
+
+# 56. POST /admin/maintenance-items
+
+## Purpose
+
+관리자가 새로운 정비 항목을 등록한다.
+
+---
+
+## Authorization
+
+```text
+ADMIN
+```
+
+---
+
+## URL
+
+```http
+POST /admin/maintenance-items
+```
+
+---
+
+## Request Body
+
+```json
+{
+  "name": "타이어 공기압 점검",
+  "description": "타이어 공기압과 마모 상태를 점검합니다.",
+  "estimatedPrice": 10000
+}
+```
+
+---
+
+## Request Fields
+
+| Field | Type | Required | Validation | Description |
+|-------|------|----------|------------|-------------|
+| name | String | Yes | 2~50자 | 정비 항목 이름 |
+| description | String | No | 최대 500자 | 정비 항목 설명 |
+| estimatedPrice | Long | No | 0 이상 | 예상 가격 |
+
+---
+
+## Validation Rules
+
+### name
+
+- 필수
+- 앞뒤 공백 제거
+- 최소 2자
+- 최대 50자
+- 공백만으로 구성할 수 없음
+- 중복 이름 금지
+
+### description
+
+- 선택
+- 최대 500자
+- 빈 문자열은 `null`로 정규화 가능
+
+### estimatedPrice
+
+- 선택
+- 0 이상
+- 소수점 미지원
+- 원 단위 정수 사용
+
+---
+
+## Business Rules
+
+1. 관리자 권한을 확인한다.
+2. 이름을 정규화한다.
+3. 동일 이름의 정비 항목이 존재하는지 확인한다.
+4. MaintenanceItem을 생성한다.
+5. 최초 상태는 `active=true`로 설정한다.
+6. 저장 후 생성 결과를 반환한다.
+
+---
+
+## Domain Creation Example
+
+```java
+MaintenanceItem.create(
+    name,
+    description,
+    estimatedPrice
+);
+```
+
+생성 시 내부 기본값:
+
+```text
+active = true
+```
+
+---
+
+## Success Response
+
+### HTTP Status
+
+```http
+201 Created
+```
+
+### Response Body
+
+```json
+{
+  "success": true,
+  "data": {
+    "maintenanceItemId": 7,
+    "name": "타이어 공기압 점검",
+    "description": "타이어 공기압과 마모 상태를 점검합니다.",
+    "estimatedPrice": 10000,
+    "active": true,
+    "createdAt": "2026-08-10T14:00:00"
+  },
+  "message": "정비 항목이 등록되었습니다."
+}
+```
+
+---
+
+## Error Responses
+
+### 이름이 누락된 경우
+
+```http
+400 Bad Request
+```
+
+```json
+{
+  "success": false,
+  "code": "COMMON_001",
+  "message": "정비 항목 이름은 필수입니다."
+}
+```
+
+### 이름이 중복된 경우
+
+```http
+409 Conflict
+```
+
+```json
+{
+  "success": false,
+  "code": "MAINTENANCE_001",
+  "message": "이미 등록된 정비 항목입니다."
+}
+```
+
+### 가격이 음수인 경우
+
+```http
+400 Bad Request
+```
+
+```json
+{
+  "success": false,
+  "code": "MAINTENANCE_003",
+  "message": "예상 가격은 0원 이상이어야 합니다."
+}
+```
+
+---
+
+## HTTP Status
+
+| Status | Description |
+|--------|-------------|
+| 201 | 등록 성공 |
+| 400 | 입력값 검증 실패 |
+| 401 | 로그인 필요 |
+| 403 | 관리자 권한 없음 |
+| 409 | 정비 항목 이름 중복 |
+| 500 | 서버 오류 |
+
+---
+
+## Related Screen
+
+- 관리자 정비 항목 등록 화면
+- 관리자 정비 항목 관리 화면
+
+---
+
+## Related Entity
+
+- MaintenanceItem
+
+---
+
+## Related DTO
+
+```text
+MaintenanceItemCreateRequest
+MaintenanceItemCreateResponse
+```
+
+예시:
+
+```java
+public record MaintenanceItemCreateRequest(
+    @NotBlank
+    @Size(min = 2, max = 50)
+    String name,
+
+    @Size(max = 500)
+    String description,
+
+    @PositiveOrZero
+    Long estimatedPrice
+) {
+}
+```
+
+---
+
+## Related Service
+
+```text
+MaintenanceItemService#createMaintenanceItem()
+```
+
+---
+
+## Related Repository
+
+```text
+MaintenanceItemRepository
+```
+
+예상 메서드:
+
+```java
+boolean existsByNameIgnoreCase(String name);
+```
+
+---
+
+## Related Exception
+
+- `DuplicateMaintenanceItemException`
+- `InvalidMaintenanceItemPriceException`
+
+---
+
+## Related Test
+
+- 정상 등록 테스트
+- 이름 중복 등록 실패 테스트
+- 빈 이름 등록 실패 테스트
+- 이름 길이 초과 테스트
+- 음수 가격 입력 실패 테스트
+- CUSTOMER 등록 차단 테스트
+
+---
+
+# 57. PUT /admin/maintenance-items/{maintenanceItemId}
+
+## Purpose
+
+관리자가 기존 정비 항목의 정보를 수정한다.
+
+활성 상태는 이 API에서 변경하지 않는다.
+
+활성 상태 변경은 별도의 API를 사용한다.
+
+```http
+PATCH /admin/maintenance-items/{maintenanceItemId}/active
+```
+
+---
+
+## Authorization
+
+```text
+ADMIN
+```
+
+---
+
+## URL
+
+```http
+PUT /admin/maintenance-items/{maintenanceItemId}
+```
+
+---
+
+## Path Variable
+
+| Name | Type | Description |
+|------|------|-------------|
+| maintenanceItemId | Long | 수정할 정비 항목 ID |
+
+---
+
+## Request Body
+
+```json
+{
+  "name": "타이어 공기압 및 마모 점검",
+  "description": "공기압, 트레드 마모도 및 편마모 여부를 점검합니다.",
+  "estimatedPrice": 15000
+}
+```
+
+---
+
+## Request Fields
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| name | String | Yes | 2~50자 |
+| description | String | No | 최대 500자 |
+| estimatedPrice | Long | No | 0 이상 |
+
+`PUT` 방식이므로 수정 가능한 필드는 모두 전달하는 것을 원칙으로 한다.
+
+부분 수정이 필요해질 경우 향후 `PATCH` API를 별도로 제공할 수 있다.
+
+---
+
+## Business Rules
+
+1. 관리자 권한을 확인한다.
+2. 정비 항목을 조회한다.
+3. 이름을 정규화한다.
+4. 다른 정비 항목과 이름이 중복되는지 확인한다.
+5. 도메인 메서드를 통해 정보를 수정한다.
+6. 수정된 정보를 반환한다.
+
+자기 자신의 기존 이름은 중복으로 판단하지 않는다.
+
+예시:
+
+```text
+현재 이름: 엔진오일 교환
+변경 이름: 엔진오일 교환
+```
+
+허용
+
+```text
+다른 항목 이름: 엔진오일 교환
+변경 이름: 엔진오일 교환
+```
+
+불허
+
+---
+
+## Domain Method Example
+
+```java
+maintenanceItem.update(
+    request.name(),
+    request.description(),
+    request.estimatedPrice()
+);
+```
+
+Entity 필드를 Controller나 Service에서 직접 수정하지 않는다.
+
+---
+
+## Success Response
+
+```http
+200 OK
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "maintenanceItemId": 7,
+    "name": "타이어 공기압 및 마모 점검",
+    "description": "공기압, 트레드 마모도 및 편마모 여부를 점검합니다.",
+    "estimatedPrice": 15000,
+    "active": true,
+    "updatedAt": "2026-08-11T10:20:00"
+  },
+  "message": "정비 항목이 수정되었습니다."
+}
+```
+
+---
+
+## Error Responses
+
+### 정비 항목이 존재하지 않는 경우
+
+```http
+404 Not Found
+```
+
+```json
+{
+  "success": false,
+  "code": "MAINTENANCE_002",
+  "message": "정비 항목을 찾을 수 없습니다."
+}
+```
+
+### 다른 정비 항목과 이름이 중복되는 경우
+
+```http
+409 Conflict
+```
+
+```json
+{
+  "success": false,
+  "code": "MAINTENANCE_001",
+  "message": "이미 등록된 정비 항목입니다."
+}
+```
+
+---
+
+## Related Screen
+
+- 관리자 정비 항목 수정 화면
+- 관리자 정비 항목 상세 또는 목록
+
+---
+
+## Related DTO
+
+```text
+MaintenanceItemUpdateRequest
+MaintenanceItemResponse
+```
+
+---
+
+## Related Service
+
+```text
+MaintenanceItemService#updateMaintenanceItem()
+```
+
+---
+
+## Related Repository
+
+```text
+MaintenanceItemRepository
+```
+
+예상 메서드:
+
+```java
+boolean existsByNameIgnoreCaseAndIdNot(
+    String name,
+    Long maintenanceItemId
+);
+```
+
+---
+
+## Related Exception
+
+- `MaintenanceItemNotFoundException`
+- `DuplicateMaintenanceItemException`
+- `InvalidMaintenanceItemPriceException`
+
+---
+
+## Related Test
+
+- 정상 수정 테스트
+- 존재하지 않는 항목 수정 실패 테스트
+- 자기 자신의 동일 이름 유지 테스트
+- 다른 항목과 이름 중복 실패 테스트
+- 음수 가격 수정 실패 테스트
+- CUSTOMER 수정 차단 테스트
+
+---
+
+# 58. PATCH /admin/maintenance-items/{maintenanceItemId}/active
+
+## Purpose
+
+관리자가 정비 항목의 활성 상태를 변경한다.
+
+정비 항목을 삭제하지 않고 고객 예약 화면에서 노출 여부만 제어한다.
+
+---
+
+## Authorization
+
+```text
+ADMIN
+```
+
+---
+
+## URL
+
+```http
+PATCH /admin/maintenance-items/{maintenanceItemId}/active
+```
+
+---
+
+## Path Variable
+
+| Name | Type | Description |
+|------|------|-------------|
+| maintenanceItemId | Long | 정비 항목 ID |
+
+---
+
+## Request Body
+
+```json
+{
+  "active": false
+}
+```
+
+---
+
+## Request Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| active | Boolean | Yes | 변경할 활성 상태 |
+
+---
+
+## Business Rules
+
+### 활성화
+
+```text
+active=false
+    ↓
+active=true
+```
+
+활성화된 정비 항목은 고객 예약 화면에 노출된다.
+
+### 비활성화
+
+```text
+active=true
+    ↓
+active=false
+```
+
+비활성화된 정비 항목은 신규 예약에서 선택할 수 없다.
+
+기존 예약 데이터에서는 계속 표시된다.
+
+---
+
+## Idempotency
+
+현재 상태와 동일한 값을 요청해도 오류를 발생시키지 않는다.
+
+예시:
+
+```text
+현재 active=true
+요청 active=true
+```
+
+결과:
+
+```text
+active=true
+```
+
+정상 응답을 반환한다.
+
+이 정책은 관리자 화면에서 중복 요청이 발생해도 안정적으로 처리하기 위함이다.
+
+---
+
+## Success Response
+
+```http
+200 OK
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "maintenanceItemId": 7,
+    "name": "타이어 공기압 및 마모 점검",
+    "active": false,
+    "updatedAt": "2026-08-11T11:00:00"
+  },
+  "message": "정비 항목의 활성 상태가 변경되었습니다."
+}
+```
+
+---
+
+## Error Responses
+
+### 정비 항목이 존재하지 않는 경우
+
+```http
+404 Not Found
+```
+
+```json
+{
+  "success": false,
+  "code": "MAINTENANCE_002",
+  "message": "정비 항목을 찾을 수 없습니다."
+}
+```
+
+### active 값이 누락된 경우
+
+```http
+400 Bad Request
+```
+
+```json
+{
+  "success": false,
+  "code": "COMMON_001",
+  "message": "활성 상태 값은 필수입니다."
+}
+```
+
+---
+
+## Reservation Relationship
+
+정비 항목을 비활성화해도 기존 `ReservationItem`은 삭제하지 않는다.
+
+```text
+MaintenanceItem active=false
+
+기존 ReservationItem 유지
+
+기존 예약 상세 조회 가능
+
+신규 예약 선택만 차단
+```
+
+---
+
+## Related Screen
+
+- 관리자 정비 항목 목록
+- 활성화 토글
+- 비활성화 버튼
+
+---
+
+## Related DTO
+
+```text
+MaintenanceItemActiveUpdateRequest
+MaintenanceItemActiveResponse
+```
+
+---
+
+## Related Service
+
+```text
+MaintenanceItemService#changeActiveStatus()
+```
+
+---
+
+## Related Domain Method
+
+다음과 같이 상태별 메서드를 분리할 수 있다.
+
+```java
+maintenanceItem.activate();
+maintenanceItem.deactivate();
+```
+
+또는 명시적 변경 메서드를 사용할 수 있다.
+
+```java
+maintenanceItem.changeActiveStatus(active);
+```
+
+도메인 의미가 더 명확한 `activate()`와 `deactivate()` 방식을 우선 고려한다.
+
+---
+
+## Related Exception
+
+- `MaintenanceItemNotFoundException`
+
+---
+
+## Related Test
+
+- 활성 항목 비활성화 테스트
+- 비활성 항목 활성화 테스트
+- 동일 상태 요청 테스트
+- 존재하지 않는 항목 상태 변경 실패 테스트
+- CUSTOMER 접근 차단 테스트
+- 비활성 항목이 고객 목록에서 제외되는지 테스트
+
+---
+
+# 59. MaintenanceItem Validation Policy
+
+## Controller Validation
+
+요청 형식과 단순 입력값 검증을 담당한다.
+
+```text
+@NotBlank
+@Size
+@PositiveOrZero
+@NotNull
+```
+
+예시:
+
+```java
+@NotBlank
+@Size(min = 2, max = 50)
+private String name;
+```
+
+---
+
+## Service Validation
+
+다른 데이터와의 관계 또는 조회가 필요한 검증을 담당한다.
+
+예시:
+
+- 정비 항목 이름 중복 확인
+- 정비 항목 존재 여부 확인
+- 관리자 권한 확인
+
+---
+
+## Domain Validation
+
+객체 자체가 항상 유효한 상태를 유지하도록 보장한다.
+
+예시:
+
+- 이름이 공백만으로 구성되지 않음
+- 예상 가격이 음수가 아님
+- 필수 상태값이 null이 아님
+
+---
+
+## Validation Responsibility
+
+```text
+Controller
+    │
+    ├── 요청 형식
+    ├── 필수값
+    └── 길이 및 숫자 범위
+    │
+    ▼
+Service
+    │
+    ├── 중복 검사
+    ├── 존재 여부
+    └── 권한 및 관계 검증
+    │
+    ▼
+Domain
+    │
+    └── 객체 불변 조건 보장
+```
+
+---
+
+# 60. MaintenanceItem Authorization Policy
+
+| Action | GUEST | CUSTOMER | ADMIN |
+|--------|-------|----------|-------|
+| 활성 항목 조회 | 불가 | 가능 | 가능 |
+| 전체 항목 조회 | 불가 | 불가 | 가능 |
+| 정비 항목 등록 | 불가 | 불가 | 가능 |
+| 정비 항목 수정 | 불가 | 불가 | 가능 |
+| 활성 상태 변경 | 불가 | 불가 | 가능 |
+
+관리자가 고객용 API를 호출하는 것은 허용할 수 있다.
+
+ADMIN은 CUSTOMER보다 상위 권한으로 간주한다.
+
+---
+
+# 61. MaintenanceItem Error Codes
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| MAINTENANCE_001 | 409 | 정비 항목 이름 중복 |
+| MAINTENANCE_002 | 404 | 정비 항목을 찾을 수 없음 |
+| MAINTENANCE_003 | 400 | 예상 가격이 유효하지 않음 |
+| MAINTENANCE_004 | 400 | 정비 항목 이름이 유효하지 않음 |
+| MAINTENANCE_005 | 409 | 비활성 정비 항목을 예약에 사용 |
+| MAINTENANCE_006 | 400 | 활성 상태 값이 유효하지 않음 |
+
+---
+
+## Error Code Usage
+
+### MAINTENANCE_001
+
+다음 API에서 발생할 수 있다.
+
+```text
+POST /admin/maintenance-items
+PUT /admin/maintenance-items/{maintenanceItemId}
+```
+
+### MAINTENANCE_002
+
+다음 API에서 발생할 수 있다.
+
+```text
+PUT /admin/maintenance-items/{maintenanceItemId}
+PATCH /admin/maintenance-items/{maintenanceItemId}/active
+POST /reservations
+```
+
+### MAINTENANCE_005
+
+예약 생성 시 비활성 정비 항목이 포함된 경우 발생한다.
+
+```json
+{
+  "success": false,
+  "code": "MAINTENANCE_005",
+  "message": "현재 선택할 수 없는 정비 항목이 포함되어 있습니다."
+}
+```
+
+---
+
+# 62. MaintenanceItem Sequence Diagrams
+
+## 62.1 고객 정비 항목 조회
+
+```mermaid
+sequenceDiagram
+    actor Customer
+    participant Controller as MaintenanceItemController
+    participant Service as MaintenanceItemService
+    participant Repository as MaintenanceItemRepository
+    participant DB as Database
+
+    Customer->>Controller: GET /maintenance-items
+    Controller->>Service: getActiveMaintenanceItems()
+    Service->>Repository: findAllByActiveTrue()
+    Repository->>DB: SELECT active = true
+    DB-->>Repository: MaintenanceItems
+    Repository-->>Service: List<MaintenanceItem>
+    Service-->>Controller: List<MaintenanceItemResponse>
+    Controller-->>Customer: 200 OK
+```
+
+---
+
+## 62.2 관리자 정비 항목 등록
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant Controller as AdminMaintenanceItemController
+    participant Service as MaintenanceItemService
+    participant Repository as MaintenanceItemRepository
+    participant DB as Database
+
+    Admin->>Controller: POST /admin/maintenance-items
+    Controller->>Controller: Bean Validation
+    Controller->>Service: createMaintenanceItem(request)
+    Service->>Repository: existsByNameIgnoreCase(name)
+    Repository->>DB: SELECT EXISTS
+    DB-->>Repository: false
+    Service->>Service: MaintenanceItem.create()
+    Service->>Repository: save(maintenanceItem)
+    Repository->>DB: INSERT
+    DB-->>Repository: saved entity
+    Repository-->>Service: MaintenanceItem
+    Service-->>Controller: MaintenanceItemCreateResponse
+    Controller-->>Admin: 201 Created
+```
+
+---
+
+## 62.3 정비 항목 비활성화
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant Controller as AdminMaintenanceItemController
+    participant Service as MaintenanceItemService
+    participant Repository as MaintenanceItemRepository
+    participant Entity as MaintenanceItem
+
+    Admin->>Controller: PATCH /admin/maintenance-items/{id}/active
+    Controller->>Service: changeActiveStatus(id, false)
+    Service->>Repository: findById(id)
+    Repository-->>Service: MaintenanceItem
+    Service->>Entity: deactivate()
+    Entity-->>Service: active=false
+    Service-->>Controller: MaintenanceItemActiveResponse
+    Controller-->>Admin: 200 OK
+```
+
+---
+
+# 63. MaintenanceItem Transaction Policy
+
+## Read Operations
+
+다음 API는 읽기 전용 트랜잭션을 사용한다.
+
+```java
+@Transactional(readOnly = true)
+```
+
+적용 대상:
+
+- 고객 정비 항목 목록 조회
+- 관리자 정비 항목 목록 조회
+
+---
+
+## Write Operations
+
+다음 API는 일반 트랜잭션을 사용한다.
+
+```java
+@Transactional
+```
+
+적용 대상:
+
+- 정비 항목 등록
+- 정비 항목 수정
+- 활성 상태 변경
+
+---
+
+## Transaction Boundary
+
+트랜잭션은 Controller가 아닌 Service 계층에서 시작한다.
+
+```text
+Controller
+    │
+    │ 트랜잭션 없음
+    ▼
+Service
+    │
+    │ @Transactional
+    ▼
+Repository
+```
+
+---
+
+# 64. MaintenanceItem DTO Convention
+
+## Request DTO
+
+```text
+MaintenanceItemCreateRequest
+MaintenanceItemUpdateRequest
+MaintenanceItemActiveUpdateRequest
+```
+
+## Response DTO
+
+```text
+MaintenanceItemResponse
+AdminMaintenanceItemResponse
+MaintenanceItemCreateResponse
+MaintenanceItemActiveResponse
+```
+
+---
+
+## DTO Mapping Policy
+
+Entity를 Controller 응답으로 직접 반환하지 않는다.
+
+```text
+Entity
+    ↓
+Response DTO
+    ↓
+ApiResponse<T>
+```
+
+예시:
+
+```java
+return ApiResponse.success (
+    MaintenanceItemResponse.from(maintenanceItem)
+);
+```
+
+---
+
+# 65. MaintenanceItem Repository Policy
+
+기본 Repository:
+
+```java
+public interface MaintenanceItemRepository
+        extends JpaRepository<MaintenanceItem, Long> {
+}
+```
+
+예상 메서드:
+
+```java
+boolean existsByNameIgnoreCase(String name);
+
+boolean existsByNameIgnoreCaseAndIdNot(
+    String name,
+    Long maintenanceItemId
+);
+
+List<MaintenanceItem> findAllByActiveTrueOrderByNameAsc();
+```
+
+복잡한 관리자 검색 조건이 추가될 경우 QueryDSL 도입을 검토한다.
+
+MVP 단계에서는 단순한 Spring Data JPA 조회 메서드를 우선 사용한다.
+
+---
+
+# 66. MaintenanceItem Design Decisions
+
+## 66.1 DELETE API를 제공하지 않는다
+
+정비 항목은 기존 예약 데이터에서 참조될 수 있다.
+
+물리 삭제 시 다음 문제가 발생할 수 있다.
+
+- 예약 이력 손실
+- 외래 키 오류
+- 과거 정비 내역 표시 불가
+- 통계 데이터 왜곡
+
+따라서 활성 상태 변경 방식으로 관리한다.
+
+---
+
+## 66.2 고객 API와 관리자 API를 분리한다
+
+고객은 활성 항목만 조회해야 하고, 관리자는 모든 항목을 조회해야 한다.
+
+하나의 API에서 권한에 따라 응답을 다르게 반환하면 동작을 예측하기 어려워질 수 있다.
+
+따라서 URL을 분리한다.
+
+```text
+/maintenance-items
+
+/admin/maintenance-items
+```
+
+---
+
+## 66.3 활성 상태 변경은 별도 API를 사용한다
+
+정비 항목 정보 수정과 상태 변경은 목적이 다르다.
+
+정보 수정:
+
+```http
+PUT /admin/maintenance-items/{id}
+```
+
+상태 변경:
+
+```http
+PATCH /admin/maintenance-items/{id}/active
+```
+
+이를 분리함으로써 요청 의도와 감사 로그를 명확하게 유지할 수 있다.
+
+---
+
+## 66.4 가격은 Long 타입을 사용한다
+
+MVP에서는 대한민국 원화만 사용한다.
+
+소수점이 필요하지 않으므로 `Long` 타입을 사용한다.
+
+```text
+80000
+```
+
+통화 단위를 여러 개 지원하게 될 경우 다음 구조를 검토한다.
+
+```text
+Money
+├── amount
+└── currency
+```
+
+---
+
+## 66.5 과거 예약 스냅샷은 MVP 이후로 연기한다
+
+현재는 ReservationItem이 MaintenanceItem을 참조한다.
+
+정비 항목 이름이나 가격 변경 시 과거 예약 표시값도 변경될 수 있다.
+
+MVP에서는 구현 복잡도를 줄이기 위해 현재 구조를 유지한다.
+
+서비스 운영 데이터가 쌓이기 시작하면 스냅샷 필드를 추가한다.
+
+---
+
+# 67. MaintenanceItem Open Decisions
+
+향후 검토할 항목:
+
+- 정비 항목 카테고리
+- 정비 예상 소요시간
+- 차량 종류별 가격
+- 부품비와 공임 분리
+- 정비 항목 대표 이미지
+- 정비 항목 표시 순서
+- 관리자 드래그 정렬
+- 예약 시점 이름·가격 스냅샷
+- 다국어 정비 항목 이름
+- 정비 항목별 사전 안내 사항
+- 정비 항목별 예약 가능 시간 설정
+
+---
+
+# 68. MaintenanceItem Summary
+
+MaintenanceItem API는 고객이 예약 시 선택할 정비 항목을 제공하고, 관리자가 정비 항목을 관리할 수 있도록 설계한다.
+
+고객은 활성화된 정비 항목만 조회할 수 있으며, 관리자는 전체 항목 조회, 등록, 수정, 활성 상태 변경을 수행할 수 있다.
+
+정비 항목은 기존 예약 이력을 보호하기 위해 물리적으로 삭제하지 않는다.
+
+```text
+등록
+  ↓
+활성 상태
+  ↓
+예약에서 사용
+  ↓
+비활성화
+  ↓
+신규 예약 선택 차단
+  ↓
+기존 예약 이력 유지
+```
+
+MaintenanceItem은 Reservation Aggregate 외부의 독립적인 기준 정보이며, ReservationItem을 통해 예약과 연결된다.
+
+---
+
+# 69. Notice API Overview
+
+Notice API는 고객에게 공지사항을 제공하고, 관리자가 공지사항을 등록·수정·삭제할 수 있는 기능을 제공한다.
+
+공지사항은 회원가입 여부와 관계없이 조회할 수 있는 공개 정보이다.
+
+```text
+ADMIN
+    │
+    ▼
+ Notice 작성
+    │
+    ▼
+ Notice 수정
+    │
+    ▼
+ 고객 조회
+```
+
+공지사항은 서비스 운영, 휴무 안내, 이벤트, 시스템 점검 등의 정보를 전달하기 위해 사용한다.
+
+---
+
+# 70. Notice Design Principles
+
+## 70.1 공지사항은 공개 데이터이다
+
+공지사항은 로그인하지 않은 사용자도 조회할 수 있다.
+
+```text
+Guest
+Customer
+Admin
+```
+
+모두 조회 가능
+
+---
+
+## 70.2 작성 권한은 관리자만 가진다
+
+공지 등록, 수정, 삭제는 관리자만 수행한다.
+
+```text
+POST
+
+PUT
+
+DELETE
+```
+
+모두 ADMIN 전용이다.
+
+---
+
+## 70.3 삭제는 MVP에서 물리 삭제를 사용한다
+
+예약 데이터와 달리 공지사항은 과거 이력을 반드시 보존할 필요가 없다.
+
+따라서 MVP에서는 Physical Delete를 사용한다.
+
+향후 운영 이력이 필요할 경우 Soft Delete를 검토한다.
+
+---
+
+## 70.4 최신 공지가 먼저 노출된다
+
+기본 정렬
+
+```text
+createdAt DESC
+```
+
+최신 공지가 항상 상단에 표시된다.
+
+---
+
+## 70.5 제목은 필수이다
+
+내용이 짧더라도 제목은 반드시 입력한다.
+
+---
+
+# 71. Notice API Summary
+
+## Public API
+
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/notices` | 공지 목록 조회 |
+| GET | `/notices/{noticeId}` | 공지 상세 조회 |
+
+---
+
+## Admin API
+
+| Method | URL | Description |
+|--------|-----|-------------|
+| POST | `/admin/notices` | 공지 등록 |
+| PUT | `/admin/notices/{noticeId}` | 공지 수정 |
+| DELETE | `/admin/notices/{noticeId}` | 공지 삭제 |
+
+---
+
+# 72. GET /notices
+
+## Purpose
+
+공지사항 목록을 조회한다.
+
+---
+
+## Authorization
+
+```text
+PUBLIC
+```
+
+로그인 여부와 관계없이 접근 가능하다.
+
+---
+
+## URL
+
+```http
+GET /notices
+```
+
+---
+
+## Query Parameters
+
+| Name | Type | Required | Default |
+|------|------|----------|---------|
+| page | Integer | No | 0 |
+| size | Integer | No | 10 |
+
+---
+
+## Business Rules
+
+최신 공지부터 조회한다.
+
+기본 정렬
+
+```text
+createdAt DESC
+```
+
+---
+
+## Success Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "content": [
+      {
+        "noticeId": 15,
+        "title": "추석 연휴 휴무 안내",
+        "createdAt": "2026-09-12"
+      }
+    ],
+    "page":0,
+    "size":10,
+    "totalPages":1
+  }
+}
+```
+
+---
+
+## Related DTO
+
+```
+NoticeListResponse
+```
+
+---
+
+## Related Service
+
+```
+NoticeService#getNoticeList()
+```
+
+---
+
+## Related Test
+
+- 목록 조회
+- 페이지 조회
+- 최신순 정렬
+
+---
+
+# 73. GET /notices/{noticeId}
+
+## Purpose
+
+공지사항 상세 조회
+
+---
+
+## Authorization
+
+PUBLIC
+
+---
+
+## URL
+
+```http
+GET /notices/{noticeId}
+```
+
+---
+
+## Success Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "noticeId":15,
+    "title":"추석 연휴 휴무 안내",
+    "content":"9월 29일부터 10월 1일까지 휴무입니다.",
+    "createdAt":"2026-09-12",
+    "updatedAt":"2026-09-13"
+  }
+}
+```
+
+---
+
+## Error
+
+```json
+{
+  "success":false,
+  "code":"NOTICE_001",
+  "message":"공지사항을 찾을 수 없습니다."
+}
+```
+
+---
+
+# 74. POST /admin/notices
+
+## Purpose
+
+공지 등록
+
+---
+
+## Authorization
+
+ADMIN
+
+---
+
+## URL
+
+```http
+POST /admin/notices
+```
+
+---
+
+## Request
+
+```json
+{
+    "title":"추석 휴무 안내",
+    "content":"9월 29일부터 휴무입니다."
+}
+```
+
+---
+
+## Validation
+
+title
+
+- 필수
+- 2~100자
+
+content
+
+- 필수
+- 최대 5000자
+
+---
+
+## Business Rules
+
+관리자 권한 확인
+
+↓
+
+Notice 생성
+
+↓
+
+저장
+
+↓
+
+응답 반환
+
+---
+
+## Success
+
+```http
+201 Created
+```
+
+```json
+{
+    "success":true,
+    "data":{
+        "noticeId":31
+    },
+    "message":"공지사항이 등록되었습니다."
+}
+```
+
+---
+
+## Related DTO
+
+```
+NoticeCreateRequest
+
+NoticeResponse
+```
+
+---
+
+## Related Service
+
+```
+NoticeService#createNotice()
+```
+
+---
+
+## Related Test
+
+- 정상 등록
+- 제목 누락
+- 내용 누락
+- CUSTOMER 접근 차단
+
+---
+
+# 75. PUT /admin/notices/{noticeId}
+
+## Purpose
+
+공지 수정
+
+---
+
+## Authorization
+
+ADMIN
+
+---
+
+## URL
+
+```http
+PUT /admin/notices/{noticeId}
+```
+
+---
+
+## Request
+
+```json
+{
+    "title":"추석 휴무 안내(수정)",
+    "content":"9월 29일부터 10월 2일까지 휴무입니다."
+}
+```
+
+---
+
+## Business Rules
+
+공지 조회
+
+↓
+
+제목 수정
+
+↓
+
+내용 수정
+
+↓
+
+updatedAt 갱신
+
+↓
+
+저장
+
+---
+
+## Success
+
+```http
+200 OK
+```
+
+---
+
+## Error
+
+404
+
+NOTICE_001
+
+---
+
+## Related Service
+
+```
+NoticeService#updateNotice()
+```
+
+---
+
+## Related Test
+
+- 정상 수정
+- 존재하지 않는 공지
+- CUSTOMER 접근 차단
+
+---
+
+# 76. DELETE /admin/notices/{noticeId}
+
+## Purpose
+
+공지 삭제
+
+---
+
+## Authorization
+
+ADMIN
+
+---
+
+## URL
+
+```http
+DELETE /admin/notices/{noticeId}
+```
+
+---
+
+## Business Rules
+
+공지 조회
+
+↓
+
+삭제
+
+↓
+
+204 반환
+
+---
+
+## Success
+
+```http
+204 No Content
+```
+
+---
+
+## Error
+
+```json
+{
+  "success":false,
+  "code":"NOTICE_001",
+  "message":"공지사항을 찾을 수 없습니다."
+}
+```
+
+---
+
+## Related Test
+
+- 삭제 성공
+- 존재하지 않는 공지
+- CUSTOMER 삭제 차단
+
+---
+
+# 77. Notice Validation Policy
+
+Controller
+
+↓
+
+Bean Validation
+
+↓
+
+Service Validation
+
+↓
+
+Domain Validation
+
+제목
+
+- 필수
+- 최대 100자
+
+내용
+
+- 필수
+- 최대 5000자
+
+---
+
+# 78. Notice Authorization Policy
+
+| Action | Guest | Customer | Admin |
+|---------|-------|----------|-------|
+|목록조회|O|O|O|
+|상세조회|O|O|O|
+|등록|X|X|O|
+|수정|X|X|O|
+|삭제|X|X|O|
+
+---
+
+# 79. Notice Error Codes
+
+| Code | HTTP | Description |
+|------|------|-------------|
+| NOTICE_001 |404|공지를 찾을 수 없음|
+| NOTICE_002 |400|제목이 유효하지 않음|
+| NOTICE_003 |400|내용이 유효하지 않음|
+
+---
+
+# 80. Notice Sequence
+
+## 공지 등록
+
+```mermaid
+sequenceDiagram
+actor Admin
+participant Controller
+participant Service
+participant Repository
+
+Admin->>Controller: POST
+Controller->>Service:createNotice()
+Service->>Repository:save()
+Repository-->>Service
+Service-->>Controller
+Controller-->>Admin
+```
+
+---
+
+## 공지 조회
+
+```mermaid
+sequenceDiagram
+actor Customer
+participant Controller
+participant Service
+participant Repository
+
+Customer->>Controller:GET
+Controller->>Service
+Service->>Repository
+Repository-->>Service
+Service-->>Controller
+Controller-->>Customer
+```
+
+---
+
+# 81. Notice Design Decisions
+
+- 공지는 공개 데이터이다.
+- 최신순으로 조회한다.
+- 작성자는 ADMIN만 가능하다.
+- MVP에서는 Physical Delete를 사용한다.
+- Entity는 Response로 직접 반환하지 않는다.
+
+---
+
+# 82. Notice Open Decisions
+
+향후 추가 예정
+
+- 중요 공지 고정(Pinned Notice)
+- 팝업 공지
+- 예약 완료 시 공지 노출
+- 첨부파일
+- 이미지
+- Markdown 지원
+- 조회수
+- 검색
+- 카테고리
+- 예약 관련 공지 자동 생성
+
+---
+
+# 83. Notice Summary
+
+Notice API는 서비스 운영 정보를 고객에게 전달하기 위한 API이다.
+
+Guest와 Customer는 조회만 가능하며, 공지 등록·수정·삭제는 관리자만 수행한다.
+
+MVP에서는 단순한 공지 시스템으로 시작하지만, 향후 팝업 공지, 중요 공지 고정, 첨부파일, 검색 기능 등을 추가할 수 있도록 확장성을 고려하여 설계하였다.
+
+---
+
+# 84. Common API Policy
+
+GarageCare의 모든 API는 일관된 설계 원칙을 따른다.
+
+이를 통해 유지보수성을 높이고, 새로운 기능이 추가되더라도 동일한 규칙을 적용할 수 있도록 한다.
+
+---
+
+## 84.1 RESTful API
+
+다음 원칙을 따른다.
+
+### Resource 중심 URL
+
+```http
+GET /members
+GET /vehicles
+GET /reservations
+GET /notices
+```
+
+동사를 URL에 포함하지 않는다.
+
+❌
+
+```http
+/getReservation
+/createVehicle
+/updateNotice
+```
+
+⭕
+
+```http
+GET /reservations
+POST /vehicles
+PUT /notices/{noticeId}
+```
+
+---
+
+## 84.2 HTTP Method
+
+| Method | Purpose |
+|---------|---------|
+| GET | 조회 |
+| POST | 생성 |
+| PUT | 전체 수정 |
+| PATCH | 부분 수정 |
+| DELETE | 삭제 |
+
+---
+
+## 84.3 URL Convention
+
+모든 URL은
+
+- 소문자
+- 복수형
+- kebab-case
+
+를 사용한다.
+
+예시
+
+```http
+/api/v1/maintenance-items
+```
+
+---
+
+## 84.4 JSON
+
+모든 Request / Response는 JSON을 사용한다.
+
+```http
+Content-Type
+
+application/json
+```
+
+---
+
+## 84.5 Time Format
+
+ISO-8601
+
+```text
+2026-08-15T14:30:00
+```
+
+날짜만 필요한 경우
+
+```text
+2026-08-15
+```
+
+시간만 필요한 경우
+
+```text
+14:30
+```
+
+---
+
+# 85. Response Convention
+
+GarageCare의 모든 응답은 동일한 구조를 가진다.
+
+```json
+{
+    "success": true,
+    "data": {},
+    "message": null
+}
+```
+
+---
+
+## Success
+
+```json
+{
+    "success": true,
+    "data": {
+        "memberId": 1
+    },
+    "message": null
+}
+```
+
+---
+
+## Error
+
+```json
+{
+    "success": false,
+    "code": "MEMBER_001",
+    "message": "회원을 찾을 수 없습니다."
+}
+```
+
+---
+
+## ApiResponse
+
+예상 클래스
+
+```java
+public class ApiResponse<T> {
+
+    private boolean success;
+
+    private T data;
+
+    private String message;
+
+}
+```
+
+---
+
+## ErrorResponse
+
+```java
+public class ErrorResponse {
+
+    private boolean success;
+
+    private String code;
+
+    private String message;
+
+}
+```
+
+---
+
+## Design Rule
+
+Entity는 Response로 직접 반환하지 않는다.
+
+```
+Entity
+
+↓
+
+Response DTO
+
+↓
+
+ApiResponse
+```
+
+---
+
+# 86. Exception Policy
+
+모든 비즈니스 예외는 BusinessException을 상속받는다.
+
+```text
+RuntimeException
+
+↓
+
+BusinessException
+
+↓
+
+MemberException
+
+VehicleException
+
+ReservationException
+
+MaintenanceItemException
+
+NoticeException
+```
+
+---
+
+## Exception Example
+
+```java
+throw new ReservationNotFoundException();
+```
+
+Controller에서는 예외를 처리하지 않는다.
+
+모든 예외는
+
+```
+@ControllerAdvice
+```
+
+에서 처리한다.
+
+---
+
+## GlobalExceptionHandler
+
+```text
+Controller
+
+↓
+
+Service
+
+↓
+
+Exception 발생
+
+↓
+
+ControllerAdvice
+
+↓
+
+ErrorResponse
+```
+
+---
+
+## Error Code Convention
+
+```
+MEMBER_001
+
+VEHICLE_001
+
+RESERVATION_001
+
+NOTICE_001
+```
+
+---
+
+# 87. Authorization Policy
+
+GarageCare는 Role 기반 접근 제어를 사용한다.
+
+```
+Guest
+
+↓
+
+Customer
+
+↓
+
+Admin
+```
+
+---
+
+## Permission Matrix
+
+| API | Guest | Customer | Admin |
+|------|:----:|:--------:|:-----:|
+| Login | O | O | O |
+| Member | O | O | O |
+| Vehicle | X | O | O |
+| Reservation | X | O | O |
+| MaintenanceItem | O(조회) | O | O |
+| Notice | O | O | O |
+| Admin API | X | X | O |
+
+---
+
+## Authorization Rule
+
+모든 관리자 API는
+
+```http
+/admin/**
+```
+
+경로를 사용한다.
+
+예시
+
+```http
+/admin/notices
+
+/admin/maintenance-items
+```
+
+---
+
+# 88. Validation Policy
+
+검증은 계층별 역할을 가진다.
+
+```text
+Controller
+
+↓
+
+Service
+
+↓
+
+Domain
+```
+
+---
+
+## Controller
+
+Bean Validation
+
+```
+@NotBlank
+
+@NotNull
+
+@Size
+
+@Positive
+```
+
+---
+
+## Service
+
+비즈니스 검증
+
+- 중복 확인
+- 존재 여부
+- 권한 확인
+- 예약 가능 여부
+
+---
+
+## Domain
+
+객체의 불변 조건 유지
+
+예시
+
+```text
+Reservation
+
+↓
+
+status 변경 가능 여부
+```
+
+---
+
+# 89. Transaction Policy
+
+트랜잭션은 Service 계층에서 시작한다.
+
+```
+Controller
+
+↓
+
+Service (@Transactional)
+
+↓
+
+Repository
+```
+
+---
+
+## Read
+
+```java
+@Transactional(readOnly = true)
+```
+
+조회 API
+
+---
+
+## Write
+
+```java
+@Transactional
+```
+
+등록
+
+수정
+
+삭제
+
+---
+
+# 90. DTO Convention
+
+## Request
+
+```
+CreateRequest
+
+UpdateRequest
+
+SearchCondition
+```
+
+---
+
+예시
+
+```
+MemberCreateRequest
+
+VehicleUpdateRequest
+
+ReservationSearchCondition
+```
+
+---
+
+## Response
+
+```
+MemberResponse
+
+VehicleResponse
+
+ReservationResponse
+```
+
+---
+
+DTO는 immutable을 위해
+
+```
+record
+```
+
+사용을 권장한다.
+
+---
+
+# 91. Package Convention
+
+```
+garagecare
+
+├── global
+│
+├── member
+│
+├── vehicle
+│
+├── reservation
+│
+├── maintenance
+│
+└── notice
+```
+
+---
+
+각 도메인은 동일한 구조를 가진다.
+
+```
+controller
+
+service
+
+repository
+
+entity
+
+dto
+
+exception
+```
+
+---
+
+# 92. API Version Strategy
+
+현재 버전
+
+```
+v1
+```
+
+모든 API
+
+```
+/api/v1/
+```
+
+사용
+
+예시
+
+```http
+/api/v1/members
+
+/api/v1/vehicles
+
+/api/v1/reservations
+```
+
+---
+
+향후
+
+```
+v2
+```
+
+에서는
+
+기존 API를 삭제하지 않고
+
+새로운 버전을 추가한다.
+
+```
+/api/v2/
+```
+
+---
+
+# 93. Future APIs
+
+향후 추가 예정
+
+## AI
+
+```
+POST
+
+/ai/diagnosis
+```
+
+증상 기반 정비 추천
+
+---
+
+## Notification
+
+```
+/notifications
+```
+
+예약 알림
+
+점검 알림
+
+---
+
+## Maintenance History
+
+```
+/maintenance-history
+```
+
+차량별 정비 이력
+
+---
+
+## Dashboard
+
+```
+/dashboard
+```
+
+예약 통계
+
+매출 통계
+
+---
+
+## File Upload
+
+```
+/files
+```
+
+차량 사진
+
+정비 사진
+
+---
+
+## Payment
+
+```
+/payments
+```
+
+온라인 결제
+
+---
+
+# 94. Related Documents
+
+API는 다음 문서와 함께 사용된다.
+
+| Document | Description |
+|-----------|-------------|
+| planning.md | 프로젝트 목표 |
+| feature-list.md | 기능 목록 |
+| architecture.md | 시스템 구조 |
+| domain-model.md | 도메인 설계 |
+| erd.md | 데이터베이스 설계 |
+| wireframe.md | 화면 설계 |
+
+---
+
+# 95. API Summary
+
+GarageCare API는 회원, 차량, 예약, 정비 항목, 공지사항을 중심으로 구성된다.
+
+모든 API는 동일한 응답 구조와 예외 처리 정책을 사용하며, 계층별 책임을 분리하여 유지보수성과 확장성을 고려하였다.
+
+도메인 모델, ERD, 화면 설계와 일관된 구조를 유지하도록 설계되었으며, 향후 AI 상담, 정비 이력 관리, 알림, 결제 기능 등을 추가할 수 있도록 확장성을 확보하였다.
+
+```text
+Planning
+    │
+    ▼
+Feature
+    │
+    ▼
+Domain
+    │
+    ▼
+ERD
+    │
+    ▼
+Wireframe
+    │
+    ▼
+API
+    │
+    ▼
+Implementation
+```
+
+API는 구현의 기준이 되는 설계 문서이며, 이후 Spring Boot 애플리케이션 개발 시 Controller, Service, Repository, DTO, Test 코드의 기준으로 활용한다.
