@@ -1,5 +1,14 @@
 package com.hyunu.garagecare.member.repository;
 
+import com.hyunu.garagecare.member.domain.Member;
+import com.hyunu.garagecare.member.domain.MemberRole;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.assertj.core.api.Assertions.*;
+
 @DataJpaTest
 class MemberRepositoryTest {
 
@@ -21,9 +30,9 @@ class MemberRepositoryTest {
         Member savedMember = memberRepository.save(member);
 
         //then
-        Assertion.assertThat(savedMember.getId()).isNotNull();
-        Assertion.assertThat(savedMember.getEmail()).isEqualTo("Test@Test.com");
-        Assertion.assertThat(savedMember.getRole()).isEqualTo(MemberRole.MEMBER);
+        assertThat(savedMember.getId()).isNotNull();
+        assertThat(savedMember.getEmail()).isEqualTo("test@test.com");
+        assertThat(savedMember.getRole()).isEqualTo(MemberRole.MEMBER);
     }
 
     @Test
@@ -41,8 +50,8 @@ class MemberRepositoryTest {
 
         //when
         boolean result =
-                memberRepository.existsByEmail("test@test.com")
+                memberRepository.existsByEmail("test@test.com");
         //then
-        Assertion.assertThat(result).isTrue();
+        assertThat(result).isTrue();
     }
 }

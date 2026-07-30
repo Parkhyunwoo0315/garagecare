@@ -1,6 +1,17 @@
 package com.hyunu.garagecare.member.service;
 
-@springBootTest
+import com.hyunu.garagecare.member.dto.MemberSignUpRequest;
+import com.hyunu.garagecare.member.exception.DuplicateMemberException;
+import com.hyunu.garagecare.member.repository.MemberRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.assertj.core.api.Assertions.*;
+
+@SpringBootTest
 @Transactional
 class MemberServiceTest {
 
@@ -23,12 +34,12 @@ class MemberServiceTest {
 
         // when
         Long memberId =
-                memberService.signUp(request);
+                memberservice.signUp(request);
 
         // then
-        Assertion.assertThat(memberId).isNotNull();
-        Assertion.assertThat(
-                memberRepository.existsByEmail("test@test.com")
+        assertThat(memberId).isNotNull();
+        assertThat(
+                memberrepository.existsByEmail("test@test.com")
         ).isTrue();
     }
 
@@ -44,7 +55,7 @@ class MemberServiceTest {
         request1.setEmail("test@test.com");
         request1.setPassword("12345678");
 
-        memberService.signUp(request1);
+        memberservice.signUp(request1);
 
         MemberSignUpRequest request2 =
                 new MemberSignUpRequest();
@@ -55,7 +66,7 @@ class MemberServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                memberService.signUp(request2)
+                memberservice.signUp(request2)
         ).isInstanceOf(DuplicateMemberException.class);
 
     }

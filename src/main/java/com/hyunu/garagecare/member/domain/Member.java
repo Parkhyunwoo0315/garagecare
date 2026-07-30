@@ -1,10 +1,23 @@
 package com.hyunu.garagecare.member.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 @Entity
 @Table(
         name = "members",
         uniqueConstraints = {
-                @UnigueConstraints(name = "uk_mamber_email", columnNames = "email")
+                @UniqueConstraint(name = "uk_member_email", columnNames = "email")
         }
 )
 
@@ -14,9 +27,9 @@ public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
-    @Column(nullable = false, lengh = 50)
+    @Column(nullable = false, length = 50)
     private String name;
 
     @Column(nullable = false, length = 100)
@@ -25,7 +38,7 @@ public class Member {
     @Column(nullable = false)
     private String password;
 
-    @Enumeraed(EnumType.STRING)
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MemberRole role;
 
@@ -46,8 +59,8 @@ public class Member {
     }
 
     public static Member create(
-            String name;
-            String email;
+            String name,
+            String email,
             String encodedPassword
     ) {
         return new Member(
