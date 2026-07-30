@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>회원가입 완료 | GarageCare</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background-color: #f5f6f8;
+            color: #1f2937;
+            font-family: Arial, sans-serif;
+        }
+
+        .complete-container {
+            width: 100%;
+            max-width: 460px;
+            padding: 42px 36px;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .complete-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            background-color: #ecfdf5;
+            color: #047857;
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .complete-container h1 {
+            margin: 0 0 14px;
+            font-size: 28px;
+        }
+
+        .complete-message {
+            margin: 0 0 30px;
+            color: #6b7280;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .primary-button,
+        .secondary-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 48px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .primary-button {
+            background-color: #111827;
+            color: #ffffff;
+        }
+
+        .primary-button:hover {
+            background-color: #374151;
+        }
+
+        .secondary-button {
+            border: 1px solid #d1d5db;
+            background-color: #ffffff;
+            color: #374151;
+        }
+
+        .secondary-button:hover {
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+
+<body>
+<main class="complete-container">
+    <div class="complete-icon" aria-hidden="true">
+        ✓
+    </div>
+
+    <h1>회원가입이 완료되었습니다</h1>
+
+    <p class="complete-message">
+        GarageCare 회원이 되신 것을 환영합니다.<br>
+        이제 정비 예약과 차량 관리 서비스를 이용할 수 있습니다.
+    </p>
+
+    <div class="button-group">
+        <a class="primary-button"
+           th:href="@{/login}">
+            로그인하기
+        </a>
+
+        <a class="secondary-button"
+           th:href="@{/}">
+            홈으로 이동
+        </a>
+    </div>
+</main>
+</body>
+</html>

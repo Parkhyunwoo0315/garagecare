@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>회원가입 | GarageCare</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background-color: #f5f6f8;
+            color: #1f2937;
+            font-family: Arial, sans-serif;
+        }
+
+        .signup-container {
+            width: 100%;
+            max-width: 440px;
+            padding: 36px;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            margin: 0 0 10px;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 46px;
+            padding: 0 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #111827;
+            box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+        }
+
+        .form-input.field-error {
+            border-color: #dc2626;
+        }
+
+        .field-error-message {
+            margin: 7px 0 0;
+            color: #dc2626;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .global-error {
+            margin-bottom: 20px;
+            padding: 12px 14px;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            background-color: #fef2f2;
+            color: #b91c1c;
+            font-size: 14px;
+        }
+
+        .signup-button {
+            width: 100%;
+            height: 48px;
+            margin-top: 8px;
+            border: 0;
+            border-radius: 8px;
+            background-color: #111827;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .signup-button:hover {
+            background-color: #374151;
+        }
+
+        .page-footer {
+            margin-top: 22px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .page-footer a {
+            color: #111827;
+            font-weight: 700;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+<main class="signup-container">
+    <header class="page-header">
+        <h1>GarageCare 회원가입</h1>
+        <p>
+            예약과 차량 관리를 위해<br>
+            회원 정보를 입력해 주세요.
+        </p>
+    </header>
+
+    <form th:action="@{/members/signup}"
+          th:object="${form}"
+          method="post"
+          novalidate>
+
+        <div class="global-error"
+             th:if="${#fields.hasGlobalErrors()}">
+            <p th:each="error : ${#fields.globalErrors()}"
+               th:text="${error}">
+                회원가입 처리 중 오류가 발생했습니다.
+            </p>
+        </div>
+
+        <div class="form-group">
+            <label for="name" class="form-label">이름</label>
+
+            <input type="text"
+                   id="name"
+                   th:field="*{name}"
+                   class="form-input"
+                   th:errorclass="field-error"
+                   placeholder="이름을 입력해 주세요"
+                   autocomplete="name">
+
+            <p class="field-error-message"
+               th:if="${#fields.hasErrors('name')}"
+               th:errors="*{name}">
+                이름 오류 메시지
+            </p>
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">이메일</label>
+
+            <input type="email"
+                   id="email"
+                   th:field="*{email}"
+                   class="form-input"
+                   th:errorclass="field-error"
+                   placeholder="example@garagecare.com"
+                   autocomplete="email">
+
+            <p class="field-error-message"
+               th:if="${#fields.hasErrors('email')}"
+               th:errors="*{email}">
+                이메일 오류 메시지
+            </p>
+        </div>
+
+        <div class="form-group">
+            <label for="password" class="form-label">비밀번호</label>
+
+            <input type="password"
+                   id="password"
+                   th:field="*{password}"
+                   class="form-input"
+                   th:errorclass="field-error"
+                   placeholder="8자 이상 입력해 주세요"
+                   autocomplete="new-password">
+
+            <p class="field-error-message"
+               th:if="${#fields.hasErrors('password')}"
+               th:errors="*{password}">
+                비밀번호 오류 메시지
+            </p>
+        </div>
+
+        <button type="submit" class="signup-button">
+            회원가입
+        </button>
+    </form>
+
+    <footer class="page-footer">
+        이미 계정이 있으신가요?
+        <a th:href="@{/login}">로그인</a>
+    </footer>
+</main>
+</body>
+</html>
