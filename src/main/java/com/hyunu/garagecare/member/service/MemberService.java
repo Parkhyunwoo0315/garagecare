@@ -1,8 +1,10 @@
 package com.hyunu.garagecare.member.service;
 
 import com.hyunu.garagecare.member.domain.Member;
+import com.hyunu.garagecare.member.dto.MemberLoginRequest;
 import com.hyunu.garagecare.member.dto.MemberSignUpRequest;
 import com.hyunu.garagecare.member.exception.DuplicateMemberException;
+import com.hyunu.garagecare.member.exception.LoginFailedException;
 import com.hyunu.garagecare.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +35,19 @@ public class MemberService {
         Member savedMember = memberRepository.save(member);
 
         return savedMember.getId();
+    }
+
+    public Long login(MemberLoginRequest request) {
+        Member member = memberRepository.findByEmail(request.getEmail())
+                .orElseThrow(LoginFailedException::new);
+
+        if (!passwordEncoder.matches(
+                request.getPassword(),
+                member.getPassword()
+        )) {
+            throw new LoginFailedException();
+        }
+        return member.getId();
     }
 
     private void validateDuplicateEmail(String email) {

@@ -19,6 +19,10 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    // =========================
+    // Sign Up
+    // =========================
+
     @GetMapping("/signup")
     public String signUpForm(Model model) {
         model.addAttribute("form", new MemberSignUpRequest());
@@ -42,4 +46,11 @@ public class MemberController {
     public String signUpComplate() {
         return "member/signup-complate";
     }
+
+    // =========================
+    // Login
+    // =========================
+
+    @GetMapping("/login")
+
 }
