@@ -1,6 +1,11 @@
 package com.hyunu.garagecare.member.controller;
 
+import com.hyunu.garagecare.member.dto.MemberLoginRequest;
+import com.hyunu.garagecare.member.exception.LoginFailedException;
 import com.hyunu.garagecare.member.service.MemberService;
+import com.hyunu.garagecare.member.session.SessionConst;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.ui.Model;
 import com.hyunu.garagecare.member.dto.MemberSignUpRequest;
 import jakarta.validation.Valid;
@@ -52,5 +57,44 @@ public class MemberController {
     // =========================
 
     @GetMapping("/login")
+    public String login(
+            @Valid @ModelAttribute("form")MemberLoginRequest request,
+            BindingResult bindingResult,
+            HttpServletRequest httpRequest
+            ) {
+        if(bindingResult.hasErrors()) {
+            return "member/login-form";
+        }
+        try {
+            Long memberId = memberService.login(request);
+            HttpSession sesssion = httpRequest.getSession();
+            sesssion.setAttribute(
+                    SessionConst.LOGIN_MEMBER_ID,
+                    memberId
+            );
+            return "redirect:/";
 
+        } catch (LoginFailedException exception) {
+            bindingResult.reject(
+                    "loginFailed",
+                    exception.getMessage()
+            );
+            return "member/login-form";
+
+        }
+    }
+
+    // =========================
+    // Logout
+    // =========================
+
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            session.invalidate();
+        }
+        return "redirect:/";
+    }
 }

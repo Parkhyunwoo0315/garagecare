@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>로그인 | GarageCare</title>
+
+  <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background-color: #f5f6f8;
+        color: #1f2937;
+        font-family: Arial, sans-serif;
+    }
+
+    .login-container {
+        width: 100%;
+        max-width: 440px;
+        padding: 36px;
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .page-header {
+        margin-bottom: 28px;
+        text-align: center;
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px;
+        font-size: 28px;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .form-input {
+        width: 100%;
+        height: 46px;
+        padding: 0 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 15px;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #111827;
+    }
+
+    .form-input.field-error {
+        border-color: #dc2626;
+    }
+
+    .field-error-message {
+        margin-top: 7px;
+        color: #dc2626;
+        font-size: 13px;
+    }
+
+    .global-error {
+        margin-bottom: 20px;
+        padding: 12px 14px;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        background-color: #fef2f2;
+        color: #b91c1c;
+        font-size: 14px;
+    }
+
+    .login-button {
+        width: 100%;
+        height: 48px;
+        border: 0;
+        border-radius: 8px;
+        background-color: #111827;
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .page-footer {
+        margin-top: 22px;
+        text-align: center;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .page-footer a {
+        color: #111827;
+        font-weight: 700;
+        text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="login-container">
+
+  <header class="page-header">
+    <h1>GarageCare 로그인</h1>
+
+    <p>
+      등록한 계정으로 로그인해 주세요.
+    </p>
+  </header>
+
+  <form th:action="@{/members/login}"
+        th:object="${form}"
+        method="post"
+        novalidate>
+
+    <div class="global-error"
+         th:if="${#fields.hasGlobalErrors()}">
+
+      <p th:each="error : ${#fields.globalErrors()}"
+         th:text="${error}">
+        로그인에 실패했습니다.
+      </p>
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="email"
+             class="form-label">
+        이메일
+      </label>
+
+      <input type="email"
+             id="email"
+             th:field="*{email}"
+             class="form-input"
+             th:errorclass="field-error"
+             placeholder="example@garagecare.com"
+             autocomplete="email">
+
+      <p class="field-error-message"
+         th:if="${#fields.hasErrors('email')}"
+         th:errors="*{email}">
+        이메일 오류
+      </p>
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="password"
+             class="form-label">
+        비밀번호
+      </label>
+
+      <input type="password"
+             id="password"
+             th:field="*{password}"
+             class="form-input"
+             th:errorclass="field-error"
+             placeholder="비밀번호를 입력해 주세요"
+             autocomplete="current-password">
+
+      <p class="field-error-message"
+         th:if="${#fields.hasErrors('password')}"
+         th:errors="*{password}">
+        비밀번호 오류
+      </p>
+
+    </div>
+
+    <button type="submit"
+            class="login-button">
+      로그인
+    </button>
+
+  </form>
+
+  <footer class="page-footer">
+
+    아직 회원이 아니신가요?
+
+    <a th:href="@{/members/signup}">
+      회원가입
+    </a>
+
+  </footer>
+
+</main>
+
+</body>
+</html>
