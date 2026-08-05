@@ -1,5 +1,6 @@
 package com.hyunu.garagecare.member.service;
 
+import com.hyunu.garagecare.member.dto.MemberLoginRequest;
 import com.hyunu.garagecare.member.dto.MemberSignUpRequest;
 import com.hyunu.garagecare.member.exception.DuplicateMemberException;
 import com.hyunu.garagecare.member.repository.MemberRepository;
@@ -68,6 +69,29 @@ class MemberServiceTest {
         assertThatThrownBy(() ->
                 memberservice.signUp(request2)
         ).isInstanceOf(DuplicateMemberException.class);
+    }
 
+    @Test
+    @DisplayName("로그인 성공")
+    void login() {
+        //given
+        MemberSignUpRequest signUpRequest = new MemberSignUpRequest();
+
+        signUpRequest.setName("박현우");
+        signUpRequest.setEmail("test@test.com");
+        signUpRequest.setPassword("12345678");
+
+        Long savedMemberId = memberservice.signUp(signUpRequest);
+
+        MemberLoginRequest loginRequest = new MemberLoginRequest();
+
+        loginRequest.setEmail("test@test.com");
+        loginRequest.setPassword("12345678");
+
+        //when
+        Long loginMemberId = memberservice.login(loginRequest);
+
+        //then
+        assertThat(loginMemberId).isEqualTo(savedMemberId);
     }
 }
