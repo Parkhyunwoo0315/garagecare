@@ -97,7 +97,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("비밀번호가 일치하지 않으면 로그인에 실패")
+    @DisplayName("비밀번호가 일치하지 않으면 로그인 실패")
     void loginFailByPassword() {
         //given
         MemberSignUpRequest signUpRequest = new MemberSignUpRequest();
@@ -113,11 +113,27 @@ class MemberServiceTest {
         loginRequest.setEmail("test@test.com");
         loginRequest.setPassword("87654321");
 
-        //when&then
+        //when & then
         assertThatThrownBy(
                 () -> memberservice.login(loginRequest)
         )
                 .isInstanceOf(LoginFailedException.class)
                 .hasMessage("이메일 또는 비밀번호가 올바르지 않습니다.");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 이메일이면 로그인 실패")
+    void loginFailByEmail() {
+        //given
+        MemberLoginRequest request = new MemberLoginRequest();
+
+        request.setEmail("unknown@test.com");
+        request.setPassword("12345678");
+
+        //when & then
+        assertThatThrownBy(
+                () -> memberservice.login(request)
+        )
+                .isInstanceOf(LoginFailedException.class);
     }
 }
