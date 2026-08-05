@@ -3,6 +3,7 @@ package com.hyunu.garagecare.member.service;
 import com.hyunu.garagecare.member.dto.MemberLoginRequest;
 import com.hyunu.garagecare.member.dto.MemberSignUpRequest;
 import com.hyunu.garagecare.member.exception.DuplicateMemberException;
+import com.hyunu.garagecare.member.exception.LoginFailedException;
 import com.hyunu.garagecare.member.repository.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -93,5 +94,30 @@ class MemberServiceTest {
 
         //then
         assertThat(loginMemberId).isEqualTo(savedMemberId);
+    }
+
+    @Test
+    @DisplayName("비밀번호가 일치하지 않으면 로그인에 실패")
+    void loginFailByPassword() {
+        //given
+        MemberSignUpRequest signUpRequest = new MemberSignUpRequest();
+
+        signUpRequest.setName("박현우");
+        signUpRequest.setEmail("test@test.com");
+        signUpRequest.setPassword("12345678");
+
+        memberservice.signUp(signUpRequest);
+
+        MemberLoginRequest loginRequest = new MemberLoginRequest();
+
+        loginRequest.setEmail("test@test.com");
+        loginRequest.setPassword("87654321");
+
+        //when&then
+        assertThatThrownBy(
+                () -> memberservice.login(loginRequest)
+        )
+                .isInstanceOf(LoginFailedException.class)
+                .hasMessage("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
 }
