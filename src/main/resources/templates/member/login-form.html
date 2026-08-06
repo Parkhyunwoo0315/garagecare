@@ -75,6 +75,7 @@
     .form-input:focus {
         outline: none;
         border-color: #111827;
+        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
     }
 
     .form-input.field-error {
@@ -82,7 +83,7 @@
     }
 
     .field-error-message {
-        margin-top: 7px;
+        margin: 7px 0 0;
         color: #dc2626;
         font-size: 13px;
     }
@@ -97,16 +98,24 @@
         font-size: 14px;
     }
 
+    .global-error p {
+        margin: 0;
+    }
+
     .login-button {
         width: 100%;
         height: 48px;
         border: 0;
         border-radius: 8px;
         background-color: #111827;
-        color: white;
+        color: #ffffff;
         font-size: 16px;
         font-weight: 700;
         cursor: pointer;
+    }
+
+    .login-button:hover {
+        background-color: #374151;
     }
 
     .page-footer {
@@ -141,11 +150,16 @@
         method="post"
         novalidate>
 
+    <input type="hidden"
+           name="redirectURL"
+           th:value="${redirectURL}">
+
     <div class="global-error"
+         role="alert"
          th:if="${#fields.hasGlobalErrors()}">
 
       <p th:each="error : ${#fields.globalErrors()}"
-         th:text="${error}">
+         th:text="${error.defaultMessage}">
         로그인에 실패했습니다.
       </p>
 
@@ -164,9 +178,11 @@
              class="form-input"
              th:errorclass="field-error"
              placeholder="example@garagecare.com"
-             autocomplete="email">
+             autocomplete="email"
+             aria-describedby="email-error">
 
-      <p class="field-error-message"
+      <p id="email-error"
+         class="field-error-message"
          th:if="${#fields.hasErrors('email')}"
          th:errors="*{email}">
         이메일 오류
@@ -187,9 +203,11 @@
              class="form-input"
              th:errorclass="field-error"
              placeholder="비밀번호를 입력해 주세요"
-             autocomplete="current-password">
+             autocomplete="current-password"
+             aria-describedby="password-error">
 
-      <p class="field-error-message"
+      <p id="password-error"
+         class="field-error-message"
          th:if="${#fields.hasErrors('password')}"
          th:errors="*{password}">
         비밀번호 오류
