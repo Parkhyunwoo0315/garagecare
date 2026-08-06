@@ -1,0 +1,27 @@
+package com.hyunu.garagecare.global.config;
+
+import com.hyunu.garagecare.global.auth.LoginCheckInterceptor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+@RequiredArgsConstructor
+public class WebConfig implements WebMvcConfigurer {
+
+    private final LoginCheckInterceptor loginCheckInterceptor;
+
+    @Override
+    public void addInterceptorrs(InterceptorRegistry registry) {
+
+        registry.addInterceptor(loginCheckInterceptor)
+                .order(1)
+                .addPathPatterns(
+                        "/reservations/**",
+                        "/vehicles/**",
+                        "/mypage/**",
+                        "/admin/**"
+                );
+    }
+}
