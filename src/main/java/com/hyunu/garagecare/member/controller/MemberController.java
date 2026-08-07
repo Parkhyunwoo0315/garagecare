@@ -12,10 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -31,25 +28,27 @@ public class MemberController {
     @GetMapping("/signup")
     public String signUpForm(Model model) {
         model.addAttribute("form", new MemberSignUpRequest());
+
         return "member/signup-form";
     }
 
-    @PostMapping("signup")
+    @PostMapping("/signup")
     public String signUp(
-            @Valid @ModelAttribute("form") MemberSignUpRequest request,
+            @Valid @ModelAttribute("form")
+            MemberSignUpRequest request,
             BindingResult bindingResult
     ) {
         if(bindingResult.hasErrors()) {
-            return "member/sign-form";
+            return "member/signup-form";
         }
 
         memberService.signUp(request);
-        return "redirect:/member/signup/complete";
+        return "redirect:/members/signup/complete";
     }
 
-    @GetMapping("/sign/complate")
-    public String signUpComplate() {
-        return "member/signup-complate";
+    @GetMapping("/signup/complete")
+    public String signUpComplete() {
+        return "member/signup-complete";
     }
 
     // =========================
@@ -57,9 +56,29 @@ public class MemberController {
     // =========================
 
     @GetMapping("/login")
+    public String loginForm(
+            @RequestParam(
+                    name = "redirectURL",
+                    required = false
+            ) String redirectURL,
+            Model model
+    ) {
+        model.addAttribute("form", new MemberLoginRequest());
+        model.addAttribute("redirectURL", redirectURL);
+
+        return "member/login-form";
+    }
+
+    @PostMapping("/login")
     public String login(
-            @Valid @ModelAttribute("form")MemberLoginRequest request,
+            @Valid
+            @ModelAttribute("form")
+            MemberLoginRequest request,
             BindingResult bindingResult,
+            @RequestParam(
+                    name = "redirectURL",
+                    required = false
+            ) String  redirectURL,
             HttpServletRequest httpRequest
             ) {
         if(bindingResult.hasErrors()) {
@@ -67,12 +86,12 @@ public class MemberController {
         }
         try {
             Long memberId = memberService.login(request);
-            HttpSession sesssion = httpRequest.getSession();
-            sesssion.setAttribute(
+            HttpSession session = httpRequest.getSession();
+            session.setAttribute(
                     SessionConst.LOGIN_MEMBER_ID,
                     memberId
             );
-            return "redirect:/";
+            return "redirect:" + resolveRedirectURL(redirectURL);
 
         } catch (LoginFailedException exception) {
             bindingResult.reject(
@@ -96,5 +115,17 @@ public class MemberController {
             session.invalidate();
         }
         return "redirect:/";
+    }
+
+    private String resolveRedirectURL(
+            String redirectURL
+    ) {
+        if (redirectURL == null || redirectURL.isBlank()) {
+            return "/";
+        }
+        if (redirectURL.startsWith("/") || redirectURL.startsWith("//")) {
+            return "/";
+        }
+        return redirectURL;
     }
 }

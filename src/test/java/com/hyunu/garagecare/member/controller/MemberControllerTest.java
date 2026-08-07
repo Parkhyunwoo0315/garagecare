@@ -26,11 +26,15 @@ class MemberControllerTest {
     }
 
     @Test
-    @DisplayName("로그인 화면 조회")
+    @DisplayName("로그인 화면에 기존 요청 URL을 전달")
     void loginForm() throws Exception {
-        mockMvc.perform(get("/members/login"))
+        mockMvc.perform(get("/members/login")
+                        .param("redirectURL", "/reservations"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("member/login-form"))
-                .andExpect(model().attributeExists("form"));
+                .andExpect(model().attribute(
+                        "redirectURL",
+                        "/reservations")
+                );
     }
 }
