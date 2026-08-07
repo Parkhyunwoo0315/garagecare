@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final LoginCheckInterceptor loginCheckInterceptor;
 
     @Override
-    public void addInterceptorrs(InterceptorRegistry registry) {
+    public void addInterceptors(InterceptorRegistry registry) {
 
         registry.addInterceptor(loginCheckInterceptor)
                 .order(1)
