@@ -15,7 +15,7 @@ import com.hyunu.garagecare.reservation.exception.EmptyMaintenanceItemException;
 import com.hyunu.garagecare.reservation.exception.UnauthorizedVehicleAccessException;
 import com.hyunu.garagecare.reservation.repository.ReservationRepository;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
-import com.hyunu.garagecare.vehicle.exception.VehicleNoFoundException;
+import com.hyunu.garagecare.vehicle.exception.VehicleNotFoundException;
 import com.hyunu.garagecare.vehicle.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,46 +39,60 @@ public class ReservationService {
             Long memberId,
             ReservationCreateRequest request
     ) {
+
         Member member = findMember(memberId);
 
         Vehicle vehicle = findVehicle(request.getVehicleId());
 
         validateVehicleOwnership(member, vehicle);
 
-        List<Long> maintenanceItemIds = request.getMaintenanceItemIds();
+        List<Long> maintenanceItemIds =
+                request.getMaintenanceItemIds();
 
         validateMaintenanceItemIds(maintenanceItemIds);
 
-        List<MaintenanceItem> maintenanceItems = findMaintenanceItems(maintenanceItemIds);
+        List<MaintenanceItem> maintenanceItems =
+                findMaintenanceItems(maintenanceItemIds);
 
         validateActiveMaintenanceItems(maintenanceItems);
 
         Reservation reservation = Reservation.create(
-                member,
-                vehicle,
-                request.getReservationDate(),
-                request.getReservationTime()
+                        member,
+                        vehicle,
+                        request.getReservationDate(),
+                        request.getReservationTime()
         );
+
         addReservationItems(
                 reservation,
                 maintenanceItems
         );
+
         Reservation savedReservation = reservationRepository.save(reservation);
 
         return savedReservation.getId();
     }
 
     private Member findMember(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
+        return memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
     }
 
     private Vehicle findVehicle(Long vehicleId) {
-        return vehicleRepository.findById(vehicleId)
-                .orElseThrow(VehicleNoFoundException::new);
+        return vehicleRepository.findById(vehicleId).orElseThrow(VehicleNotFoundException::new);
     }
 
-    private void validateMaintenanceItemIds(List<Long> maintenanceItemIds) {
+    private void validateVehicleOwnership(
+            Member member,
+            Vehicle vehicle
+    ) {
+        if (!vehicle.isOwnedBy(member.getId())) {
+            throw new UnauthorizedVehicleAccessException();
+        }
+    }
+
+    private void validateMaintenanceItemIds(
+            List<Long> maintenanceItemIds
+    ) {
         if (maintenanceItemIds == null || maintenanceItemIds.isEmpty()) {
             throw new EmptyMaintenanceItemException();
         }
@@ -88,42 +102,44 @@ public class ReservationService {
         }
     }
 
-    private List<MaintenanceItem> findMaintenanceItems(List<Long> maintenanceItenIds) {
-        List<maintenanceItem> maintenanceItems = maintenanceItemRepository.findAllById(
-                maintenanceItenIds
-        );
+    private List<MaintenanceItem> findMaintenanceItems(List<Long> maintenanceItemIds) {
+        List<MaintenanceItem> maintenanceItems =
+                maintenanceItemRepository.findAllById(
+                        maintenanceItemIds
+                );
 
-        if (maintenanceItems.size() != maintenanceItems.size()) {
+        if (maintenanceItems.size() != maintenanceItemIds.size()) {
             throw new MaintenanceItemNotFoundException();
         }
+
         return maintenanceItems;
     }
 
-    private void validateActiveMaintenanceItems(List<maintenanceItem> maintenanceItems) {
-        boolean containsInactiveItem = maintenanceItems.stream().anyMatch(
-                maintenanceItem -> !maintenanceItem.isActive()
-        );
+    private void validateActiveMaintenanceItems(List<MaintenanceItem> maintenanceItems) {
+        boolean containsInactiveItem =
+                maintenanceItems.stream().anyMatch(
+                                maintenanceItem ->
+                                        !maintenanceItem.isActive()
+                );
 
         if (containsInactiveItem) {
             throw new InactiveMaintenanceItemException();
         }
     }
 
-    private void addReservationItems(Reservation reservation, List<MaintenanceItem> maintenanceItems) {
+    private void addReservationItems(
+            Reservation reservation,
+            List<MaintenanceItem> maintenanceItems
+    ) {
         for (MaintenanceItem maintenanceItem : maintenanceItems) {
             ReservationItem reservationItem =
-                    ReservationItem.create(maintenanceItem);
+                    ReservationItem.create(
+                            maintenanceItem
+                    );
 
-            reservation.addReservationItem(reservationItem);
-        }
-    }
-
-    private void validateVehicleOwnership(
-            Member member,
-            Vehicle vehicle
-    ) {
-        if (!vehicle.isOwnedBy(member.getId())) {
-            throw new UnauthorizedVehicleAccessException();
+            reservation.addReservationItem(
+                    reservationItem
+            );
         }
     }
 }

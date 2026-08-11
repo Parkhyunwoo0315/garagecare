@@ -62,7 +62,7 @@ public class Reservation {
 
     public static Reservation create(
             Member member,
-            Vehicle vihicle,
+            Vehicle vehicle,
             LocalDate reservationDate,
             LocalTime reservationTime
     ) {
