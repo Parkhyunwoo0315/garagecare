@@ -118,4 +118,12 @@ public class ReservationService {
         }
     }
 
+    private void validateVehicleOwnership(
+            Member member,
+            Vehicle vehicle
+    ) {
+        if (!vehicle.isOwnedBy(member.getId())) {
+            throw new UnauthorizedVehicleAccessException();
+        }
+    }
 }
