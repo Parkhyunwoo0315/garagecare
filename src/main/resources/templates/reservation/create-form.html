@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>정비 예약 | GarageCare</title>
+
+  <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 40px 20px;
+        background: #f5f6f8;
+        color: #1f2937;
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 620px;
+        margin: 0 auto;
+        padding: 36px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+    }
+
+    h1 {
+        margin: 0 0 8px;
+    }
+
+    .description {
+        margin: 0 0 30px;
+        color: #6b7280;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    label,
+    .group-title {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    select,
+    input[type="date"],
+    input[type="time"] {
+        width: 100%;
+        height: 46px;
+        padding: 0 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        font-size: 15px;
+    }
+
+    .maintenance-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .maintenance-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    .maintenance-item label {
+        margin: 0;
+        font-weight: 400;
+        cursor: pointer;
+    }
+
+    .price {
+        margin-left: auto;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .field-error {
+        margin-top: 7px;
+        color: #dc2626;
+        font-size: 13px;
+    }
+
+    button {
+        width: 100%;
+        height: 48px;
+        border: 0;
+        border-radius: 8px;
+        background: #111827;
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="container">
+
+  <h1>정비 예약</h1>
+
+  <p class="description">
+    차량과 필요한 정비 항목을 선택해 주세요.
+  </p>
+
+  <form th:action="@{/reservations}"
+        th:object="${form}"
+        method="post">
+
+    <div class="form-group">
+
+      <label for="vehicle">
+        차량
+      </label>
+
+      <select id="vehicle"
+              th:field="*{vehicleId}">
+
+        <option value="">
+          차량을 선택해 주세요
+        </option>
+
+        <option
+                th:each="vehicle : ${vehicles}"
+                th:value="${vehicle.id}"
+                th:text="${vehicle.displayName}">
+        </option>
+
+      </select>
+
+      <p class="field-error"
+         th:if="${#fields.hasErrors('vehicleId')}"
+         th:errors="*{vehicleId}">
+      </p>
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="reservationDate">
+        예약 날짜
+      </label>
+
+      <input type="date"
+             id="reservationDate"
+             th:field="*{reservationDate}">
+
+      <p class="field-error"
+         th:if="${#fields.hasErrors('reservationDate')}"
+         th:errors="*{reservationDate}">
+      </p>
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="reservationTime">
+        예약 시간
+      </label>
+
+      <input type="time"
+             id="reservationTime"
+             th:field="*{reservationTime}">
+
+      <p class="field-error"
+         th:if="${#fields.hasErrors('reservationTime')}"
+         th:errors="*{reservationTime}">
+      </p>
+
+    </div>
+
+    <div class="form-group">
+
+            <span class="group-title">
+                정비 항목
+            </span>
+
+      <div class="maintenance-list">
+
+        <div class="maintenance-item"
+             th:each="item : ${maintenanceItems}">
+
+          <input type="checkbox"
+                 th:id="'maintenance-' + ${item.id}"
+                 th:field="*{maintenanceItemIds}"
+                 th:value="${item.id}">
+
+          <label
+                  th:for="'maintenance-' + ${item.id}"
+                  th:text="${item.name}">
+          </label>
+
+          <span class="price"
+                th:if="${item.estimatedPrice != null}"
+                th:text="${#numbers.formatInteger(item.estimatedPrice, 0, 'COMMA')} + '원'">
+                    </span>
+
+        </div>
+
+      </div>
+
+      <p class="field-error"
+         th:if="${#fields.hasErrors('maintenanceItemIds')}"
+         th:errors="*{maintenanceItemIds}">
+      </p>
+
+    </div>
+
+    <button type="submit">
+      예약 등록
+    </button>
+
+  </form>
+
+</main>
+
+</body>
+</html>

@@ -1,6 +1,7 @@
 package com.hyunu.garagecare.reservation.service;
 
 import com.hyunu.garagecare.maintenance.domain.MaintenanceItem;
+import com.hyunu.garagecare.maintenance.dto.MaintenanceItemOptionResponse;
 import com.hyunu.garagecare.maintenance.exception.InactiveMaintenanceItemException;
 import com.hyunu.garagecare.maintenance.exception.MaintenanceItemNotFoundException;
 import com.hyunu.garagecare.maintenance.repository.MaintenanceItemRepository;
@@ -15,6 +16,7 @@ import com.hyunu.garagecare.reservation.exception.EmptyMaintenanceItemException;
 import com.hyunu.garagecare.reservation.exception.UnauthorizedVehicleAccessException;
 import com.hyunu.garagecare.reservation.repository.ReservationRepository;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
+import com.hyunu.garagecare.vehicle.dto.VehicleOptionResponse;
 import com.hyunu.garagecare.vehicle.exception.VehicleNotFoundException;
 import com.hyunu.garagecare.vehicle.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
@@ -141,5 +143,21 @@ public class ReservationService {
                     reservationItem
             );
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<VehicleOptionResponse> getMemberVehicles(Long memberId) {
+        return vehicleRepository.findAllMemberId(memberId)
+                .stream()
+                .map(VehicleOptionResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MaintenanceItemOptionResponse> getActiveMaintenanceItems() {
+        return maintenanceItemRepository.findAllByActiveTrue()
+                .stream()
+                .map(MaintenanceItemOptionResponse::from)
+                .toList();
     }
 }
