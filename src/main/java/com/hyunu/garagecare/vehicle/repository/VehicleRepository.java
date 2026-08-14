@@ -8,5 +8,5 @@ import java.util.List;
 public interface VehicleRepository
         extends JpaRepository<Vehicle, Long> {
 
-    List<Vehicle> findAllMemberId(Long memberId);
+    List<Vehicle> findAllByMemberId(Long memberId);
 }

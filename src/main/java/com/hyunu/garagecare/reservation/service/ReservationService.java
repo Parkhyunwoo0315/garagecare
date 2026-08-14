@@ -147,7 +147,7 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public List<VehicleOptionResponse> getMemberVehicles(Long memberId) {
-        return vehicleRepository.findAllMemberId(memberId)
+        return vehicleRepository.findAllByMemberId(memberId)
                 .stream()
                 .map(VehicleOptionResponse::from)
                 .toList();
