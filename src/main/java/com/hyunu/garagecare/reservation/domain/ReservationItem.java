@@ -29,7 +29,7 @@ public class ReservationItem {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name = "reservation-id",
+            name = "reservation_id",
             nullable = false
     )
     private Reservation reservation;
