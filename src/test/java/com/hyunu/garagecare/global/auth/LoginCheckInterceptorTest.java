@@ -16,6 +16,7 @@ class LoginCheckInterceptorTest {
     @Test
     @DisplayName("로그인한 회원은 보호된 요청을 통과")
     void authenticatedMemberCanAccess() throws Exception {
+
         //given
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -39,6 +40,7 @@ class LoginCheckInterceptorTest {
     @Test
     @DisplayName("세션이 없는 사용자는 로그안 화면으로 이동")
     void noSessionRedirectsToLogin() throws Exception {
+
         //given
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -61,6 +63,7 @@ class LoginCheckInterceptorTest {
     @Test
     @DisplayName("세션은 존재하지만 로그인 정보가 없으면 접근 불가능")
     void sessionWithoutLoginMemberRedirects() throws Exception {
+
         //given
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -85,6 +88,7 @@ class LoginCheckInterceptorTest {
     @Test
     @DisplayName("로그인 전 요청의 쿼리 파라미터도 유지")
     void preserveQueryString() throws Exception {
+
         //given
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
