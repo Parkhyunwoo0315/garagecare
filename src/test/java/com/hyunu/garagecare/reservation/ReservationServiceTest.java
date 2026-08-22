@@ -6,20 +6,21 @@ import com.hyunu.garagecare.maintenance.exception.MaintenanceItemNotFoundExcepti
 import com.hyunu.garagecare.maintenance.repository.MaintenanceItemRepository;
 import com.hyunu.garagecare.member.domain.Member;
 import com.hyunu.garagecare.member.repository.MemberRepository;
+import com.hyunu.garagecare.member.session.SessionConst;
 import com.hyunu.garagecare.reservation.domain.Reservation;
 import com.hyunu.garagecare.reservation.dto.ReservationCreateRequest;
-import com.hyunu.garagecare.reservation.exception.DuplicateMaintenanceItemException;
-import com.hyunu.garagecare.reservation.exception.EmptyMaintenanceItemException;
-import com.hyunu.garagecare.reservation.exception.UnauthorizedVehicleAccessException;
+import com.hyunu.garagecare.reservation.dto.ReservationDetailResponse;
+import com.hyunu.garagecare.reservation.dto.ReservationListResponse;
+import com.hyunu.garagecare.reservation.exception.*;
 import com.hyunu.garagecare.reservation.repository.ReservationRepository;
 import com.hyunu.garagecare.reservation.service.ReservationService;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
 import com.hyunu.garagecare.vehicle.repository.VehicleRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -111,6 +112,7 @@ class ReservationServiceTest {
     @Test
     @DisplayName("다른 회원의 차량으로 예약 불가")
     void createReservationWithAnotherMembersVehicle() {
+
         //given
         Member member1 = memberRepository.save(
                 Member.create(
@@ -133,7 +135,7 @@ class ReservationServiceTest {
                         member2,
                         "22나2222",
                         "현대",
-                        "아반떼",
+                        "아반떼 CN7",
                         2021
                 )
         );
@@ -171,6 +173,7 @@ class ReservationServiceTest {
     @Test
     @DisplayName("정비 항목이 없으면 예약 불가능")
     void createReservationWithoutMaintenanceItem() {
+
         //given
         Member member = memberRepository.save(
                 Member.create(
@@ -185,7 +188,7 @@ class ReservationServiceTest {
                         member,
                         "33다3333",
                         "제네시스",
-                        "G80",
+                        "G80 RG3",
                         2022
                 )
         );
@@ -212,6 +215,7 @@ class ReservationServiceTest {
     @Test
     @DisplayName("동일한 정비 항목을 중복 선택 불가능")
     void duplicateMaintenanceItem() {
+
         //given
         Member member = memberRepository.save(
                 Member.create(
@@ -264,6 +268,7 @@ class ReservationServiceTest {
     @Test
     @DisplayName("존재하지 않는 정비 항목으로 예약 불가능")
     void maintenanceItemNotFound() {
+
         //given
         Member member = memberRepository.save(
                 Member.create(
@@ -349,6 +354,226 @@ class ReservationServiceTest {
                 .isInstanceOf(
                         InactiveMaintenanceItemException.class
                 );
+    }
+
+    @Test
+    @DisplayName("회원의 예약 목록 조회")
+    void getReservations() {
+
+        //given
+        Member member = memberRepository.save(
+                Member.create(
+                        "박현우",
+                        "list@test.com",
+                        "password"
+                )
+        );
+
+        Vehicle vehicle = vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        "77사7777",
+                        "Tesla",
+                        "Model 3",
+                        2024
+                )
+        );
+
+        MaintenanceItem maintenanceItem = maintenanceItemRepository.save(
+                MaintenanceItem.create(
+                        "엔진오일 교환",
+                        "엔진오일을 교환하고 싶습니다.",
+                        70000L
+                )
+        );
+
+        ReservationCreateRequest request = createRequest(
+                vehicle.getId(),
+                List.of(maintenanceItem.getId())
+        );
+
+        Long reservationId = reservationService.createReservation(
+                member.getId(),
+                request
+        );
+
+        //when
+        List<ReservationListResponse> reservations =
+                reservationService.getReservations(member.getId());
+
+        //then
+        assertThat(reservations).hasSize(1);
+        ReservationListResponse response = reservations.get(0);
+        assertThat(response.reservationId()).isEqualTo(reservationId);
+        assertThat(response.vehicleNumber()).isEqualTo("77사7777");
+    }
+
+    @Test
+    @DisplayName("예약이 없는 회원은 빈 목록을 반환")
+    void getEmptyReservations() {
+
+        //given
+        Member member =memberRepository.save(
+                Member.create(
+                        "박현우",
+                        "empty-list@test.com",
+                        "password"
+                )
+        );
+
+        //when
+        List<ReservationListResponse> reservations =
+                reservationService.getReservations(member.getId());
+
+        //then
+        assertThat(reservations).isEmpty();
+    }
+
+    @Test
+    @DisplayName("본인의 예약 상세 정보 조회")
+    void getReservation() {
+
+        //given
+        Member member = memberRepository.save(
+                Member.create(
+                        "박현우",
+                        "detail@test.com",
+                        "password"
+                )
+        );
+
+        Vehicle vehicle = vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        "88아8888",
+                        "기아",
+                        "쏘렌토 MQ4",
+                        2023
+                )
+        );
+
+        MaintenanceItem item1 = maintenanceItemRepository.save(
+                MaintenanceItem.create(
+                        "엔진오일 교환",
+                        "엔진오일을 교환하고 싶습니다.",
+                        70000L
+                )
+        );
+
+        MaintenanceItem item2 = maintenanceItemRepository.save(
+                MaintenanceItem.create(
+                        "타이어 점검",
+                        "타이어를 점검받고 싶습니다.",
+                        10000L
+                )
+        );
+
+        ReservationCreateRequest request = createRequest(
+                vehicle.getId(),
+                List.of(
+                        item1.getId(),
+                        item2.getId()
+                )
+        );
+
+        Long reservationId = reservationService.createReservation(
+                member.getId(),
+                request
+        );
+
+        //when
+        ReservationDetailResponse response =
+                reservationService.getReservationDetail(
+                        member.getId(),
+                        reservationId
+                );
+
+        //then
+        assertThat(response.reservationId()).isEqualTo(reservationId);
+        assertThat(response.vehicleNumber()).isEqualTo("88아8888");
+        assertThat(response.maintenanceItems()).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 예약을 조회하면 예외가 발생")
+    void reservationNotFound() {
+
+        //given
+        Member member = memberRepository.save(
+                Member.create(
+                        "박현우",
+                        "not-found-reservation@test.com",
+                        "password"
+                )
+        );
+
+        //when & then
+        assertThatThrownBy(
+                () -> reservationService.getReservationDetail(
+                        member.getId(),
+                        999999L
+                )
+        )
+                .isInstanceOf(ReservationNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("다른 회원의 예약 상세 정보에 접근 불가능")
+    void unauthorizedReservationAccess() {
+
+        //given
+        Member owner = memberRepository.save(
+                Member.create(
+                        "예약 소유자",
+                        "owner@test.com",
+                        "password"
+                )
+        );
+
+        Member otherMember = memberRepository.save(
+                Member.create(
+                        "다른 회원",
+                        "other@test.com",
+                        "password"
+                )
+        );
+
+        Vehicle vehicle = vehicleRepository.save(
+                Vehicle.create(
+                        owner,
+                        "99자9999",
+                        "Volvo",
+                        "XC60 B5",
+                        2023
+                )
+        );
+
+        MaintenanceItem maintenanceItem = maintenanceItemRepository.save(
+                MaintenanceItem.create(
+                        "엔진오일 교환",
+                        "엔진오일을 교환하고 싶습니다.",
+                        70000L
+                )
+        );
+
+        ReservationCreateRequest request = createRequest(
+                vehicle.getId(),
+                List.of(maintenanceItem.getId())
+        );
+
+        Long reservationId = reservationService.createReservation(
+                owner.getId(),
+                request
+        );
+
+        //when & then
+        assertThatThrownBy(
+                () -> reservationService.getReservationDetail(
+                        otherMember.getId(),
+                        reservationId
+                )
+        )
+                .isInstanceOf(UnauthorizedReservationAccessException.class);
     }
 
     private ReservationCreateRequest createRequest(

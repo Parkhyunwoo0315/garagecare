@@ -11,9 +11,9 @@ import com.hyunu.garagecare.member.repository.MemberRepository;
 import com.hyunu.garagecare.reservation.domain.Reservation;
 import com.hyunu.garagecare.reservation.domain.ReservationItem;
 import com.hyunu.garagecare.reservation.dto.ReservationCreateRequest;
-import com.hyunu.garagecare.reservation.exception.DuplicateMaintenanceItemException;
-import com.hyunu.garagecare.reservation.exception.EmptyMaintenanceItemException;
-import com.hyunu.garagecare.reservation.exception.UnauthorizedVehicleAccessException;
+import com.hyunu.garagecare.reservation.dto.ReservationDetailResponse;
+import com.hyunu.garagecare.reservation.dto.ReservationListResponse;
+import com.hyunu.garagecare.reservation.exception.*;
 import com.hyunu.garagecare.reservation.repository.ReservationRepository;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
 import com.hyunu.garagecare.vehicle.dto.VehicleOptionResponse;
@@ -73,6 +73,42 @@ public class ReservationService {
         Reservation savedReservation = reservationRepository.save(reservation);
 
         return savedReservation.getId();
+    }
+
+    public List<ReservationListResponse> getReservations(Long memberId) {
+        return reservationRepository.findAllByMemberIdOrderByReservationDateDescReservationTimeDesc(memberId)
+                .stream()
+                .map(ReservationListResponse::from)
+                .toList();
+    }
+
+    public ReservationDetailResponse getReservationDetail(
+            Long memberId,
+            Long reservationId) {
+        Reservation reservation = reservationRepository
+                .findDetailById(reservationId)
+                .orElseThrow(ReservationNotFoundException::new);
+
+        validateReservationOwnship(
+                memberId,
+                reservation
+        );
+
+        return ReservationDetailResponse.from(reservation);
+    }
+
+    public List<VehicleOptionResponse> getMemberVehicles(Long memberId) {
+        return vehicleRepository.findAllByMemberId(memberId)
+                .stream()
+                .map(VehicleOptionResponse::from)
+                .toList();
+    }
+
+    public List<MaintenanceItemOptionResponse> getActiveMaintenanceItems() {
+        return maintenanceItemRepository.findAllByActiveTrue()
+                .stream()
+                .map(MaintenanceItemOptionResponse::from)
+                .toList();
     }
 
     private Member findMember(Long memberId) {
@@ -145,19 +181,14 @@ public class ReservationService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public List<VehicleOptionResponse> getMemberVehicles(Long memberId) {
-        return vehicleRepository.findAllByMemberId(memberId)
-                .stream()
-                .map(VehicleOptionResponse::from)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<MaintenanceItemOptionResponse> getActiveMaintenanceItems() {
-        return maintenanceItemRepository.findAllByActiveTrue()
-                .stream()
-                .map(MaintenanceItemOptionResponse::from)
-                .toList();
+    private void validateReservationOwnship(
+            Long memberId,
+            Reservation reservation
+    ) {
+        if (!reservation.getMember()
+                .getId()
+                .equals(memberId)) {
+            throw new UnauthorizedReservationAccessException();
+        }
     }
 }

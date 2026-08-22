@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>예약 상세 | GarageCare</title>
+
+  <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 40px 20px;
+        background: #f5f6f8;
+        color: #1f2937;
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 34px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: white;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    h1 {
+        margin: 0;
+    }
+
+    .back-link {
+        color: #374151;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 16px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .label {
+        color: #6b7280;
+    }
+
+    .value {
+        font-weight: 700;
+    }
+
+    .maintenance-section {
+        margin-top: 30px;
+    }
+
+    .maintenance-section h2 {
+        margin: 0 0 16px;
+        font-size: 19px;
+    }
+
+    .maintenance-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 14px;
+        margin-bottom: 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    .price {
+        color: #6b7280;
+        font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="container">
+
+  <div class="header">
+
+    <h1>예약 상세</h1>
+
+    <a th:href="@{/reservations}"
+       class="back-link">
+      ← 예약 목록
+    </a>
+
+  </div>
+
+  <div class="info-row">
+
+        <span class="label">
+            예약 번호
+        </span>
+
+    <span class="value"
+          th:text="${reservation.reservationId}">
+            1
+        </span>
+
+  </div>
+
+  <div class="info-row">
+
+        <span class="label">
+            차량
+        </span>
+
+    <span class="value"
+          th:text="${reservation.vehicleNumber}">
+            12가3456
+        </span>
+
+  </div>
+
+  <div class="info-row">
+
+        <span class="label">
+            예약 날짜
+        </span>
+
+    <span class="value"
+          th:text="${reservation.reservationDate}">
+            2026-08-20
+        </span>
+
+  </div>
+
+  <div class="info-row">
+
+        <span class="label">
+            예약 시간
+        </span>
+
+    <span class="value"
+          th:text="${reservation.reservationTime}">
+            14:00
+        </span>
+
+  </div>
+
+  <div class="info-row">
+
+        <span class="label">
+            상태
+        </span>
+
+    <span class="value"
+          th:text="${reservation.status}">
+            PENDING
+        </span>
+
+  </div>
+
+  <section class="maintenance-section">
+
+    <h2>정비 항목</h2>
+
+    <div class="maintenance-item"
+         th:each="item : ${reservation.maintenanceItems}">
+
+            <span th:text="${item.name}">
+                엔진오일 교환
+            </span>
+
+      <span class="price"
+            th:if="${item.estimatedPrice != null}"
+            th:text="${#numbers.formatInteger(
+                        item.estimatedPrice,
+                        0,
+                        'COMMA'
+                  )} + '원'">
+                70,000원
+            </span>
+
+    </div>
+
+  </section>
+
+</main>
+
+</body>
+</html>

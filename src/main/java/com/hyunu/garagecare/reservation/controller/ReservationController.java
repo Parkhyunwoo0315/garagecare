@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,25 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ReservationController {
 
     private final ReservationService reservationService;
-
-    @GetMapping("/new")
-    public String createForm(
-            HttpSession session,
-            Model model
-    ) {
-        Long memberId = getLonginMemberId(session);
-
-        model.addAttribute(
-                "form",
-                new ReservationCreateRequest()
-        );
-
-        addReservationOptions(
-                memberId,
-                model
-        );
-        return "reservation/create-form";
-    }
 
     @PostMapping
     public String create(
@@ -63,6 +41,57 @@ public class ReservationController {
                         request
                 );
         return "redirect:/reservations/" + reservationId;
+    }
+
+    @GetMapping("/new")
+    public String createForm(
+            HttpSession session,
+            Model model
+    ) {
+        Long memberId = getLonginMemberId(session);
+
+        model.addAttribute(
+                "form",
+                new ReservationCreateRequest()
+        );
+
+        addReservationOptions(
+                memberId,
+                model
+        );
+        return "reservation/create-form";
+    }
+
+    @GetMapping
+    public String reservations(
+            HttpSession session,
+            Model model
+    ) {
+        Long memberId = getLonginMemberId(session);
+
+        model.addAttribute(
+                "reservations",
+                reservationService.getReservations(memberId)
+        );
+        return "reservation/list";
+    }
+
+    @GetMapping("/{reservationId}")
+    public String reservationDetail(
+            @PathVariable Long reservationId,
+            HttpSession session,
+            Model model
+    ) {
+        Long memberId = getLonginMemberId(session);
+
+        model.addAttribute(
+                "reservation",
+                reservationService.getReservationDetail(
+                        memberId,
+                        reservationId
+                )
+        );
+        return "reservation/detail";
     }
 
     private Long getLonginMemberId(HttpSession session) {

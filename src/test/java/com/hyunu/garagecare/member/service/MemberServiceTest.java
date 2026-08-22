@@ -75,6 +75,7 @@ class MemberServiceTest {
     @Test
     @DisplayName("로그인 성공")
     void login() {
+
         //given
         MemberSignUpRequest signUpRequest = new MemberSignUpRequest();
 
@@ -99,6 +100,7 @@ class MemberServiceTest {
     @Test
     @DisplayName("비밀번호가 일치하지 않으면 로그인 실패")
     void loginFailByPassword() {
+
         //given
         MemberSignUpRequest signUpRequest = new MemberSignUpRequest();
 
@@ -124,6 +126,7 @@ class MemberServiceTest {
     @Test
     @DisplayName("존재하지 않는 이메일이면 로그인 실패")
     void loginFailByEmail() {
+
         //given
         MemberLoginRequest request = new MemberLoginRequest();
 
