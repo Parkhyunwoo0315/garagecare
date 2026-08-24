@@ -1,6 +1,7 @@
 package com.hyunu.garagecare.reservation.domain;
 
 import com.hyunu.garagecare.member.domain.Member;
+import com.hyunu.garagecare.reservation.exception.InvalidReservationStatusException;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -80,6 +81,16 @@ public class Reservation {
     }
 
     public void cancel() {
+        if (status == ReservationStatus.CANCELED) {
+            return;
+        }
+
+        if (status == ReservationStatus.COMPLETED) {
+            throw new InvalidReservationStatusException(
+                    "완료된 예약은 취소할 수 없습니다."
+            );
+        }
+
         this.status = ReservationStatus.CANCELED;
     }
 }
