@@ -182,7 +182,7 @@ public class ReservationService {
     }
 
     @Transactional
-    private void cancelReservation(
+    public void cancelReservation(
             Long memberId,
             Long reservationId
     ) {

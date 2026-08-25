@@ -43,6 +43,21 @@ public class ReservationController {
         return "redirect:/reservations/" + reservationId;
     }
 
+    @PostMapping("/{reservationId}/cancel")
+    public String cancelReservation(
+            @PathVariable Long reservationId,
+            HttpSession session
+    ) {
+        Long memberId = getLonginMemberId(session);
+
+        reservationService.cancelReservation(
+                memberId,
+                reservationId
+        );
+
+        return "redirect:/reservations/" + reservationId;
+    }
+
     @GetMapping("/new")
     public String createForm(
             HttpSession session,
