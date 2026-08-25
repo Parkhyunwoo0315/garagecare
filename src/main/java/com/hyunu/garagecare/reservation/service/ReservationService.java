@@ -89,7 +89,7 @@ public class ReservationService {
                 .findDetailById(reservationId)
                 .orElseThrow(ReservationNotFoundException::new);
 
-        validateReservationOwnship(
+        validateReservationOwnership(
                 memberId,
                 reservation
         );
@@ -181,13 +181,32 @@ public class ReservationService {
         }
     }
 
-    private void validateReservationOwnship(
+    @Transactional
+    public void cancelReservation(
+            Long memberId,
+            Long reservationId
+    ) {
+        Reservation reservation = reservationRepository
+                .findDetailById(reservationId)
+                .orElseThrow(ReservationNotFoundException::new);
+
+        validateReservationOwnership(
+                memberId,
+                reservation
+        );
+
+        reservation.cancel();
+    }
+
+    private void validateReservationOwnership(
             Long memberId,
             Reservation reservation
     ) {
+
         if (!reservation.getMember()
                 .getId()
                 .equals(memberId)) {
+
             throw new UnauthorizedReservationAccessException();
         }
     }
