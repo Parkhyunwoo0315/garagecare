@@ -1,9 +1,7 @@
 # GarageCare Planning
 
-> Version: 1.0.0
->
-> Status: Draft
->
+> Version: 1.0.0  
+> Status: Draft  
 > Last Updated: 2026-07-13
 
 ---
