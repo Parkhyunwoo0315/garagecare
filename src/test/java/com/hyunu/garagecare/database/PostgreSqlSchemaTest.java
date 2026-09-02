@@ -21,7 +21,7 @@ class PostgreSqlSchemaTest {
     EntityManager entityManager;
 
     @Test
-    @DisplayName("PostgreSQL에 GarageCare 핵심 테이블이 생성된다")
+    @DisplayName("PostgreSQL에 GarageCare 핵심 테이블 생성")
     void tablesAreCreated() {
 
         List<String> tables = entityManager
@@ -43,7 +43,7 @@ class PostgreSqlSchemaTest {
     }
 
     @Test
-    @DisplayName("Reservation 복합 인덱스가 생성된다")
+    @DisplayName("Reservation 복합 인덱스 생성")
     void reservationCompositeIndexExists() {
 
         List<String> indexes = entityManager
