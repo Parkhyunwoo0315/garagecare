@@ -48,11 +48,11 @@ class PostgreSqlSchemaTest {
 
         List<String> indexes = entityManager
                 .createNativeQuery("""
-                    SELECT indexname
-                    FROM pg_indexes
-                    WHERE schemaname = 'public'
-                      AND tablename = 'reservations'
-                    """, String.class)
+                        SELECT indexname
+                        FROM pg_indexes
+                        WHERE schemaname = 'public'
+                          AND tablename = 'reservations'
+                         """, String.class)
                 .getResultList();
 
         assertThat(indexes)
