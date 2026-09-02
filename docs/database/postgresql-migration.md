@@ -1,5 +1,11 @@
 # PostgreSQL Development Environment
 
+> Version: 1.1.1  
+> Status: In Progress  
+> Last Updated: 2026-09-02
+
+---
+
 ## 1. Overview
 
 GarageCare의 개발 데이터베이스를 H2에서 **PostgreSQL로 전환**하였다.
