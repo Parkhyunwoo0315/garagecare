@@ -229,26 +229,92 @@ PostgreSQL에서도 다시 수행하여 DBMS에 따른 차이를 확인한다.
 
 ---
 
-## 8. Next Step
+## 8. PostgreSQL Revalidation Result
 
-다음 단계에서는 PostgreSQL의 실제 Query Plan을 측정한다.
+PostgreSQL에서 동일한 예약 조회 Query를 대상으로
+복합 인덱스 적용 전후의 실행계획을 비교하였다.
+
+테스트 데이터:
+
+```text
+Members                  10
+Reservations per Member  1,000
+Total Reservations       10,000
+Target Reservations      1,000
+```
+
+측정에는 PostgreSQL의 다음 명령을 사용하였다.
 
 ```sql
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT *
-FROM reservations
-WHERE member_id = ?
-ORDER BY reservation_date DESC,
-         reservation_time DESC;
 ```
 
-복합 인덱스 적용 전후의 다음 항목을 비교한다.
+### Before
 
-- Scan Type
-- Planning Time
-- Execution Time
-- Actual Rows
-- Buffer 사용량
+복합 인덱스를 제거한 상태에서는 `Sequential Scan`이 발생하였다.
 
-성능 실험 결과는 별도의
+```text
+Seq Scan on reservations
+Rows Removed by Filter: 9000
+
+Execution Time: 0.363 ms
+Buffers: shared hit=94
+```
+
+전체 10,000건을 탐색한 후 조건에 맞지 않는
+9,000건을 제거하였다.
+
+### After
+
+다음 복합 인덱스를 적용하였다.
+
+```text
+idx_reservation_member_date_time
+(member_id, reservation_date, reservation_time)
+```
+
+PostgreSQL은 해당 인덱스를 실제 실행계획에 사용하였다.
+
+```text
+Bitmap Index Scan
+→ Bitmap Heap Scan
+→ Sort
+
+Execution Time: 0.184 ms
+Buffers: shared hit=10 read=6
+```
+
+단일 실행 기준 Execution Time은 다음과 같이 변화하였다.
+
+```text
+0.363 ms → 0.184 ms
+```
+
+약 49.3% 감소하였다.
+
+단, 실행시간과 Buffer 상태는 캐시 및 실행 환경의 영향을 받을 수 있으므로
+이를 일반적인 성능 향상률로 단정하지 않는다.
+
+상세 분석은
 `performance/reservation-index.md`에서 관리한다.
+
+---
+
+## 9. Conclusion
+
+PostgreSQL 전환을 통해 다음을 확인하였다.
+
+- JPA Entity와 PostgreSQL Schema의 일치 여부 검증
+- 예약 테이블 명명 규칙 정리
+- 복합 인덱스 생성 검증
+- `EXPLAIN ANALYZE` 기반 실행계획 확인
+- PostgreSQL Optimizer의 복합 인덱스 사용 확인
+
+H2에서는 복합 인덱스의 실제 선택을 명확하게 확인하지 못했지만,
+PostgreSQL에서는 `idx_reservation_member_date_time`이
+실제 실행계획에 사용되는 것을 확인하였다.
+
+따라서 해당 복합 인덱스를 유지한다.
+
+H2는 빠른 일반 테스트 환경으로 유지하고,
+PostgreSQL은 실제 DB 동작과 성능 검증을 위한 개발 환경으로 사용한다.

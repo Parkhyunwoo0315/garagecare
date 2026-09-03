@@ -1178,25 +1178,55 @@ Database Level
 
 ### Parent
 
+Database 성능 최적화 실험의 전체 흐름과 진행 상태를 관리한다.
+
 ```text
 docs/database/database-performance.md
 ```
 
 ### Previous Experiment
 
+예약 목록 조회에서 발생한 N+1 문제와
+`@EntityGraph`를 이용한 Query 수 최적화 과정을 기록한다.
+
 ```text
 docs/database/performance/reservation-n-plus-one.md
 ```
 
-### Next Experiment
+### PostgreSQL Environment
+
+H2에서 PostgreSQL로 개발 DB 환경을 전환한 과정과
+Schema 및 Index 검증 내용을 기록한다.
 
 ```text
-PostgreSQL Index Revalidation
+docs/database/postgresql-migration.md
 ```
 
 ### Related Source
 
+예약 조회 Query와 복합 인덱스가 정의된 소스 코드:
+
 ```text
 src/main/java/com/hyunu/garagecare/reservation/
+```
+
+H2 기반 인덱스 실행계획 테스트:
+
+```text
 src/test/java/com/hyunu/garagecare/reservation/repository/
+ReservationIndexPerformanceTest.java
+```
+
+PostgreSQL 기반 인덱스 Before / After 실행계획 테스트:
+
+```text
+src/test/java/com/hyunu/garagecare/reservation/repository/
+ReservationPostgreSqlIndexPerformanceTest.java
+```
+
+PostgreSQL Schema 및 Index 생성 검증 테스트:
+
+```text
+src/test/java/com/hyunu/garagecare/database/
+PostgreSqlSchemaTest.java
 ```
