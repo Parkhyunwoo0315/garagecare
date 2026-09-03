@@ -569,47 +569,288 @@ PostgreSQL에서 동일한 Query와 데이터 분포를 기반으로
 
 ---
 
-## 15. Next Experiment
+## 15. PostgreSQL Revalidation
 
-다음 단계에서는 GarageCare의 DB 환경을
-실제 운영 환경에 가까운 PostgreSQL로 전환한다.
+## 15. PostgreSQL Revalidation
 
-이후 동일한 인덱스 실험을 다시 수행한다.
+H2 환경에서는 복합 인덱스가 정상적으로 생성되었지만,
+Optimizer가 기존 `MEMBER_ID` Foreign Key 인덱스를 계속 선택하였다.
+
+따라서 동일한 Query와 테스트 데이터 분포를 PostgreSQL에서 다시 구성하고,
+`EXPLAIN (ANALYZE, BUFFERS)`를 이용하여 실행계획을 재검증하였다.
+
+### Test Environment
 
 ```text
-PostgreSQL
-    ↓
-동일 테스트 데이터 생성
-    ↓
-Before EXPLAIN ANALYZE
-    ↓
-Composite Index 적용
-    ↓
-ANALYZE
-    ↓
-After EXPLAIN ANALYZE
-    ↓
-실행계획 비교
-    ↓
-실제 실행시간 비교
+Database            : PostgreSQL 17.11
+Member              : 10
+Reservation / Member: 1,000
+Total Reservation   : 10,000
+Target Reservation  : 1,000
 ```
 
-PostgreSQL에서는 다음 항목을 추가로 확인한다.
+대상 Query는 H2 실험과 동일하게 유지하였다.
 
-- Sequential Scan 여부
-- Index Scan 여부
-- 실제 사용된 Index
-- Estimated Rows
-- Actual Rows
-- Planning Time
-- Execution Time
+```sql
+SELECT *
+FROM reservations
+WHERE member_id = ?
+ORDER BY reservation_date DESC,
+         reservation_time DESC;
+```
 
-이를 통해 H2에서 확인하지 못한
-복합 인덱스의 실제 효과를 재검증한다.
+실행계획은 다음 명령으로 확인하였다.
+
+```sql
+EXPLAIN (ANALYZE, BUFFERS)
+```
 
 ---
 
-## 16. Connection with N+1 Experiment
+### 15.1 Before Index
+
+복합 인덱스를 제거한 상태에서 실행계획을 측정하였다.
+
+```text
+Sort
+  Sort Key: reservation_date DESC, reservation_time DESC
+  Sort Method: quicksort
+  Buffers: shared hit=94
+
+  -> Seq Scan on reservations
+       Filter: member_id = ?
+       Rows Removed by Filter: 9000
+       Buffers: shared hit=94
+
+Planning Time: 0.315 ms
+Execution Time: 0.363 ms
+```
+
+PostgreSQL은 전체 Reservation 10,000건을 Sequential Scan으로 읽은 뒤,
+조건에 맞지 않는 9,000건을 제거하였다.
+
+남은 1,000건은:
+
+```text
+reservation_date DESC
+reservation_time DESC
+```
+
+조건에 따라 별도로 정렬되었다.
+
+실행 흐름은 다음과 같다.
+
+```text
+Reservations 10,000
+        ↓
+Sequential Scan
+        ↓
+9,000 Rows 제거
+        ↓
+1,000 Rows
+        ↓
+Sort
+```
+
+---
+
+### 15.2 After Index
+
+다음 복합 인덱스를 생성하였다.
+
+```sql
+CREATE INDEX idx_reservation_member_date_time
+ON reservations (
+    member_id,
+    reservation_date,
+    reservation_time
+);
+```
+
+인덱스 생성 후:
+
+```sql
+ANALYZE reservations;
+```
+
+를 수행하고 동일한 Query를 다시 실행하였다.
+
+실행계획은 다음과 같이 변경되었다.
+
+```text
+Sort
+  Sort Key: reservation_date DESC, reservation_time DESC
+  Sort Method: quicksort
+  Buffers: shared hit=10 read=6
+
+  -> Bitmap Heap Scan on reservations
+       Recheck Cond: member_id = ?
+
+       -> Bitmap Index Scan
+            on idx_reservation_member_date_time
+            Index Cond: member_id = ?
+
+Planning Time: 0.094 ms
+Execution Time: 0.184 ms
+```
+
+PostgreSQL Optimizer가 새로 생성한 복합 인덱스를
+실제 실행계획에 사용하였다.
+
+실행 흐름은 다음과 같이 변경되었다.
+
+```text
+Composite Index
+        ↓
+Bitmap Index Scan
+        ↓
+Bitmap Heap Scan
+        ↓
+1,000 Rows
+        ↓
+Sort
+```
+
+---
+
+### 15.3 Before / After Comparison
+
+| Metric | Before | After |
+|---|---|---|
+| Scan Type | Sequential Scan | Bitmap Index Scan + Bitmap Heap Scan |
+| Total Rows | 10,000 | 10,000 |
+| Result Rows | 1,000 | 1,000 |
+| Rows Removed by Filter | 9,000 | - |
+| Sort | Quicksort | Quicksort |
+| Buffer | 94 hit | 10 hit + 6 read |
+| Planning Time | 0.315 ms | 0.094 ms |
+| Execution Time | 0.363 ms | 0.184 ms |
+| Composite Index Used | No | Yes |
+
+해당 실행에서는 Execution Time이:
+
+```text
+0.363 ms
+    ↓
+0.184 ms
+```
+
+로 감소하였다.
+
+감소율은 약:
+
+```text
+49.3%
+```
+
+이다.
+
+다만 실행시간과 Buffer 사용량은
+DB Cache와 시스템 상태에 영향을 받을 수 있으므로,
+단일 실행 결과를 일반적인 성능 향상률로 확정하지 않는다.
+
+이번 실험에서 확실하게 확인한 결과는
+PostgreSQL Optimizer가 복합 인덱스를 실제 실행계획에 사용했다는 점이다.
+
+---
+
+## 16. PostgreSQL Result Analysis
+
+PostgreSQL에서는 H2와 달리
+복합 인덱스가 실제 실행계획에 사용되었다.
+
+### H2
+
+```text
+Existing MEMBER_ID Index
+        ↓
+Composite Index 생성
+        ↓
+Optimizer는 기존 Index 선택
+```
+
+### PostgreSQL
+
+```text
+Before
+Sequential Scan
+
+        ↓ Composite Index
+
+After
+Bitmap Index Scan
++
+Bitmap Heap Scan
+```
+
+이를 통해 H2에서 확인하지 못했던
+복합 인덱스의 실제 활용 여부를 PostgreSQL에서 확인할 수 있었다.
+
+### Sort가 남아 있는 이유
+
+복합 인덱스에는 다음 컬럼이 포함되어 있다.
+
+```text
+member_id
+reservation_date
+reservation_time
+```
+
+하지만 PostgreSQL은 이번 실행에서 일반적인 Index Scan이 아니라
+Bitmap Index Scan을 선택하였다.
+
+Bitmap Scan은 여러 Row의 위치를 효율적으로 찾는 데 유리하지만,
+인덱스의 정렬 순서를 그대로 유지하지 않는다.
+
+따라서 실행계획에는 여전히:
+
+```text
+Sort
+→ reservation_date DESC
+→ reservation_time DESC
+```
+
+단계가 남았다.
+
+현재 조회 대상은 전체 데이터의 약 10%이다.
+
+```text
+1,000 / 10,000
+= 10%
+```
+
+이 데이터 분포에서 PostgreSQL Optimizer는
+Bitmap Scan 이후 정렬하는 실행계획을 선택하였다.
+
+따라서 특정 실행계획을 강제로 유도하기보다
+Optimizer가 실제 비용을 기반으로 선택한 결과를 그대로 기록한다.
+
+### Index Decision
+
+PostgreSQL에서는 다음 복합 인덱스가 실제 실행계획에 사용되었다.
+
+```text
+idx_reservation_member_date_time
+(member_id, reservation_date, reservation_time)
+```
+
+따라서 현재 예약 목록 조회 패턴에서는
+해당 복합 인덱스를 유지하기로 결정하였다.
+
+```text
+H2
+→ 효과 확인 불가
+
+PostgreSQL
+→ 실제 Index 사용 확인
+
+        ↓
+
+Composite Index 유지
+```
+---
+
+## 17. Connection with N+1 Experiment
 
 이전 N+1 실험에서는 예약 목록 조회에서 발생하던
 DB 접근 횟수를 줄였다.
@@ -679,66 +920,265 @@ docs/database/performance/reservation-n-plus-one.md
 
 ---
 
-## 17. Final Conclusion
+## 18. Final Conclusion
 
-회원별 예약 목록 Query를 분석하여
-다음 복합 인덱스를 후보로 설계하였다.
+회원별 예약 목록 Query를 대상으로
+N+1 최적화 이후 남은 단일 Query의 인덱스 구조와 실행계획을 분석하였다.
 
-```text
-(MEMBER_ID, RESERVATION_DATE, RESERVATION_TIME)
+대상 Query는 다음과 같다.
+
+```sql
+SELECT *
+FROM reservations
+WHERE member_id = ?
+ORDER BY reservation_date DESC,
+         reservation_time DESC;
 ```
 
-Before 실행계획을 확인한 결과,
-H2는 이미 `MEMBER_ID` Foreign Key 인덱스를 사용하고 있었다.
+Query의 검색 조건과 정렬 조건을 기반으로
+다음 복합 인덱스를 설계하였다.
 
-복합 인덱스를 추가한 뒤 Metadata를 확인한 결과
-새 인덱스는 정상적으로 생성되었다.
+```text
+idx_reservation_member_date_time
 
-초기 테스트 데이터가 한 Member에게 집중되어 있다는 문제도 발견하여:
+(member_id, reservation_date, reservation_time)
+```
+
+### H2 Analysis
+
+H2에서는 복합 인덱스가 정상적으로 생성되었지만,
+Optimizer가 기존 `MEMBER_ID` Foreign Key 인덱스를 계속 선택하였다.
+
+```text
+Before
+MEMBER_ID FK Index
+
+        ↓ Composite Index 추가
+
+After
+MEMBER_ID FK Index
+```
+
+따라서 H2 결과만으로는 복합 인덱스의 실제 효과를 확인할 수 없었다.
+
+이 과정에서 테스트 데이터가 한 Member에게 집중되어 있으면
+인덱스 선택 실험에 적절하지 않다는 문제도 발견하였다.
+
+초기 데이터 구조:
 
 ```text
 1 Member × 10,000 Reservations
 ```
 
-구조를:
+이를 다음과 같이 변경하였다.
 
 ```text
 10 Members × 1,000 Reservations
+
+Total Reservation  : 10,000
+Target Reservation : 1,000
+Selectivity         : 10%
 ```
 
-으로 변경하고 `ANALYZE`를 수행하였다.
+데이터 분포를 개선하고 `ANALYZE`를 수행했음에도
+H2에서는 복합 인덱스가 선택되지 않았다.
 
-그럼에도 After 실행계획에서는
-H2 Optimizer가 기존 `MEMBER_ID` 인덱스를 계속 선택하였다.
+따라서 H2의 실행계획을 실제 운영 DBMS의 결과로 일반화하지 않고,
+PostgreSQL에서 동일한 조건으로 재검증하였다.
 
-따라서 이번 실험의 결론은:
+### PostgreSQL Revalidation
+
+PostgreSQL에서는 복합 인덱스를 제거한 Before 상태에서
+다음 실행계획이 선택되었다.
 
 ```text
-Composite Index 생성 성공
-
-≠
-
-Composite Index 사용 확인
-
-≠
-
-성능 개선 확인
+Sequential Scan
+        ↓
+10,000 Rows 확인
+        ↓
+9,000 Rows 제거
+        ↓
+1,000 Rows
+        ↓
+Sort
 ```
 
-이다.
+실행 결과:
 
-이를 통해 인덱스 최적화에서는
-인덱스를 추가하는 것보다 실제 실행계획을 확인하는 과정이 중요하다는 것을 확인하였다.
+```text
+Scan Type      : Sequential Scan
+Rows Removed   : 9,000
+Buffers        : shared hit=94
+Planning Time  : 0.315 ms
+Execution Time : 0.363 ms
+```
 
-H2 환경에서는 복합 인덱스의 효과를 검증하지 못했으므로,
-다음 단계에서는 PostgreSQL의 `EXPLAIN ANALYZE`를 사용하여
-동일한 실험을 다시 수행한다.
+이후 다음 복합 인덱스를 적용하였다.
+
+```sql
+CREATE INDEX idx_reservation_member_date_time
+ON reservations (
+    member_id,
+    reservation_date,
+    reservation_time
+);
+```
+
+`ANALYZE` 수행 후 동일한 Query를 다시 측정한 결과,
+PostgreSQL Optimizer가 해당 복합 인덱스를 실제로 선택하였다.
+
+```text
+Bitmap Index Scan
+        ↓
+Bitmap Heap Scan
+        ↓
+1,000 Rows
+        ↓
+Sort
+```
+
+실행 결과:
+
+```text
+Scan Type      : Bitmap Index Scan + Bitmap Heap Scan
+Selected Index : idx_reservation_member_date_time
+Buffers        : shared hit=10 read=6
+Planning Time  : 0.094 ms
+Execution Time : 0.184 ms
+```
+
+Before / After를 비교하면 다음과 같다.
+
+| Metric | Before | After |
+|---|---|---|
+| Scan Type | Sequential Scan | Bitmap Index Scan + Bitmap Heap Scan |
+| Result Rows | 1,000 | 1,000 |
+| Rows Removed by Filter | 9,000 | - |
+| Composite Index Used | No | Yes |
+| Sort | Quicksort | Quicksort |
+| Buffers | 94 hit | 10 hit + 6 read |
+| Planning Time | 0.315 ms | 0.094 ms |
+| Execution Time | 0.363 ms | 0.184 ms |
+
+해당 실행에서 Execution Time은:
+
+```text
+0.363 ms
+    ↓
+0.184 ms
+```
+
+로 약 **49.3% 감소**하였다.
+
+다만 실행시간과 Buffer 사용량은
+DB Cache와 시스템 상태에 영향을 받을 수 있으므로,
+단일 실행 결과를 일반적인 성능 향상률로 확정하지 않는다.
+
+이번 실험에서 더 중요한 결과는
+실제 PostgreSQL 실행계획이:
+
+```text
+Sequential Scan
+
+        ↓
+
+Bitmap Index Scan
++
+Bitmap Heap Scan
+```
+
+으로 변경되었고,
+설계한 복합 인덱스가 실제로 사용되었다는 점이다.
+
+또한 복합 인덱스에 정렬 컬럼이 포함되어 있음에도
+PostgreSQL은 이번 데이터 분포에서 일반적인 Index Scan이 아닌
+Bitmap Scan을 선택하였다.
+
+Bitmap Scan은 인덱스의 정렬 순서를 그대로 유지하지 않으므로
+다음 Sort 단계는 실행계획에 남았다.
+
+```text
+Sort
+→ reservation_date DESC
+→ reservation_time DESC
+```
+
+이는 인덱스 생성만으로 원하는 실행계획이 항상 선택되는 것이 아니라,
+Optimizer가 데이터 분포와 비용을 기반으로 실행계획을 결정한다는 것을 보여준다.
+
+### Final Decision
+
+H2에서는 복합 인덱스의 효과를 확인하지 못했지만,
+PostgreSQL에서는 실제 실행계획에서 해당 인덱스가 사용되는 것을 확인하였다.
+
+따라서 GarageCare의 회원별 예약 목록 조회를 위해
+다음 복합 인덱스를 유지한다.
+
+```text
+idx_reservation_member_date_time
+(member_id, reservation_date, reservation_time)
+```
+
+이번 실험을 통해 다음을 확인하였다.
+
+- 인덱스 생성과 실제 인덱스 사용은 별개의 문제이다.
+- 인덱스 실험에서는 데이터 개수뿐 아니라 데이터 분포도 중요하다.
+- Optimizer는 존재하는 인덱스를 반드시 선택하지 않는다.
+- H2 실행계획을 실제 운영 DBMS의 결과로 일반화해서는 안 된다.
+- 실제 성능 검증에는 `EXPLAIN (ANALYZE, BUFFERS)`와 같은 실행계획 분석이 필요하다.
+- 단일 실행시간만으로 성능 향상률을 일반화해서는 안 된다.
+- GarageCare의 복합 인덱스는 PostgreSQL에서 실제 조회 계획에 사용된다.
+
+이전 N+1 최적화와 이번 인덱스 최적화를 연결하면
+예약 목록 조회는 다음 두 단계에서 개선되었다.
+
+```text
+Reservation List
+        ↓
+
+N+1 Optimization
+        ↓
+11 Statements
+        ↓
+@EntityGraph
+        ↓
+1 Statement
+
+        ↓
+
+Index Optimization
+        ↓
+Sequential Scan
+        ↓
+Composite Index
+        ↓
+Bitmap Index Scan
++
+Bitmap Heap Scan
+```
+
+즉 N+1 실험에서는 **애플리케이션과 DB 사이의 접근 횟수**를 줄였고,
+이번 인덱스 실험에서는 **DB 내부에서 남은 Query가 처리되는 방식**을 분석하고 개선하였다.
+
+최종적으로 GarageCare 예약 목록 조회에 대해:
+
+```text
+Application Level
+→ JDBC Statement 11 → 1
+
+Database Level
+→ Sequential Scan → Composite Index 기반 Bitmap Scan
+```
+
+이라는 두 단계의 최적화와 검증을 완료하였다.
 
 ---
 
-## 18. Related
+## 19. Related
 
 ### Parent
+
+Database 성능 최적화 실험의 전체 흐름과 진행 상태를 관리한다.
 
 ```text
 docs/database/database-performance.md
@@ -746,19 +1186,47 @@ docs/database/database-performance.md
 
 ### Previous Experiment
 
+예약 목록 조회에서 발생한 N+1 문제와
+`@EntityGraph`를 이용한 Query 수 최적화 과정을 기록한다.
+
 ```text
 docs/database/performance/reservation-n-plus-one.md
 ```
 
-### Next Experiment
+### PostgreSQL Environment
+
+H2에서 PostgreSQL로 개발 DB 환경을 전환한 과정과
+Schema 및 Index 검증 내용을 기록한다.
 
 ```text
-PostgreSQL Index Revalidation
+docs/database/postgresql-migration.md
 ```
 
 ### Related Source
 
+예약 조회 Query와 복합 인덱스가 정의된 소스 코드:
+
 ```text
 src/main/java/com/hyunu/garagecare/reservation/
+```
+
+H2 기반 인덱스 실행계획 테스트:
+
+```text
 src/test/java/com/hyunu/garagecare/reservation/repository/
+ReservationIndexPerformanceTest.java
+```
+
+PostgreSQL 기반 인덱스 Before / After 실행계획 테스트:
+
+```text
+src/test/java/com/hyunu/garagecare/reservation/repository/
+ReservationPostgreSqlIndexPerformanceTest.java
+```
+
+PostgreSQL Schema 및 Index 생성 검증 테스트:
+
+```text
+src/test/java/com/hyunu/garagecare/database/
+PostgreSqlSchemaTest.java
 ```

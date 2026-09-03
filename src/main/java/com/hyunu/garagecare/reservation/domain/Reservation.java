@@ -14,7 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table
+@Table(
+        name = "reservations",
+        indexes = {
+                @Index(
+                        name = "idx_reservation_member_date_time",
+                        columnList = "member_id, reservation_date, reservation_time"
+                )
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reservation {
