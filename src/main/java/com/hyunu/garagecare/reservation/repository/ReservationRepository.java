@@ -1,6 +1,8 @@
 package com.hyunu.garagecare.reservation.repository;
 
 import com.hyunu.garagecare.reservation.domain.Reservation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,9 +15,14 @@ public interface ReservationRepository
         extends JpaRepository<Reservation, Long>{
 
     @EntityGraph(attributePaths = "vehicle")
-    List<Reservation>
-    findAllByMemberIdOrderByReservationDateDescReservationTimeDesc(
+    List<Reservation> findAllByMemberIdOrderByReservationDateDescReservationTimeDesc(
             Long memberId
+    );
+
+    @EntityGraph(attributePaths = "vehicle")
+    Page<Reservation> findByMemberId(
+            Long memberId,
+            Pageable pageable
     );
 
     @Query("""

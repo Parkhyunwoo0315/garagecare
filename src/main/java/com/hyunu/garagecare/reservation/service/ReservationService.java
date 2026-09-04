@@ -20,6 +20,10 @@ import com.hyunu.garagecare.vehicle.dto.VehicleOptionResponse;
 import com.hyunu.garagecare.vehicle.exception.VehicleNotFoundException;
 import com.hyunu.garagecare.vehicle.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +35,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ReservationService {
 
+    private static final int DEFAULT_PAGE_SIZE = 10;
     private final ReservationRepository reservationRepository;
     private final MemberRepository memberRepository;
     private final VehicleRepository vehicleRepository;
@@ -75,11 +80,22 @@ public class ReservationService {
         return savedReservation.getId();
     }
 
-    public List<ReservationListResponse> getReservations(Long memberId) {
-        return reservationRepository.findAllByMemberIdOrderByReservationDateDescReservationTimeDesc(memberId)
-                .stream()
-                .map(ReservationListResponse::from)
-                .toList();
+    public Page<ReservationListResponse> getReservations(
+            Long memberId,
+            int page
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                DEFAULT_PAGE_SIZE,
+                Sort.by(
+                        Sort.Order.desc("reservationDate"),
+                        Sort.Order.desc("reservationTime")
+                )
+        );
+
+        return reservationRepository
+                .findByMemberId(memberId, pageable)
+                .map(ReservationListResponse::from);
     }
 
     public ReservationDetailResponse getReservationDetail(

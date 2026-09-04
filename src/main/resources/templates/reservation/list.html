@@ -107,67 +107,102 @@
 
 <main class="container">
 
-  <div class="header">
+    <div class="header">
 
-    <h1>내 예약</h1>
+        <h1>내 예약</h1>
 
-    <a th:href="@{/reservations/new}"
-       class="new-button">
-      새 예약
-    </a>
+        <a th:href="@{/reservations/new}"
+           class="new-button">
+            새 예약
+        </a>
 
-  </div>
+    </div>
 
-  <div class="empty-state"
-       th:if="${#lists.isEmpty(reservations)}">
+    <div class="empty-state"
+         th:if="${reservations.empty}">
 
-    <p>
-      아직 등록된 예약이 없습니다.
-    </p>
+        <p>
+            아직 등록된 예약이 없습니다.
+        </p>
 
-    <a th:href="@{/reservations/new}"
-       class="new-button">
-      첫 예약 등록하기
-    </a>
+        <a th:href="@{/reservations/new}"
+           class="new-button">
+            첫 예약 등록하기
+        </a>
 
-  </div>
+    </div>
 
-  <div class="reservation-list"
-       th:unless="${#lists.isEmpty(reservations)}">
+    <div class="reservation-list"
+         th:unless="${reservations.empty}">
 
-    <a class="reservation-card"
-       th:each="reservation : ${reservations}"
-       th:href="@{/reservations/{id}(id=${reservation.reservationId})}">
+        <a class="reservation-card"
+           th:each="reservation : ${reservations.content}"
+           th:href="@{/reservations/{id}(id=${reservation.reservationId})}">
 
-      <div class="card-top">
+            <div class="card-top">
 
-                <span class="vehicle"
-                      th:text="${reservation.vehicleNumber}">
-                    12가3456
-                </span>
+        <span class="vehicle"
+              th:text="${reservation.vehicleNumber}">
+          12가3456
+        </span>
 
-        <span class="status"
-              th:text="${reservation.status}">
-                    PENDING
-                </span>
+                <span class="status"
+                      th:text="${reservation.status}">
+          PENDING
+        </span>
 
-      </div>
+            </div>
 
-      <div class="date">
+            <div class="date">
 
-                <span th:text="${reservation.reservationDate}">
-                    2026-08-20
-                </span>
+        <span th:text="${reservation.reservationDate}">
+          2026-08-20
+        </span>
 
-        <span th:text="${reservation.reservationTime}">
-                    14:00
-                </span>
+                <span th:text="${reservation.reservationTime}">
+          14:00
+        </span>
 
-      </div>
+            </div>
 
-    </a>
+        </a>
 
-  </div>
+    </div>
+
+    <div class="pagination"
+         th:if="${reservations.totalPages > 1}">
+
+        <a class="page-button"
+           th:if="${reservations.hasPrevious()}"
+           th:href="@{/reservations(page=${reservations.number - 1})}">
+            이전
+        </a>
+
+        <span th:each="pageNumber :
+          ${#numbers.sequence(0, reservations.totalPages - 1)}">
+
+      <a class="page-number"
+         th:if="${pageNumber != reservations.number}"
+         th:href="@{/reservations(page=${pageNumber})}"
+         th:text="${pageNumber + 1}">
+        1
+      </a>
+
+      <span class="page-number active"
+            th:if="${pageNumber == reservations.number}"
+            th:text="${pageNumber + 1}">
+        1
+      </span>
+
+    </span>
+
+        <a class="page-button"
+           th:if="${reservations.hasNext()}"
+           th:href="@{/reservations(page=${reservations.number + 1})}">
+            다음
+        </a>
+
+    </div>
 
 </main>
 

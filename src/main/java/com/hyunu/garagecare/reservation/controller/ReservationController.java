@@ -2,10 +2,12 @@ package com.hyunu.garagecare.reservation.controller;
 
 import com.hyunu.garagecare.member.session.SessionConst;
 import com.hyunu.garagecare.reservation.dto.ReservationCreateRequest;
+import com.hyunu.garagecare.reservation.dto.ReservationListResponse;
 import com.hyunu.garagecare.reservation.service.ReservationService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -79,14 +81,21 @@ public class ReservationController {
 
     @GetMapping
     public String reservations(
+            @RequestParam(defaultValue = "0") int page,
             HttpSession session,
             Model model
     ) {
         Long memberId = getLonginMemberId(session);
 
+        Page<ReservationListResponse> reservations =
+                reservationService.getReservations(
+                        memberId,
+                        page
+                );
+
         model.addAttribute(
                 "reservations",
-                reservationService.getReservations(memberId)
+                reservations
         );
         return "reservation/list";
     }
