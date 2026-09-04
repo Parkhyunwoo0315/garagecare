@@ -1,12 +1,12 @@
 package com.hyunu.garagecare.reservation.repository;
 
 import com.hyunu.garagecare.member.domain.Member;
-import com.hyunu.garagecare.member.domain.MemberRole;
 import com.hyunu.garagecare.member.repository.MemberRepository;
 import com.hyunu.garagecare.reservation.domain.Reservation;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
 import com.hyunu.garagecare.vehicle.repository.VehicleRepository;
 import jakarta.persistence.EntityManager;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @SpringBootTest
 @Transactional
@@ -148,14 +149,14 @@ public class ReservationRepositoryTest {
         createReservation(
                 member,
                 vehicle,
-                LocalDate.of(2026, 9, 3),
+                LocalDate.of(2026, 9, 2),
                 LocalTime.of(14, 0)
         );
 
         createReservation(
                 member,
                 vehicle,
-                LocalDate.of(2026, 9, 2),
+                LocalDate.of(2026, 9, 3),
                 LocalTime.of(12, 0)
         );
 
@@ -180,11 +181,22 @@ public class ReservationRepositoryTest {
 
         // then
         assertThat(result.getContent())
-                .extracting(Reservation::getReservationDate)
+                .extracting(
+                        Reservation::getReservationDate,
+                        Reservation::getReservationTime)
                 .containsExactly(
-                        LocalDate.of(2026, 9, 3),
-                        LocalDate.of(2026, 9, 2),
-                        LocalDate.of(2026, 9, 1)
+                        tuple(
+                                LocalDate.of(2026, 9, 3),
+                                LocalTime.of(12, 0)
+                        ),
+                        tuple(
+                                LocalDate.of(2026, 9, 2),
+                                LocalTime.of(14, 0)
+                        ),
+                        tuple(
+                                LocalDate.of(2026, 9, 1),
+                                LocalTime.of(10, 0)
+                        )
                 );
     }
 
@@ -229,7 +241,11 @@ public class ReservationRepositoryTest {
         Pageable pageable =
                 PageRequest.of(
                         0,
-                        10
+                        10,
+                        Sort.by(
+                                Sort.Order.desc("reservationDate"),
+                                Sort.Order.desc("reservationTime")
+                        )
                 );
 
         // when
