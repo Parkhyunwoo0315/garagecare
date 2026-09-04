@@ -20,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -400,12 +401,12 @@ class ReservationServiceTest {
         );
 
         //when
-        List<ReservationListResponse> reservations =
-                reservationService.getReservations(member.getId());
+        Page<ReservationListResponse> result =
+                reservationService.getReservations(member.getId(), 0);
 
         //then
-        assertThat(reservations).hasSize(1);
-        ReservationListResponse response = reservations.get(0);
+        assertThat(result.getContent()).hasSize(2);
+        ReservationListResponse response = result.getContent().get(0);
         assertThat(response.reservationId()).isEqualTo(reservationId);
         assertThat(response.vehicleNumber()).isEqualTo("77사7777");
     }
@@ -424,11 +425,11 @@ class ReservationServiceTest {
         );
 
         //when
-        List<ReservationListResponse> reservations =
-                reservationService.getReservations(member.getId());
+        Page<ReservationListResponse> result =
+                reservationService.getReservations(member.getId(), 0);
 
         //then
-        assertThat(reservations).isEmpty();
+        assertThat(result).isEmpty();
     }
 
     @Test

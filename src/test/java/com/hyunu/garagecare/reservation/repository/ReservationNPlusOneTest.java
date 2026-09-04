@@ -40,46 +40,6 @@ class ReservationNPlusOneTest {
     @Autowired
     VehicleRepository vehicleRepository;
 
-    private Member createMember() {
-        Member member = Member.create(
-                "N+1 테스트 회원",
-                "nplusone@test.com",
-                "encoded-password"
-        );
-
-        return memberRepository.save(member);
-    }
-
-    private Vehicle createVehicle(
-            Member member,
-            int index
-    ) {
-        Vehicle vehicle = Vehicle.create(
-                member,
-                "10가" + String.format("%04d", index),
-                " ",
-                " ",
-                2000
-        );
-
-        return vehicleRepository.save(vehicle);
-    }
-
-    private Reservation createReservation(
-            Member member,
-            Vehicle vehicle,
-            int index
-    ) {
-        Reservation reservation = Reservation.create(
-                member,
-                vehicle,
-                LocalDate.now().plusDays(index + 1),
-                LocalTime.of(10, 0)
-        );
-
-        return reservationRepository.save(reservation);
-    }
-
     @Test
     @DisplayName("예약 목록 조회 N+1 발생 여부 확인")
     void reservationListNPlusOne() {
@@ -134,5 +94,45 @@ class ReservationNPlusOneTest {
                         + queryCount
                         + " ====="
         );
+    }
+
+    private Member createMember() {
+        Member member = Member.create(
+                "N+1 테스트 회원",
+                "nplusone@test.com",
+                "encoded-password"
+        );
+
+        return memberRepository.save(member);
+    }
+
+    private Vehicle createVehicle(
+            Member member,
+            int index
+    ) {
+        Vehicle vehicle = Vehicle.create(
+                member,
+                "10가" + String.format("%04d", index),
+                " ",
+                " ",
+                2000
+        );
+
+        return vehicleRepository.save(vehicle);
+    }
+
+    private Reservation createReservation(
+            Member member,
+            Vehicle vehicle,
+            int index
+    ) {
+        Reservation reservation = Reservation.create(
+                member,
+                vehicle,
+                LocalDate.now().plusDays(index + 1),
+                LocalTime.of(10, 0)
+        );
+
+        return reservationRepository.save(reservation);
     }
 }
