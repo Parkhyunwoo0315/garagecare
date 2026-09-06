@@ -405,7 +405,12 @@ class ReservationServiceTest {
                 reservationService.getReservations(member.getId(), 0);
 
         //then
-        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getTotalPages()).isEqualTo(1);
+        assertThat(result.getNumber()).isEqualTo(0);
+        assertThat(result.hasNext()).isFalse();
+        assertThat(result.hasPrevious()).isFalse();
         ReservationListResponse response = result.getContent().get(0);
         assertThat(response.reservationId()).isEqualTo(reservationId);
         assertThat(response.vehicleNumber()).isEqualTo("77사7777");
