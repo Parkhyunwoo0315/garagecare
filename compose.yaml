@@ -1,0 +1,26 @@
+services:
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: garagecare
+      POSTGRES_USER: garagecare
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://db:5432/garagecare
+      DB_USERNAME: garagecare
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres-data:
