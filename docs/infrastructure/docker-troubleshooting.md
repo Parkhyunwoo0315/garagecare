@@ -1114,7 +1114,280 @@ docker compose logs app
 
 ---
 
-# 19. Related
+## 19. Host Gradle Test에서 Docker PostgreSQL 연결 실패
+
+### 19.1 문제
+
+Docker Compose 환경에서 GarageCare 애플리케이션을 실행한 뒤
+회원가입과 로그인 기능을 검증했을 때 PostgreSQL 연동은 정상적으로 동작했다.
+
+그러나 Host 환경에서 전체 테스트를 실행하면
+일부 PostgreSQL 기반 테스트가 실패했다.
+
+```bash
+./gradlew cleanTest test
+```
+
+실행 결과:
+
+```text
+51 tests completed, 4 failed
+
+PostgreSqlSchemaTest FAILED
+ReservationPaginationPerformanceTest FAILED
+ReservationPostgreSqlIndexPerformanceTest FAILED
+
+Caused by:
+org.hibernate.service.spi.ServiceException
+
+Caused by:
+org.hibernate.HibernateException
+at DialectFactoryImpl.java
+```
+
+일반적인 애플리케이션 테스트는 정상적으로 실행되었으며,
+PostgreSQL에 직접 의존하는 테스트에서 문제가 발생했다.
+
+---
+
+### 19.2 원인 분석
+
+GarageCare의 개발 환경 Database 설정은 다음과 같다.
+
+```properties
+spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/garagecare}
+```
+
+Docker Compose 환경에서는 환경변수를 통해
+GarageCare Container가 PostgreSQL Container에 연결한다.
+
+```text
+GarageCare Container
+        │
+        │ jdbc:postgresql://db:5432/garagecare
+        ▼
+PostgreSQL Container
+```
+
+Docker Compose Network 내부에서는 PostgreSQL Service 이름인
+`db`를 Hostname으로 사용할 수 있으므로 정상적으로 연결된다.
+
+반면 다음 Gradle 명령은 Docker Container 내부가 아니라
+Host 환경에서 실행된다.
+
+```bash
+./gradlew cleanTest test
+```
+
+Docker Compose는 `.env` 파일을 Compose 변수 치환에 사용할 수 있지만,
+일반적인 Host Gradle 실행은 `.env` 파일의 값을
+Shell Environment Variable로 자동 등록하지 않는다.
+
+따라서 Host에서 `DB_URL`이 설정되어 있지 않으면
+Spring Boot는 `application-dev.properties`의 기본값을 사용한다.
+
+```text
+jdbc:postgresql://localhost:5432/garagecare
+```
+
+하지만 Docker PostgreSQL은 Host와 Container 사이에서
+다음과 같이 Port Mapping하도록 구성하였다.
+
+```yaml
+ports:
+  - "5433:5432"
+```
+
+즉 Docker PostgreSQL에 Host에서 접근하려면
+`localhost:5433`을 사용해야 한다.
+
+결과적으로 Docker 내부와 Host Gradle Test 사이에
+Database Endpoint 차이가 발생했다.
+
+```text
+Docker Compose 내부
+
+GarageCare
+    │
+    │ db:5432
+    ▼
+PostgreSQL
+    │
+    └── 정상 연결
+
+
+Host Gradle Test
+
+./gradlew test
+    │
+    │ localhost:5432
+    ▼
+잘못된 PostgreSQL Endpoint
+    │
+    └── 연결 실패
+```
+
+---
+
+### 19.3 해결
+
+Host에서 Docker PostgreSQL에 접근할 때
+Docker에 공개된 Host Port인 `5433`을 사용하도록
+Database 환경변수를 명시적으로 전달한다.
+
+```bash
+DB_URL=jdbc:postgresql://localhost:5433/garagecare \
+DB_USERNAME=garagecare \
+DB_PASSWORD=<DB_PASSWORD> \
+./gradlew cleanTest test
+```
+
+또는 현재 Terminal Session에 환경변수를 등록할 수 있다.
+
+```bash
+export DB_URL=jdbc:postgresql://localhost:5433/garagecare
+export DB_USERNAME=garagecare
+export DB_PASSWORD=<DB_PASSWORD>
+```
+
+이후에는 기존 Gradle 명령을 그대로 사용할 수 있다.
+
+```bash
+./gradlew cleanTest test
+```
+
+Terminal Session이 종료되면 `export`로 등록한 환경변수도 사라진다.
+
+---
+
+### 19.4 환경별 Database Endpoint
+
+| 실행 환경 | Database URL |
+|---|---|
+| Local PostgreSQL | `jdbc:postgresql://localhost:5432/garagecare` |
+| Docker GarageCare → PostgreSQL | `jdbc:postgresql://db:5432/garagecare` |
+| Host Gradle Test → Docker PostgreSQL | `jdbc:postgresql://localhost:5433/garagecare` |
+
+PostgreSQL Container 자체는 기본 Port인 `5432`를 사용한다.
+
+Docker Compose 내부에서는 `db:5432`로 접근하고,
+Host에서는 Port Mapping을 통해 `localhost:5433`으로 접근한다.
+
+```text
+Host
+localhost:5433
+      │
+      │ Docker Port Mapping
+      ▼
+PostgreSQL Container
+5432
+```
+
+---
+
+### 19.5 `.env`와 Gradle 실행의 차이
+
+Docker Compose는 프로젝트의 `.env` 파일을 읽어
+`compose.yaml`의 변수 치환에 사용할 수 있다.
+
+```text
+docker compose
+      │
+      ▼
+    .env
+      │
+      ▼
+compose.yaml
+```
+
+반면 일반적인 Host Gradle 실행에서는
+`.env` 파일이 자동으로 Shell Environment Variable로 등록되지 않는다.
+
+```text
+./gradlew test
+      │
+      X
+    .env
+```
+
+따라서 Docker Compose와 Host Gradle Test가
+동일한 PostgreSQL Container를 사용하더라도
+실행 환경에 맞는 Database URL을 전달해야 한다.
+
+---
+
+### 19.6 설정 결정
+
+`application-dev.properties`의 기본 Database URL은
+Docker Host Port인 `5433`으로 변경하지 않았다.
+
+기존 설정을 유지한다.
+
+```properties
+spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/garagecare}
+```
+
+`5433`은 PostgreSQL의 기본 Port가 아니라
+Docker 개발 환경에서 Host와 Container 사이의 Port 충돌을 피하기 위해
+선택한 Host Port이기 때문이다.
+
+따라서 특정 Docker 환경의 Port를 애플리케이션 기본 설정에
+직접 결합하지 않고 실행 환경에 따라 `DB_URL`을 주입하도록 구성하였다.
+
+```text
+Local Development
+localhost:5432
+
+Docker Network
+db:5432
+
+Host → Docker
+localhost:5433
+```
+
+이를 통해 애플리케이션 설정이 특정 실행 환경의
+Docker Port Mapping에 직접 의존하지 않도록 하였다.
+
+---
+
+### 19.8 결과
+
+이번 문제를 통해 Docker Compose 내부에서 실행되는 애플리케이션과
+Host에서 실행되는 Gradle Test가 서로 다른 Network Endpoint를
+사용한다는 점을 확인하였다.
+
+또한 다음 요소를 분리하여 관리할 필요가 있음을 확인하였다.
+
+- Docker Compose 내부 Service Discovery
+- Host와 Container 사이의 Port Mapping
+- Spring Boot 환경변수 기반 Database 설정
+- Docker Compose `.env`와 Host Shell Environment Variable의 차이
+
+Docker 환경에서도 PostgreSQL 기반 테스트를 실행할 수 있도록
+Host 환경에서는 Docker PostgreSQL Endpoint를
+환경변수로 명시적으로 전달하도록 구성하였다.
+
+---
+
+### 19.9 최종 검증
+
+Host에서 Docker PostgreSQL을 대상으로 전체 Regression Test를
+다음 명령으로 재실행한다.
+
+```bash
+DB_URL=jdbc:postgresql://localhost:5433/garagecare \
+DB_USERNAME=garagecare \
+DB_PASSWORD=<DB_PASSWORD> \
+./gradlew cleanTest test
+```
+
+전체 테스트 통과 여부를 확인한 뒤
+Docker 환경 전환으로 인해 기존 기능과 Database 테스트에
+Regression이 발생하지 않았는지 최종 검증한다.
+
+---
+
+# 20. Related
 
 ### Infrastructure
 
