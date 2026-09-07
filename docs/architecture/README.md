@@ -1,8 +1,8 @@
 # GarageCare Architecture
 
-> Version: 1.0.0
+> Version: 1.0.1
 > Status: Draft
-> Last Updated: 2026-07-28
+> Last Updated: 2026-09-08
 
 ---
 
@@ -165,6 +165,23 @@ docs/
     ├── logging-policy.md
     └── design-principles.md
 ```
+
+---
+
+# Docker
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
+
+Application:
+
+```text
+http://localhost:8080
+```
+
+자세한 Docker 환경 구성은 `docs/infrastructure/docker.md`를 참고합니다.
 
 ---
 

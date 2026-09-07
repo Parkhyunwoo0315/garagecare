@@ -6,7 +6,6 @@ import com.hyunu.garagecare.reservation.domain.Reservation;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
 import com.hyunu.garagecare.vehicle.repository.VehicleRepository;
 import jakarta.persistence.EntityManager;
-import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -215,12 +215,12 @@ public class ReservationRepositoryTest {
 
         Vehicle vehicleA = createVehicle(
                 memberA,
-                "12가3456"
+                "98파1001"
         );
 
         Vehicle vehicleB = createVehicle(
                 memberB,
-                "34나5678"
+                "98파1002"
         );
 
         createReservations(
@@ -294,16 +294,18 @@ public class ReservationRepositoryTest {
         assertThat(result.getTotalPages()).isZero();
     }
 
-    private Member createMember() {
+    private static int sequence = 0;
 
-        return createMember(
-                1
-        );
+    private static final AtomicInteger SEQUENCE =
+            new AtomicInteger();
+
+    private int nextSequence() {
+        return SEQUENCE.incrementAndGet();
     }
 
-    private Member createMember(
-            int index
-    ) {
+    private Member createMember() {
+
+        int index = nextSequence();
 
         Member member = Member.create(
                 "페이지네이션 테스트 회원" + index,
@@ -319,7 +321,7 @@ public class ReservationRepositoryTest {
     ) {
 
         Member member = Member.create(
-                "페이지네이션 테스트 회원",
+                "페이지네이션 테스트 회원" + nextSequence(),
                 email,
                 "encoded-password"
         );
@@ -330,21 +332,11 @@ public class ReservationRepositoryTest {
     private Vehicle createVehicle(
             Member member
     ) {
-
-        return createVehicle(
-                member,
-                1
-        );
-    }
-
-    private Vehicle createVehicle(
-            Member member,
-            int index
-    ) {
+        int index = nextSequence();
 
         Vehicle vehicle = Vehicle.create(
                 member,
-                "99가" + String.format("%04d", index),
+                "99파" + String.format("%04d", index),
                 "BMW",
                 "M3(E46)",
                 2004

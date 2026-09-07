@@ -1052,6 +1052,46 @@ Composite Index
 
 ---
 
+## 23. Troubleshooting
+
+### Problem
+
+Pagination 적용 이후 전체 테스트 실행 시
+예약 Repository 및 Service 테스트가 실패했다.
+
+### Cause
+
+- 테스트 차량번호가 기존 테스트 데이터와 중복되어
+  `vehicle_number` Unique Constraint 위반 발생
+- Pagination 적용 이후 Service 테스트의 기존 기대값이
+  실제 반환 결과와 일치하지 않음
+
+### Fix
+
+- Pagination 테스트 전용 차량번호 사용
+- 테스트 데이터 간 Unique 값 충돌 방지
+- Service 테스트 기대값 수정
+- 원인 분석을 위해 추가했던 디버깅 코드 제거
+
+### Verification
+
+전체 회귀 테스트를 다시 실행하였다.
+
+```bash
+./gradlew clean build
+```
+
+결과:
+
+```text
+BUILD SUCCESSFUL
+```
+
+Pagination 적용 이후에도 기존 기능을 포함한
+전체 테스트가 정상적으로 통과하는 것을 확인했다.
+
+---
+
 ## 23. Related
 
 ### Parent
