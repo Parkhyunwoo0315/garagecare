@@ -289,7 +289,7 @@ public class ReservationRepositoryTest {
                 );
 
         // then
-        assertThat(result.isEmpty()).isTrue();
+        assertThat(result.isEmpty()).isFalse();
         assertThat(result.getTotalElements()).isZero();
         assertThat(result.getTotalPages()).isZero();
     }
