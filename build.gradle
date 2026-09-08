@@ -54,3 +54,15 @@ tasks.named('test') {
 	useJUnitPlatform()
 	maxParallelForks = 1
 }
+
+// CI 전용 Gradle Task
+tasks.register('ciTest', Test) {
+	description = 'Runs tests for CI excluding PostgreSQL performance experiments.'
+	group = 'verification'
+
+	useJUnitPlatform()
+
+	exclude '**/PostgreSqlSchemaTest.class'
+	exclude '**/ReservationPostgreSqlIndexPerformanceTest.class'
+	exclude '**/ReservationPaginationPerformanceTest.class'
+}
