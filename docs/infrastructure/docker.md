@@ -1,4 +1,9 @@
 # Docker Environment
+> Version: 1.0.0  
+> Status: Draft  
+> Last Updated: 2026-09-08
+
+---
 
 > GarageCare Infrastructure  
 > Environment: Docker Compose  
