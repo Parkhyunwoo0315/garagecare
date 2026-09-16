@@ -9,7 +9,7 @@ public record VehicleOptionResponse (
     public static VehicleOptionResponse from(Vehicle vehicle) {
         return new VehicleOptionResponse(
                 vehicle.getId(),
-                vehicle.getVehicleNumber()
+                vehicle.getModel()
                         + "(" + vehicle.getVehicleNumber() + ")"
         );
     }

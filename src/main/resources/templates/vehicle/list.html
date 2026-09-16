@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>내 차량 | GarageCare</title>
+</head>
+
+<body>
+
+<main>
+
+    <h1>내 차량</h1>
+
+    <a th:href="@{/vehicles/new}">
+        차량 등록
+    </a>
+
+    <div th:if="${#lists.isEmpty(vehicles)}">
+        <p>등록된 차량이 없습니다.</p>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(vehicles)}">
+
+        <div th:each="vehicle : ${vehicles}">
+
+            <h2 th:text="${vehicle.model}">
+                차량 모델
+            </h2>
+
+            <p th:text="${vehicle.vehicleNumber}">
+                차량번호
+            </p>
+
+            <p th:if="${vehicle.manufacturer != null}"
+               th:text="${vehicle.manufacturer}">
+                제조사
+            </p>
+
+            <p th:if="${vehicle.modelYear != null}"
+               th:text="${vehicle.modelYear}">
+                연식
+            </p>
+
+        </div>
+
+    </div>
+
+    <a th:href="@{/reservations/new}">
+        예약하기
+    </a>
+
+</main>
+
+</body>
+</html>
