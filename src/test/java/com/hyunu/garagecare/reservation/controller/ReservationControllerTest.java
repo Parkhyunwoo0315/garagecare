@@ -365,6 +365,79 @@ class ReservationControllerTest {
         );
     }
 
+    @Test
+    @Transactional
+    @DisplayName("차량을 선택하지 않은 예약 요청은 등록 화면으로 반환")
+    void createReservationWithoutVehicle() throws Exception {
+
+        // given
+        Member member = memberRepository.save(
+                Member.create(
+                        "차량 미선택 회원",
+                        "controller-no-vehicle@test.com",
+                        "password"
+                )
+        );
+
+        MaintenanceItem maintenanceItem =
+                maintenanceItemRepository.save(
+                        MaintenanceItem.create(
+                                "차량 미선택 테스트 정비",
+                                "차량 미선택 예약 검증용 정비 항목입니다. ",
+                                70000L
+                        )
+                );
+
+        MockHttpSession session = new MockHttpSession();
+
+        session.setAttribute(
+                SessionConst.LOGIN_MEMBER_ID,
+                member.getId()
+        );
+
+        // when & then
+        mockMvc.perform(
+                        post("/reservations")
+                                .session(session)
+                                .param(
+                                        "reservationDate",
+                                        LocalDate.now()
+                                                .plusDays(1)
+                                                .toString()
+                                )
+                                .param(
+                                        "reservationTime",
+                                        "14:00"
+                                )
+                                .param(
+                                        "maintenanceItemIds",
+                                        maintenanceItem.getId().toString()
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        view().name(
+                                "reservation/create-form"
+                        )
+                )
+                .andExpect(
+                        model().attributeHasFieldErrors(
+                                "form",
+                                "vehicleId"
+                        )
+                )
+                .andExpect(
+                        model().attributeExists(
+                                "vehicles"
+                        )
+                )
+                .andExpect(
+                        model().attributeExists(
+                                "maintenanceItems"
+                        )
+                );
+    }
+
     private ReservationCreateRequest createRequest(
             Long vehicleId,
             List<Long> maintenanceItemIds
