@@ -132,7 +132,12 @@ public class ReservationService {
     }
 
     private Vehicle findVehicle(Long vehicleId) {
-        return vehicleRepository.findById(vehicleId).orElseThrow(VehicleNotFoundException::new);
+        if (vehicleId == null) {
+            throw new VehicleNotFoundException();
+        }
+
+        return vehicleRepository.findById(vehicleId)
+                .orElseThrow(VehicleNotFoundException::new);
     }
 
     private void validateVehicleOwnership(

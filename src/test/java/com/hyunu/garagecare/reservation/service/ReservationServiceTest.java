@@ -810,6 +810,50 @@ class ReservationServiceTest {
                 .isEqualTo(ReservationStatus.CANCELED);
     }
 
+    @Test
+    @DisplayName("차량 ID가 없으면 예약할 수 없다")
+    void createReservationWithoutVehicleId() {
+
+        // given
+        Member member = memberRepository.save(
+                Member.create(
+                        "차량 미선택 회원",
+                        "no-vehicle@test.com",
+                        "password"
+                )
+        );
+
+        MaintenanceItem maintenanceItem =
+                maintenanceItemRepository.save(
+                        MaintenanceItem.create(
+                                "차량 미선택 테스트 정비",
+                                "차량 미선택 예약 검증용 정비 항목입니다. ",
+                                70000L
+                        )
+                );
+
+        ReservationCreateRequest request =
+                createRequest(
+                        null,
+                        List.of(
+                                maintenanceItem.getId()
+                        )
+                );
+
+        // when & then
+        assertThatThrownBy(
+                () -> reservationService
+                        .createReservation(
+                                member.getId(),
+                                request
+                        )
+        )
+                .isInstanceOf(
+                        com.hyunu.garagecare.vehicle.exception
+                                .VehicleNotFoundException.class
+                );
+    }
+
     private ReservationCreateRequest createRequest(
             Long vehicleId,
             List<Long> maintenanceItemIds

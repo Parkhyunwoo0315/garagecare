@@ -1,9 +1,13 @@
 # GarageCare Operations
+> Version: 1.0.0  
+> Status: Draft  
+> Last Updated: 2026-09-15
+
+---
 
 > GarageCare Production Health Check & Logging  
 > Environment: AWS EC2 + Docker + Amazon RDS PostgreSQL  
-> Status: Verified  
-> Last Updated: 2026-09-15
+> Status: Verified
 
 ---
 

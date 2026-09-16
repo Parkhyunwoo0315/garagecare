@@ -36,6 +36,7 @@ public class ReservationController {
                     memberId,
                     model
             );
+            return "reservation/create-form";
         }
         Long reservationId =
                 reservationService.createReservation(
