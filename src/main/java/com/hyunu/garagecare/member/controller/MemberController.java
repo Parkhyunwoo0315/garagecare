@@ -114,17 +114,18 @@ public class MemberController {
         if (session != null) {
             session.invalidate();
         }
-        return "redirect:/";
+        return "redirect:/members/login";
     }
 
     private String resolveRedirectURL(
             String redirectURL
     ) {
         if (redirectURL == null || redirectURL.isBlank()) {
-            return "/";
+            return "/vehicles";
         }
-        if (redirectURL.startsWith("/") || redirectURL.startsWith("//")) {
-            return "/";
+        if (!redirectURL.startsWith("/")
+                || redirectURL.startsWith("//")) {
+            return "/vehicles";
         }
         return redirectURL;
     }
