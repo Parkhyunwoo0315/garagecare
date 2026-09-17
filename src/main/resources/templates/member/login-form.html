@@ -159,7 +159,7 @@
          th:if="${#fields.hasGlobalErrors()}">
 
       <p th:each="error : ${#fields.globalErrors()}"
-         th:text="${error.defaultMessage}">
+         th:text="${error}">
         로그인에 실패했습니다.
       </p>
 

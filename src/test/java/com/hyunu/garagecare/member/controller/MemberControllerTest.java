@@ -10,9 +10,11 @@ import com.hyunu.garagecare.member.dto.MemberSignUpRequest;
 import com.hyunu.garagecare.member.service.MemberService;
 import com.hyunu.garagecare.member.session.SessionConst;
 import org.springframework.transaction.annotation.Transactional;
+import static org.hamcrest.Matchers.containsString;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -170,6 +172,23 @@ class MemberControllerTest {
                                 "/members/login"
                         )
                 );
+    }
+
+    @Test
+    @DisplayName("로그인 실패 시 글로벌 오류를 렌더링하고 로그인 화면을 다시 표시")
+    void loginFailed() throws Exception {
+
+        mockMvc.perform(
+                        post("/members/login")
+                                .param("email", "not-exist@test.com")
+                                .param("password", "wrong-password")
+                )
+                .andExpect(status().isOk())
+                .andExpect(view().name("member/login-form"))
+                .andExpect(model().attributeHasErrors("form"))
+                .andExpect(content().string(
+                        containsString("이메일 또는 비밀번호가 올바르지 않습니다.")
+                ));
     }
 
     private void signUpMember(
