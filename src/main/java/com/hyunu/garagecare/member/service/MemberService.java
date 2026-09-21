@@ -1,10 +1,12 @@
 package com.hyunu.garagecare.member.service;
 
 import com.hyunu.garagecare.member.domain.Member;
+import com.hyunu.garagecare.member.domain.MemberRole;
 import com.hyunu.garagecare.member.dto.MemberLoginRequest;
 import com.hyunu.garagecare.member.dto.MemberSignUpRequest;
 import com.hyunu.garagecare.member.exception.DuplicateMemberException;
 import com.hyunu.garagecare.member.exception.LoginFailedException;
+import com.hyunu.garagecare.member.exception.MemberNotFoundException;
 import com.hyunu.garagecare.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,6 +50,13 @@ public class MemberService {
             throw new LoginFailedException();
         }
         return member.getId();
+    }
+
+    public boolean isAdmin(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberNotFoundException::new);
+
+        return member.getRole() == MemberRole.ADMIN;
     }
 
     private void validateDuplicateEmail(String email) {
