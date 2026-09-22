@@ -1,5 +1,6 @@
 package com.hyunu.garagecare.global.config;
 
+import com.hyunu.garagecare.global.auth.AdminAuthorizationInterceptor;
 import com.hyunu.garagecare.global.auth.LoginCheckInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final LoginCheckInterceptor loginCheckInterceptor;
+    private final AdminAuthorizationInterceptor adminAuthorizationInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -23,5 +25,9 @@ public class WebConfig implements WebMvcConfigurer {
                         "/mypage/**",
                         "/admin/**"
                 );
+
+        registry.addInterceptor(adminAuthorizationInterceptor)
+                .order(2)
+                .addPathPatterns("/admin/**");
     }
 }
