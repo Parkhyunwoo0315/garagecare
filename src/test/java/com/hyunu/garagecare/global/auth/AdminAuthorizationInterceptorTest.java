@@ -98,7 +98,7 @@ class AdminAuthorizationInterceptorTest {
     }
 
     @Test
-    @DisplayName("세션에 로그인 회원 ID가 없으면 관리자 요청이 거부된다")
+    @DisplayName("세션에 로그인 회원 ID가 없으면 관리자 요청이 거부")
     void noLoginMemberCannotAccess() throws Exception {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
