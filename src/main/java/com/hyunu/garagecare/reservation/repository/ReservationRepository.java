@@ -25,6 +25,12 @@ public interface ReservationRepository
             Pageable pageable
     );
 
+    @EntityGraph(attributePaths = {
+            "member",
+            "vehicle"
+    })
+    Page<Reservation> findAll(Pageable pageable);
+
     @Query("""
             select distinct r
             from Reservation r

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>예약 관리 | GarageCare</title>
+
+  <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 40px 20px;
+        background: #f5f6f8;
+        color: #1f2937;
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .header {
+        margin-bottom: 28px;
+    }
+
+    h1 {
+        margin: 0 0 8px;
+    }
+
+    .description {
+        margin: 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: white;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 950px;
+    }
+
+    th,
+    td {
+        padding: 16px 14px;
+        border-bottom: 1px solid #e5e7eb;
+        text-align: left;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    th {
+        background: #f9fafb;
+        color: #4b5563;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .reservation-id {
+        font-weight: 700;
+    }
+
+    .member-name {
+        font-weight: 700;
+    }
+
+    .member-email {
+        color: #6b7280;
+    }
+
+    .vehicle-number {
+        font-weight: 700;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 6px;
+        background: #f3f4f6;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .empty-state {
+        padding: 60px 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: white;
+        color: #6b7280;
+        text-align: center;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 24px;
+    }
+
+    .page-button,
+    .page-number {
+        display: inline-block;
+        min-width: 36px;
+        padding: 9px 11px;
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+        background: white;
+        color: #374151;
+        text-align: center;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .page-number.active {
+        border-color: #111827;
+        background: #111827;
+        color: white;
+        font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="container">
+
+  <div class="header">
+    <h1>예약 관리</h1>
+
+    <p class="description">
+      GarageCare에 등록된 전체 예약을 조회합니다.
+    </p>
+  </div>
+
+  <div class="empty-state"
+       th:if="${reservations.empty}">
+    등록된 예약이 없습니다.
+  </div>
+
+  <div class="table-wrapper"
+       th:unless="${reservations.empty}">
+
+    <table>
+      <thead>
+      <tr>
+        <th>예약 ID</th>
+        <th>예약자</th>
+        <th>이메일</th>
+        <th>차량번호</th>
+        <th>차량</th>
+        <th>예약일</th>
+        <th>시간</th>
+        <th>상태</th>
+      </tr>
+      </thead>
+
+      <tbody>
+      <tr th:each="reservation : ${reservations.content}">
+
+        <td class="reservation-id"
+            th:text="${reservation.reservationId}">
+          1
+        </td>
+
+        <td class="member-name"
+            th:text="${reservation.memberName}">
+          홍길동
+        </td>
+
+        <td class="member-email"
+            th:text="${reservation.memberEmail}">
+          member@example.com
+        </td>
+
+        <td class="vehicle-number"
+            th:text="${reservation.vehicleNumber}">
+          12가3456
+        </td>
+
+        <td th:text="${reservation.vehicleModel}">
+          E350
+        </td>
+
+        <td th:text="${reservation.reservationDate}">
+          2026-09-25
+        </td>
+
+        <td th:text="${reservation.reservationTime}">
+          14:00
+        </td>
+
+        <td>
+          <span class="status"
+                th:text="${reservation.status}">
+            PENDING
+          </span>
+        </td>
+
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <div class="pagination"
+       th:if="${reservations.totalPages > 1}">
+
+    <a class="page-button"
+       th:if="${reservations.hasPrevious()}"
+       th:href="@{/admin/reservations(page=${reservations.number - 1})}">
+      이전
+    </a>
+
+    <span th:each="pageNumber :
+      ${#numbers.sequence(0, reservations.totalPages - 1)}">
+
+      <a class="page-number"
+         th:if="${pageNumber != reservations.number}"
+         th:href="@{/admin/reservations(page=${pageNumber})}"
+         th:text="${pageNumber + 1}">
+        1
+      </a>
+
+      <span class="page-number active"
+            th:if="${pageNumber == reservations.number}"
+            th:text="${pageNumber + 1}">
+        1
+      </span>
+
+    </span>
+
+    <a class="page-button"
+       th:if="${reservations.hasNext()}"
+       th:href="@{/admin/reservations(page=${reservations.number + 1})}">
+      다음
+    </a>
+
+  </div>
+
+</main>
+
+</body>
+</html>
