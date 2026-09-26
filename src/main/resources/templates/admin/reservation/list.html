@@ -181,9 +181,12 @@
       <tbody>
       <tr th:each="reservation : ${reservations.content}">
 
-        <td class="reservation-id"
-            th:text="${reservation.reservationId}">
-          1
+        <td class="reservation-id">
+          <a class="reservation-link"
+             th:href="@{/admin/reservations/{id}(id=${reservation.reservationId})}"
+             th:text="${reservation.reservationId}">
+            1
+          </a>
         </td>
 
         <td class="member-name"
