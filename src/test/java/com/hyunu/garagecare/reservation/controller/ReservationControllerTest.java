@@ -127,6 +127,7 @@ class ReservationControllerTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("로그인한 회원은 본인의 에약 상세 화면 조회 가능")
     void reservationDetail() throws Exception {
 

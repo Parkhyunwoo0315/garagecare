@@ -13,6 +13,8 @@ import com.hyunu.garagecare.reservation.domain.ReservationItem;
 import com.hyunu.garagecare.reservation.dto.ReservationCreateRequest;
 import com.hyunu.garagecare.reservation.dto.ReservationDetailResponse;
 import com.hyunu.garagecare.reservation.dto.ReservationListResponse;
+import com.hyunu.garagecare.reservation.dto.admin.AdminReservationDetailResponse;
+import com.hyunu.garagecare.reservation.dto.admin.AdminReservationListResponse;
 import com.hyunu.garagecare.reservation.exception.*;
 import com.hyunu.garagecare.reservation.repository.ReservationRepository;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
@@ -125,6 +127,33 @@ public class ReservationService {
                 .stream()
                 .map(MaintenanceItemOptionResponse::from)
                 .toList();
+    }
+
+    public Page<AdminReservationListResponse> getAdminReservations(
+            int page
+    ) {
+        Pageable pageable = PageRequest.of(
+                page,
+                DEFAULT_PAGE_SIZE,
+                Sort.by(
+                        Sort.Order.desc("reservationDate"),
+                        Sort.Order.desc("reservationTime")
+                )
+        );
+
+        return reservationRepository
+                .findAll(pageable)
+                .map(AdminReservationListResponse::from);
+    }
+
+    public AdminReservationDetailResponse getAdminReservationDetail(
+            Long reservationId
+    ) {
+        Reservation reservation = reservationRepository
+                .findDetailById(reservationId)
+                .orElseThrow(ReservationNotFoundException::new);
+
+        return AdminReservationDetailResponse.from(reservation);
     }
 
     private Member findMember(Long memberId) {

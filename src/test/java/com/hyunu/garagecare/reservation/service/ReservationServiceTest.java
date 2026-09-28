@@ -11,6 +11,8 @@ import com.hyunu.garagecare.reservation.domain.ReservationStatus;
 import com.hyunu.garagecare.reservation.dto.ReservationCreateRequest;
 import com.hyunu.garagecare.reservation.dto.ReservationDetailResponse;
 import com.hyunu.garagecare.reservation.dto.ReservationListResponse;
+import com.hyunu.garagecare.reservation.dto.admin.AdminReservationDetailResponse;
+import com.hyunu.garagecare.reservation.dto.admin.AdminReservationListResponse;
 import com.hyunu.garagecare.reservation.exception.*;
 import com.hyunu.garagecare.reservation.repository.ReservationRepository;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
@@ -854,6 +856,119 @@ class ReservationServiceTest {
                 );
     }
 
+    @Test
+    @DisplayName("관리자는 전체 회원의 예약 목록을 조회 가능")
+    void getAdminReservations() {
+
+        // given
+        Member member1 = memberRepository.save(
+                Member.create(
+                        "회원1",
+                        "admin-list1@test.com",
+                        "password"
+                )
+        );
+
+        Member member2 = memberRepository.save(
+                Member.create(
+                        "회원2",
+                        "admin-list2@test.com",
+                        "password"
+                )
+        );
+
+        Vehicle vehicle1 = vehicleRepository.save(
+                Vehicle.create(
+                        member1,
+                        "268가8986",
+                        "BMW",
+                        "M3(E46)",
+                        2003
+                )
+        );
+
+        Vehicle vehicle2 = vehicleRepository.save(
+                Vehicle.create(
+                        member2,
+                        "80아6412",
+                        "Mercedes-Benz",
+                        "190 E 2.5-16 Evolution II",
+                        1990
+                )
+        );
+
+        MaintenanceItem maintenanceItem =
+                maintenanceItemRepository.save(
+                        MaintenanceItem.create(
+                                "엔진오일 교환",
+                                "엔진오일 교환",
+                                70000L
+                        )
+                );
+
+        Long reservationId1 =
+                reservationService.createReservation(
+                        member1.getId(),
+                        createRequest(
+                                vehicle1.getId(),
+                                List.of(maintenanceItem.getId())
+                        )
+                );
+
+        Long reservationId2 =
+                reservationService.createReservation(
+                        member2.getId(),
+                        createRequest(
+                                vehicle2.getId(),
+                                List.of(maintenanceItem.getId())
+                        )
+                );
+
+        // when
+        Page<AdminReservationListResponse> result =
+                reservationService.getAdminReservations(0);
+
+        // then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getNumber()).isEqualTo(0);
+
+        assertThat(result.getContent())
+                .extracting(AdminReservationListResponse::reservationId)
+                .containsExactlyInAnyOrder(
+                        reservationId1,
+                        reservationId2
+                );
+
+        assertThat(result.getContent())
+                .extracting(AdminReservationListResponse::memberEmail)
+                .containsExactlyInAnyOrder(
+                        "admin-list1@test.com",
+                        "admin-list2@test.com"
+                );
+
+        assertThat(result.getContent())
+                .extracting(AdminReservationListResponse::vehicleNumber)
+                .containsExactlyInAnyOrder(
+                        "268가8986",
+                        "80아6412"
+                );
+    }
+
+    @Test
+    @DisplayName("예약이 없으면 관리자 예약 목록은 빈 페이지를 반환")
+    void getEmptyAdminReservations() {
+
+        // when
+        Page<AdminReservationListResponse> result =
+                reservationService.getAdminReservations(0);
+
+        // then
+        assertThat(result).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
+        assertThat(result.getNumber()).isZero();
+    }
+
     private ReservationCreateRequest createRequest(
             Long vehicleId,
             List<Long> maintenanceItemIds
@@ -866,5 +981,95 @@ class ReservationServiceTest {
         request.setMaintenanceItemIds(maintenanceItemIds);
 
         return request;
+    }
+
+    @Test
+    @DisplayName("관리자는 회원의 예약 상세 정보를 조회 가능")
+    void getAdminReservationDetail() {
+
+        // given
+        Member member = memberRepository.save(
+                Member.create(
+                        "관리자 상세 조회 회원",
+                        "admin-detail@test.com",
+                        "password"
+                )
+        );
+
+        Vehicle vehicle = vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        "35거3535",
+                        "Porsche",
+                        "911 Carrera",
+                        2024
+                )
+        );
+
+        MaintenanceItem maintenanceItem =
+                maintenanceItemRepository.save(
+                        MaintenanceItem.create(
+                                "엔진오일 교환",
+                                "엔진오일 교환",
+                                70000L
+                        )
+                );
+
+        Long reservationId =
+                reservationService.createReservation(
+                        member.getId(),
+                        createRequest(
+                                vehicle.getId(),
+                                List.of(maintenanceItem.getId())
+                        )
+                );
+
+        // when
+        AdminReservationDetailResponse response =
+                reservationService.getAdminReservationDetail(
+                        reservationId
+                );
+
+        // then
+        assertThat(response.reservationId())
+                .isEqualTo(reservationId);
+
+        assertThat(response.memberName())
+                .isEqualTo("관리자 상세 조회 회원");
+
+        assertThat(response.memberEmail())
+                .isEqualTo("admin-detail@test.com");
+
+        assertThat(response.vehicleNumber())
+                .isEqualTo("35거3535");
+
+        assertThat(response.manufacturer())
+                .isEqualTo("Porsche");
+
+        assertThat(response.model())
+                .isEqualTo("911 Carrera");
+
+        assertThat(response.modelYear())
+                .isEqualTo(2024);
+
+        assertThat(response.maintenanceItems())
+                .hasSize(1);
+
+        assertThat(response.maintenanceItems().get(0).name())
+                .isEqualTo("엔진오일 교환");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 예약을 관리자 상세 조회하면 예외가 발생")
+    void adminReservationDetailNotFound() {
+
+        assertThatThrownBy(
+                () -> reservationService.getAdminReservationDetail(
+                        999999L
+                )
+        )
+                .isInstanceOf(
+                        ReservationNotFoundException.class
+                );
     }
 }
