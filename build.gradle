@@ -55,6 +55,9 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 	maxParallelForks = 1
+
+	// H2 인덱스 실행계획 성능 실험 테스트는 일반 회귀 테스트에서 제외
+	exclude '**/ReservationIndexPerformanceTest.class'
 }
 
 // CI 전용 Gradle Task
@@ -67,4 +70,5 @@ tasks.register('ciTest', Test) {
 	exclude '**/PostgreSqlSchemaTest.class'
 	exclude '**/ReservationPostgreSqlIndexPerformanceTest.class'
 	exclude '**/ReservationPaginationPerformanceTest.class'
+	exclude '**/ReservationIndexPerformanceTest.class'
 }
