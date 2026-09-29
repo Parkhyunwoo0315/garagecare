@@ -1072,4 +1072,195 @@ class ReservationServiceTest {
                         ReservationNotFoundException.class
                 );
     }
+
+    @Test
+    @DisplayName("관리자는 대기 중인 예약을 확정 가능")
+    void confirmAdminReservation() {
+
+        // given
+        Member member = memberRepository.save(
+                Member.create(
+                        "관리자 상태 테스트",
+                        "admin-confirm@test.com",
+                        "password"
+                )
+        );
+
+        Vehicle vehicle = vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        "11가1111",
+                        "Honda",
+                        "Civic Type R (DC2)",
+                        1998
+                )
+        );
+
+        MaintenanceItem maintenanceItem =
+                maintenanceItemRepository.save(
+                        MaintenanceItem.create(
+                                "관리자 확정 테스트",
+                                "예약 확정 테스트용 정비 항목",
+                                100000L
+                        )
+                );
+
+        Long reservationId =
+                reservationService.createReservation(
+                        member.getId(),
+                        createRequest(
+                                vehicle.getId(),
+                                List.of(maintenanceItem.getId())
+                        )
+                );
+
+        // when
+        reservationService.confirmAdminReservation(
+                reservationId
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // then
+        Reservation reservation = reservationRepository
+                .findById(reservationId)
+                .orElseThrow();
+
+        assertThat(reservation.getStatus())
+                .isEqualTo(ReservationStatus.CONFIRMED);
+    }
+
+    @Test
+    @DisplayName("관리자는 확정된 예약을 완료 가능")
+    void completeAdminReservation() {
+
+        // given
+        Member member = memberRepository.save(
+                Member.create(
+                        "관리자 완료 테스트",
+                        "admin-complete@test.com",
+                        "password"
+                )
+        );
+
+        Vehicle vehicle = vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        "22나2222",
+                        "Toyota",
+                        "MR2 GT-S (SW20)",
+                        1994
+                )
+        );
+
+        MaintenanceItem maintenanceItem =
+                maintenanceItemRepository.save(
+                        MaintenanceItem.create(
+                                "관리자 완료 테스트",
+                                "예약 완료 테스트용 정비 항목",
+                                120000L
+                        )
+                );
+
+        Long reservationId =
+                reservationService.createReservation(
+                        member.getId(),
+                        createRequest(
+                                vehicle.getId(),
+                                List.of(maintenanceItem.getId())
+                        )
+                );
+
+        reservationService.confirmAdminReservation(
+                reservationId
+        );
+
+        // when
+        reservationService.completeAdminReservation(
+                reservationId
+        );
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // then
+        Reservation reservation = reservationRepository
+                .findById(reservationId)
+                .orElseThrow();
+
+        assertThat(reservation.getStatus())
+                .isEqualTo(ReservationStatus.COMPLETED);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 예약을 관리자가 확정하면 예외 발생")
+    void confirmAdminReservationNotFound() {
+
+        assertThatThrownBy(
+                () -> reservationService.confirmAdminReservation(
+                        999999L
+                )
+        )
+                .isInstanceOf(
+                        ReservationNotFoundException.class
+                );
+    }
+
+    @Test
+    @DisplayName("취소된 예약을 관리자가 확정 불가능")
+    void cannotConfirmCanceledAdminReservation() {
+
+        // given
+        Member member = memberRepository.save(
+                Member.create(
+                        "취소 예약 테스트",
+                        "admin-canceled@test.com",
+                        "password"
+                )
+        );
+
+        Vehicle vehicle = vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        "33다3333",
+                        "Nissan",
+                        "Silvia Spec-R (S15)",
+                        2000
+                )
+        );
+
+        MaintenanceItem maintenanceItem =
+                maintenanceItemRepository.save(
+                        MaintenanceItem.create(
+                                "취소 상태 테스트",
+                                "취소 상태 전이 테스트용 정비 항목",
+                                150000L
+                        )
+                );
+
+        Long reservationId =
+                reservationService.createReservation(
+                        member.getId(),
+                        createRequest(
+                                vehicle.getId(),
+                                List.of(maintenanceItem.getId())
+                        )
+                );
+
+        reservationService.cancelReservation(
+                member.getId(),
+                reservationId
+        );
+
+        // when & then
+        assertThatThrownBy(
+                () -> reservationService.confirmAdminReservation(
+                        reservationId
+                )
+        )
+                .isInstanceOf(
+                        InvalidReservationStatusException.class
+                );
+    }
 }
