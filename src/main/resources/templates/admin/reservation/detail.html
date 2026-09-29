@@ -118,6 +118,31 @@
     .price {
         color: #4b5563;
     }
+
+    .action-section {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .action-form {
+        margin: 0;
+    }
+
+    .action-button {
+        padding: 11px 18px;
+        border: none;
+        border-radius: 8px;
+        background: #111827;
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .action-button:hover {
+        background: #374151;
+    }
   </style>
 </head>
 
@@ -243,6 +268,36 @@
       </li>
 
     </ul>
+  </section>
+
+  <section class="section action-section"
+           th:if="${reservation.status.name() == 'PENDING'
+                    or reservation.status.name() == 'CONFIRMED'}">
+
+    <form class="action-form"
+          th:if="${reservation.status.name() == 'PENDING'}"
+          th:action="@{/admin/reservations/{id}/confirm(id=${reservation.reservationId})}"
+          method="post">
+
+      <button class="action-button"
+              type="submit">
+        예약 확정
+      </button>
+
+    </form>
+
+    <form class="action-form"
+          th:if="${reservation.status.name() == 'CONFIRMED'}"
+          th:action="@{/admin/reservations/{id}/complete(id=${reservation.reservationId})}"
+          method="post">
+
+      <button class="action-button"
+              type="submit">
+        정비 완료
+      </button>
+
+    </form>
+
   </section>
 
 </main>

@@ -115,6 +115,28 @@ public class ReservationService {
         return ReservationDetailResponse.from(reservation);
     }
 
+    @Transactional
+    public void confirmAdminReservation(
+            Long reservationId
+    ) {
+        Reservation reservation = reservationRepository
+                .findById(reservationId)
+                .orElseThrow(ReservationNotFoundException::new);
+
+        reservation.confirm();
+    }
+
+    @Transactional
+    public void completeAdminReservation(
+            Long reservationId
+    ) {
+        Reservation reservation = reservationRepository
+                .findById(reservationId)
+                .orElseThrow(ReservationNotFoundException::new);
+
+        reservation.complete();
+    }
+
     public List<VehicleOptionResponse> getMemberVehicles(Long memberId) {
         return vehicleRepository.findAllByMemberId(memberId)
                 .stream()

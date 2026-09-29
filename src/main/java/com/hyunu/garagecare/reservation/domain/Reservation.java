@@ -88,6 +88,26 @@ public class Reservation {
         reservationItem.assignReservation(this);
     }
 
+    public void confirm() {
+        if (status != ReservationStatus.PENDING) {
+            throw new InvalidReservationStatusException(
+                    "대기 중인 예약만 확정할 수 있습니다."
+            );
+        }
+
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+    public void complete() {
+        if (status != ReservationStatus.CONFIRMED) {
+            throw new InvalidReservationStatusException(
+                    "확정된 예약만 완료할 수 있습니다."
+            );
+        }
+
+        this.status = ReservationStatus.COMPLETED;
+    }
+
     public void cancel() {
         if (status == ReservationStatus.CANCELED) {
             return;

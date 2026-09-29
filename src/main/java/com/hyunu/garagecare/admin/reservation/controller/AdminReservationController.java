@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -47,5 +48,27 @@ public class AdminReservationController {
         );
 
         return "admin/reservation/detail";
+    }
+
+    @PostMapping("/{reservationId}/confirm")
+    public String confirmReservation(
+            @PathVariable Long reservationId
+    ) {
+        reservationService.confirmAdminReservation(
+                reservationId
+        );
+
+        return "redirect:/admin/reservations/" + reservationId;
+    }
+
+    @PostMapping("/{reservationId}/complete")
+    public String completeReservation(
+            @PathVariable Long reservationId
+    ) {
+        reservationService.completeAdminReservation(
+                reservationId
+        );
+
+        return "redirect:/admin/reservations/" + reservationId;
     }
 }
