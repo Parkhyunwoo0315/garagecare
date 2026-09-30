@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>회원 상세 | GarageCare</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f4f6;
+      color: #111827;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: min(900px, calc(100% - 40px));
+      margin: 50px auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .back-link {
+      color: #4b5563;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .section {
+      margin-bottom: 20px;
+      padding: 24px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+
+    .section h2 {
+      margin: 0 0 20px;
+      font-size: 18px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px 24px;
+      align-items: center;
+    }
+
+    .label {
+      color: #6b7280;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .value {
+      font-size: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-admin {
+      background: #ede9fe;
+      color: #6d28d9;
+    }
+
+    .badge-member {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .badge-active {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge-inactive {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .vehicle-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .vehicle {
+      padding: 18px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .vehicle:first-child {
+      padding-top: 0;
+    }
+
+    .vehicle:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .vehicle-number {
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .vehicle-detail {
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .empty {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="container">
+
+  <div class="header">
+    <h1>회원 상세</h1>
+
+    <a class="back-link"
+       th:href="@{/admin/members}">
+      회원 목록으로
+    </a>
+  </div>
+
+  <section class="section">
+
+    <h2>회원 정보</h2>
+
+    <div class="info-grid">
+
+      <div class="label">회원 ID</div>
+      <div class="value"
+           th:text="${member.memberId}">
+        1
+      </div>
+
+      <div class="label">이름</div>
+      <div class="value"
+           th:text="${member.name}">
+        홍길동
+      </div>
+
+      <div class="label">이메일</div>
+      <div class="value"
+           th:text="${member.email}">
+        member@example.com
+      </div>
+
+      <div class="label">권한</div>
+      <div class="value">
+
+        <span class="badge badge-admin"
+              th:if="${member.role.name() == 'ADMIN'}">
+          ADMIN
+        </span>
+
+        <span class="badge badge-member"
+              th:if="${member.role.name() == 'MEMBER'}">
+          MEMBER
+        </span>
+
+      </div>
+
+      <div class="label">계정 상태</div>
+      <div class="value">
+
+        <span class="badge badge-active"
+              th:if="${member.active}">
+          활성
+        </span>
+
+        <span class="badge badge-inactive"
+              th:unless="${member.active}">
+          비활성
+        </span>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <section class="section">
+
+    <h2>등록 차량</h2>
+
+    <ul class="vehicle-list"
+        th:if="${!member.vehicles.empty}">
+
+      <li class="vehicle"
+          th:each="vehicle : ${member.vehicles}">
+
+        <div class="vehicle-number"
+             th:text="${vehicle.vehicleNumber}">
+          12가3456
+        </div>
+
+        <div class="vehicle-detail">
+
+          <span th:text="${vehicle.manufacturer}">
+            Mercedes-Benz
+          </span>
+
+          <span th:text="${vehicle.model}">
+            E350
+          </span>
+
+          <span th:if="${vehicle.modelYear != null}"
+                th:text="|(${vehicle.modelYear})|">
+            (2024)
+          </span>
+
+        </div>
+
+      </li>
+
+    </ul>
+
+    <div class="empty"
+         th:if="${member.vehicles.empty}">
+      등록된 차량이 없습니다.
+    </div>
+
+  </section>
+
+</main>
+
+</body>
+</html>
