@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>차량 상세 | GarageCare</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f4f6;
+            color: #111827;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: min(900px, calc(100% - 40px));
+            margin: 50px auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .back-link {
+            color: #4b5563;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 24px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+        }
+
+        .section h2 {
+            margin: 0 0 20px;
+            font-size: 18px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 16px 24px;
+            align-items: center;
+        }
+
+        .label {
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .value {
+            font-size: 14px;
+        }
+
+        .member-link {
+            color: #2563eb;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .member-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="container">
+
+    <div class="header">
+        <h1>차량 상세</h1>
+
+        <a class="back-link"
+           th:href="@{/admin/vehicles}">
+            차량 목록으로
+        </a>
+    </div>
+
+    <section class="section">
+
+        <h2>차량 정보</h2>
+
+        <div class="info-grid">
+
+            <div class="label">차량 ID</div>
+            <div class="value"
+                 th:text="${vehicle.vehicleId}">
+                1
+            </div>
+
+            <div class="label">차량번호</div>
+            <div class="value"
+                 th:text="${vehicle.vehicleNumber}">
+                12가3456
+            </div>
+
+            <div class="label">제조사</div>
+            <div class="value"
+                 th:text="${vehicle.manufacturer}">
+                Mercedes-Benz
+            </div>
+
+            <div class="label">모델</div>
+            <div class="value"
+                 th:text="${vehicle.model}">
+                E350
+            </div>
+
+            <div class="label">연식</div>
+            <div class="value"
+                 th:text="${vehicle.modelYear}">
+                2024
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="section">
+
+        <h2>소유 회원</h2>
+
+        <div class="info-grid">
+
+            <div class="label">회원 ID</div>
+            <div class="value"
+                 th:text="${vehicle.memberId}">
+                1
+            </div>
+
+            <div class="label">이름</div>
+            <div class="value">
+
+                <a class="member-link"
+                   th:href="@{/admin/members/{id}(id=${vehicle.memberId})}"
+                   th:text="${vehicle.memberName}">
+                    홍길동
+                </a>
+
+            </div>
+
+            <div class="label">이메일</div>
+            <div class="value"
+                 th:text="${vehicle.memberEmail}">
+                member@example.com
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>

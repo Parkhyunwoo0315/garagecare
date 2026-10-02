@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>차량 관리 | GarageCare</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f4f6;
+      color: #111827;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: min(1100px, calc(100% - 40px));
+      margin: 50px auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .vehicle-count {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .table-wrapper {
+      overflow: hidden;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      background: #f9fafb;
+      color: #4b5563;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .vehicle-link {
+      color: #111827;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .vehicle-link:hover {
+      text-decoration: underline;
+    }
+
+    .member-link {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    .member-link:hover {
+      text-decoration: underline;
+    }
+
+    .empty {
+      padding: 50px 20px;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 24px;
+    }
+
+    .page-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 38px;
+      height: 38px;
+      padding: 0 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: white;
+      color: #111827;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .page-link:hover {
+      background: #f9fafb;
+    }
+
+    .page-info {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="container">
+
+  <div class="header">
+    <h1>차량 관리</h1>
+
+    <span class="vehicle-count"
+          th:text="|전체 ${vehicles.totalElements}대|">
+      전체 0대
+    </span>
+  </div>
+
+  <div class="table-wrapper"
+       th:if="${!vehicles.empty}">
+
+    <table>
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>차량번호</th>
+        <th>제조사</th>
+        <th>모델</th>
+        <th>연식</th>
+        <th>소유 회원</th>
+      </tr>
+      </thead>
+
+      <tbody>
+      <tr th:each="vehicle : ${vehicles.content}">
+
+        <td th:text="${vehicle.vehicleId}">
+          1
+        </td>
+
+        <td>
+          <a class="vehicle-link"
+             th:href="@{/admin/vehicles/{id}(id=${vehicle.vehicleId})}"
+             th:text="${vehicle.vehicleNumber}">
+            12가3456
+          </a>
+        </td>
+
+        <td th:text="${vehicle.manufacturer}">
+          Mercedes-Benz
+        </td>
+
+        <td th:text="${vehicle.model}">
+          E350
+        </td>
+
+        <td th:text="${vehicle.modelYear}">
+          2024
+        </td>
+
+        <td>
+          <a class="member-link"
+             th:href="@{/admin/members/{id}(id=${vehicle.memberId})}"
+             th:text="${vehicle.memberName}">
+            홍길동
+          </a>
+        </td>
+
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <div class="table-wrapper"
+       th:if="${vehicles.empty}">
+
+    <div class="empty">
+      등록된 차량이 없습니다.
+    </div>
+
+  </div>
+
+  <div class="pagination"
+       th:if="${vehicles.totalPages > 1}">
+
+    <a class="page-link"
+       th:if="${vehicles.hasPrevious()}"
+       th:href="@{/admin/vehicles(page=${vehicles.number - 1})}">
+      이전
+    </a>
+
+    <span class="page-info"
+          th:text="|${vehicles.number + 1} / ${vehicles.totalPages}|">
+      1 / 1
+    </span>
+
+    <a class="page-link"
+       th:if="${vehicles.hasNext()}"
+       th:href="@{/admin/vehicles(page=${vehicles.number + 1})}">
+      다음
+    </a>
+
+  </div>
+
+</main>
+
+</body>
+</html>
