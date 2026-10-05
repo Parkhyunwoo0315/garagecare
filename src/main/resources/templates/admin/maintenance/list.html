@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>정비 항목 관리 | GarageCare</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f4f6;
+      color: #111827;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: min(1100px, calc(100% - 40px));
+      margin: 50px auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .item-count {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .create-link {
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: #111827;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .create-link:hover {
+      background: #374151;
+    }
+
+    .table-wrapper {
+      overflow: hidden;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      background: #f9fafb;
+      color: #4b5563;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .description {
+      max-width: 320px;
+      color: #4b5563;
+    }
+
+    .price {
+      white-space: nowrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-active {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge-inactive {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-link,
+    .action-button {
+      padding: 7px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      background: white;
+      color: #111827;
+      text-decoration: none;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .action-link:hover,
+    .action-button:hover {
+      background: #f9fafb;
+    }
+
+    .action-form {
+      margin: 0;
+    }
+
+    .empty {
+      padding: 50px 20px;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 24px;
+    }
+
+    .page-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 38px;
+      height: 38px;
+      padding: 0 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: white;
+      color: #111827;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .page-link:hover {
+      background: #f9fafb;
+    }
+
+    .page-info {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="container">
+
+  <div class="header">
+
+    <h1>정비 항목 관리</h1>
+
+    <div class="header-actions">
+
+      <span class="item-count"
+            th:text="|전체 ${maintenanceItems.totalElements}개|">
+        전체 0개
+      </span>
+
+      <a class="create-link"
+         th:href="@{/admin/maintenance-items/new}">
+        정비 항목 등록
+      </a>
+
+    </div>
+
+  </div>
+
+  <div class="table-wrapper"
+       th:if="${!maintenanceItems.empty}">
+
+    <table>
+
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>정비 항목</th>
+        <th>설명</th>
+        <th>예상 가격</th>
+        <th>상태</th>
+        <th>관리</th>
+      </tr>
+      </thead>
+
+      <tbody>
+
+      <tr th:each="item : ${maintenanceItems.content}">
+
+        <td th:text="${item.maintenanceItemId}">
+          1
+        </td>
+
+        <td th:text="${item.name}">
+          엔진오일 교환
+        </td>
+
+        <td class="description"
+            th:text="${item.description}">
+          엔진오일 및 오일 필터 교환
+        </td>
+
+        <td class="price"
+            th:text="${item.estimatedPrice != null
+                ? #numbers.formatInteger(item.estimatedPrice, 0, 'COMMA') + '원'
+                : '-'}">
+          80,000원
+        </td>
+        <td>
+
+          <span class="badge badge-active"
+                th:if="${item.active}">
+            활성
+          </span>
+
+          <span class="badge badge-inactive"
+                th:unless="${item.active}">
+            비활성
+          </span>
+
+        </td>
+        <td>
+
+          <div class="actions">
+
+            <a class="action-link"
+               th:href="@{/admin/maintenance-items/{id}/edit(
+                   id=${item.maintenanceItemId}
+               )}">
+              수정
+            </a>
+
+            <form class="action-form"
+                  th:if="${item.active}"
+                  th:action="@{/admin/maintenance-items/{id}/deactivate(
+                      id=${item.maintenanceItemId}
+                  )}"
+                  method="post">
+
+              <button class="action-button"
+                      type="submit">
+                비활성화
+              </button>
+
+            </form>
+
+            <form class="action-form"
+                  th:unless="${item.active}"
+                  th:action="@{/admin/maintenance-items/{id}/activate(
+                      id=${item.maintenanceItemId}
+                  )}"
+                  method="post">
+
+              <button class="action-button"
+                      type="submit">
+                활성화
+              </button>
+
+            </form>
+
+          </div>
+
+        </td>
+
+      </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <div class="table-wrapper"
+       th:if="${maintenanceItems.empty}">
+
+    <div class="empty">
+      등록된 정비 항목이 없습니다.
+    </div>
+
+  </div>
+
+  <div class="pagination"
+       th:if="${maintenanceItems.totalPages > 1}">
+
+    <a class="page-link"
+       th:if="${maintenanceItems.hasPrevious()}"
+       th:href="@{/admin/maintenance-items(
+           page=${maintenanceItems.number - 1}
+       )}">
+      이전
+    </a>
+
+    <span class="page-info"
+          th:text="|${maintenanceItems.number + 1} / ${maintenanceItems.totalPages}|">
+      1 / 1
+    </span>
+
+    <a class="page-link"
+       th:if="${maintenanceItems.hasNext()}"
+       th:href="@{/admin/maintenance-items(
+           page=${maintenanceItems.number + 1}
+       )}">
+      다음
+    </a>
+
+  </div>
+
+</main>
+
+</body>
+</html>
