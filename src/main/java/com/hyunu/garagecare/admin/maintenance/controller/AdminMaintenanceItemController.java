@@ -45,7 +45,7 @@ public class AdminMaintenanceItemController {
         );
 
         model.addAttribute(
-                "formModel",
+                "formMode",
                 "create"
         );
 

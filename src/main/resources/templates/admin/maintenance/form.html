@@ -164,101 +164,97 @@
   <div class="form-card">
 
     <form th:object="${form}"
-          th:action="${formMode == 'create'
-              ? '/admin/maintenance-items'
-              : '/admin/maintenance-items/'
-                  + maintenanceItemId
-                  + '/edit'}"
+          th:action="${formMode == 'create'}
+              ? @{/admin/maintenance-items}
+              : @{/admin/maintenance-items/{id}/edit(id=${maintenanceItemId})}"
           method="post">
-    </form>
-  </div>
 
-  <div class="field">
+      <div class="field">
 
-    <label for="name">
-      정비 항목 이름
-    </label>
+        <label for="name">
+          정비 항목 이름
+        </label>
 
-    <input id="name"
-           type="text"
-           th:field="*{name}"
-           maxlength="50"
-           placeholder="예: 엔진오일 교환">
+        <input id="name"
+               type="text"
+               th:field="*{name}"
+               maxlength="50"
+               placeholder="예: 엔진오일 교환">
 
-    <div class="field-error"
-         th:if="${#fields.hasErrors('name')}"
-         th:errors="*{name}">
-      이름 오류
-    </div>
+        <div class="field-error"
+             th:if="${#fields.hasErrors('name')}"
+             th:errors="*{name}">
+          이름 오류
+        </div>
 
-  </div>
+      </div>
 
-  <div class="field">
+      <div class="field">
 
-    <label for="description">
-      설명
-    </label>
+        <label for="description">
+          설명
+        </label>
 
-    <textarea id="description"
-              th:field="*{description}"
-              maxlength="500"
-              placeholder="정비 항목에 대한 설명을 입력해 주세요."></textarea>
+        <textarea id="description"
+                  th:field="*{description}"
+                  maxlength="500"
+                  placeholder="정비 항목에 대한 설명을 입력해 주세요."></textarea>
 
-    <div class="help">
-      최대 500자
-    </div>
+        <div class="help">
+          최대 500자
+        </div>
 
-    <div class="field-error"
-         th:if="${#fields.hasErrors('description')}"
-         th:errors="*{description}">
-      설명 오류
-    </div>
+        <div class="field-error"
+             th:if="${#fields.hasErrors('description')}"
+             th:errors="*{description}">
+          설명 오류
+        </div>
 
-  </div>
+      </div>
 
-  <div class="field">
+      <div class="field">
 
-    <label for="estimatedPrice">
-      예상 가격
-    </label>
+        <label for="estimatedPrice">
+          예상 가격
+        </label>
 
-    <input id="estimatedPrice"
-           type="number"
-           min="0"
-           step="1"
-           th:field="*{estimatedPrice}"
-           placeholder="예: 80000">
+        <input id="estimatedPrice"
+               type="number"
+               min="0"
+               step="1"
+               th:field="*{estimatedPrice}"
+               placeholder="예: 80000">
 
-    <div class="help">
-      원 단위로 입력합니다.
-    </div>
+        <div class="help">
+          원 단위로 입력합니다.
+        </div>
 
-    <div class="field-error"
-         th:if="${#fields.hasErrors('estimatedPrice')}"
-         th:errors="*{estimatedPrice}">
-      예상 가격 오류
-    </div>
+        <div class="field-error"
+             th:if="${#fields.hasErrors('estimatedPrice')}"
+             th:errors="*{estimatedPrice}">
+          예상 가격 오류
+        </div>
 
-  </div>
+      </div>
 
-  <div class="buttons">
+      <div class="buttons">
 
-    <a class="cancel-link"
-       th:href="@{/admin/maintenance-items}">
-      취소
-    </a>
+        <a class="cancel-link"
+           th:href="@{/admin/maintenance-items}">
+          취소
+        </a>
 
-    <button class="submit-button"
-            type="submit"
-            th:text="${formMode == 'create'
+        <button class="submit-button"
+                type="submit"
+                th:text="${formMode == 'create'
                     ? '등록'
                     : '수정'}">
-      저장
-    </button>
+          저장
+        </button>
 
-  </div>
+      </div>
 
-  </form>
+    </form>
 
   </div>
 
