@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+
+  <title th:text="${formMode == 'create'
+      ? '정비 항목 등록 | GarageCare'
+      : '정비 항목 수정 | GarageCare'}">
+    정비 항목 | GarageCare
+  </title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f4f6;
+      color: #111827;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: min(700px, calc(100% - 40px));
+      margin: 50px auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .back-link {
+      color: #4b5563;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .form-card {
+      padding: 28px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+
+    .field {
+      margin-bottom: 22px;
+    }
+
+    .field:last-of-type {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: white;
+      color: #111827;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #6b7280;
+    }
+
+    .help {
+      margin-top: 7px;
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .field-error {
+      margin-top: 7px;
+      color: #dc2626;
+      font-size: 12px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .cancel-link,
+    .submit-button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .cancel-link {
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #111827;
+      text-decoration: none;
+    }
+
+    .submit-button {
+      border: none;
+      background: #111827;
+      color: white;
+      cursor: pointer;
+    }
+
+    .submit-button:hover {
+      background: #374151;
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="container">
+
+  <div class="header">
+
+    <h1 th:text="${formMode == 'create'
+        ? '정비 항목 등록'
+        : '정비 항목 수정'}">
+      정비 항목
+    </h1>
+
+    <a class="back-link"
+       th:href="@{/admin/maintenance-items}">
+      목록으로
+    </a>
+
+  </div>
+
+  <div class="form-card">
+
+    <form th:object="${form}"
+          th:action="${formMode == 'create'}
+              ? @{/admin/maintenance-items}
+              : @{/admin/maintenance-items/{id}/edit(id=${maintenanceItemId})}"
+          method="post">
+
+      <div class="field">
+
+        <label for="name">
+          정비 항목 이름
+        </label>
+
+        <input id="name"
+               type="text"
+               th:field="*{name}"
+               maxlength="50"
+               placeholder="예: 엔진오일 교환">
+
+        <div class="field-error"
+             th:if="${#fields.hasErrors('name')}"
+             th:errors="*{name}">
+          이름 오류
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <label for="description">
+          설명
+        </label>
+
+        <textarea id="description"
+                  th:field="*{description}"
+                  maxlength="500"
+                  placeholder="정비 항목에 대한 설명을 입력해 주세요."></textarea>
+
+        <div class="help">
+          최대 500자
+        </div>
+
+        <div class="field-error"
+             th:if="${#fields.hasErrors('description')}"
+             th:errors="*{description}">
+          설명 오류
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <label for="estimatedPrice">
+          예상 가격
+        </label>
+
+        <input id="estimatedPrice"
+               type="number"
+               min="0"
+               step="1"
+               th:field="*{estimatedPrice}"
+               placeholder="예: 80000">
+
+        <div class="help">
+          원 단위로 입력합니다.
+        </div>
+
+        <div class="field-error"
+             th:if="${#fields.hasErrors('estimatedPrice')}"
+             th:errors="*{estimatedPrice}">
+          예상 가격 오류
+        </div>
+
+      </div>
+
+      <div class="buttons">
+
+        <a class="cancel-link"
+           th:href="@{/admin/maintenance-items}">
+          취소
+        </a>
+
+        <button class="submit-button"
+                type="submit"
+                th:text="${formMode == 'create'
+                    ? '등록'
+                    : '수정'}">
+          저장
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</main>
+
+</body>
+</html>
