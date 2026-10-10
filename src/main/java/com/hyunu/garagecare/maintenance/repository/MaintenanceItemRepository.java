@@ -9,4 +9,8 @@ public interface MaintenanceItemRepository
         extends JpaRepository<MaintenanceItem, Long> {
 
     List<MaintenanceItem> findAllByActiveTrue();
+
+    Long countByActiveTrue();
+
+    Long countByActiveFalse();
 }
