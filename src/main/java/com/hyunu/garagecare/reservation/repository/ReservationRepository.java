@@ -1,6 +1,7 @@
 package com.hyunu.garagecare.reservation.repository;
 
 import com.hyunu.garagecare.reservation.domain.Reservation;
+import com.hyunu.garagecare.reservation.domain.ReservationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -44,4 +45,6 @@ public interface ReservationRepository
             @Param("reservationId")
             Long reservationId
     );
+
+    Long countByStatus(ReservationStatus status);
 }
