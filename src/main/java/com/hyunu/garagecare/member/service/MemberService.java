@@ -66,10 +66,9 @@ public class MemberService {
     }
 
     public boolean isAdmin(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
-
-        return member.getRole() == MemberRole.ADMIN;
+        return memberRepository.findById(memberId)
+                .map(member -> member.getRole() == MemberRole.ADMIN)
+                .orElse(false);
     }
 
     public Page<AdminMemberListResponse> getAdminMembers(
