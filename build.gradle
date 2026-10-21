@@ -65,10 +65,26 @@ tasks.register('ciTest', Test) {
 	description = 'Runs tests for CI excluding PostgreSQL performance experiments.'
 	group = 'verification'
 
+	// 기본 test SourceSet의 컴파일 결과 및 의존성 사용
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+
+	// JUnit 5
 	useJUnitPlatform()
 
+	// CI 환경의 테스트 실행 안정성
+	maxParallelForks = 1
+
+	// CI에서 실행하지 않을 DB 및 성능 실험 테스트
 	exclude '**/PostgreSqlSchemaTest.class'
 	exclude '**/ReservationPostgreSqlIndexPerformanceTest.class'
 	exclude '**/ReservationPaginationPerformanceTest.class'
 	exclude '**/ReservationIndexPerformanceTest.class'
+
+	// 테스트 결과를 로그에 표시
+	testLogging {
+		events 'passed', 'skipped', 'failed'
+
+		exceptionFormat = 'full'
+	}
 }
