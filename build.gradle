@@ -35,6 +35,9 @@ dependencies {
 	// H2
 	runtimeOnly 'com.h2database:h2'
 
+	// H2 Console (local development)
+	developmentOnly 'org.springframework.boot:spring-boot-h2console'
+
 	//PostgreSQL Driver
 	runtimeOnly 'org.postgresql:postgresql'
 
