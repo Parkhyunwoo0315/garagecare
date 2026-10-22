@@ -39,3 +39,14 @@ jobs:
 
       - name: Run CI tests
         run: ./gradlew ciTest --no-daemon
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: garagecare-ci-test-reports
+          path: |
+            build/reports/tests/ciTest/
+            build/test-results/ciTest/
+          if-no-files-found: warn
+          retention-days: 7
