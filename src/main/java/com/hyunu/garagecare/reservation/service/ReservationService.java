@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +51,8 @@ public class ReservationService {
     ) {
 
         Member member = findMember(memberId);
+
+        validateReservationDateTime(request);
 
         Vehicle vehicle = findVehicle(request.getVehicleId());
 
@@ -280,6 +283,24 @@ public class ReservationService {
                 .equals(memberId)) {
 
             throw new UnauthorizedReservationAccessException();
+        }
+    }
+
+    private void validateReservationDateTime(
+            ReservationCreateRequest request
+    ) {
+        if (request.getReservationDate() == null
+                || request.getReservationTime() == null) {
+            throw new InvalidReservationDateTimeException();
+        }
+
+        LocalDateTime requestedDateTime = LocalDateTime.of(
+                request.getReservationDate(),
+                request.getReservationTime()
+        );
+
+        if (requestedDateTime.isBefore(LocalDateTime.now())) {
+            throw new InvalidReservationDateTimeException();
         }
     }
 }

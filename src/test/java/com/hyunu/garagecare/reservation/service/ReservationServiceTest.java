@@ -1263,4 +1263,24 @@ class ReservationServiceTest {
                         InvalidReservationStatusException.class
                 );
     }
+
+    @Test
+    @DisplayName("현재 시각보다 과거 시간으로 예약할 수 없다")
+    void cannotCreateReservationInThePast() {
+
+        ReservationCreateRequest request = new ReservationCreateRequest();
+
+        request.setVehicleId(1L);
+        request.setReservationDate(LocalDate.now().minusDays(1));
+        request.setReservationTime(LocalTime.of(10, 0));
+
+        assertThatThrownBy(() ->
+                reservationService.createReservation(
+                        1L,
+                        request
+                )
+        ).isInstanceOf(
+                InvalidReservationDateTimeException.class
+        );
+    }
 }

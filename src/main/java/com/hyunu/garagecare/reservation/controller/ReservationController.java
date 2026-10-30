@@ -3,6 +3,7 @@ package com.hyunu.garagecare.reservation.controller;
 import com.hyunu.garagecare.member.session.SessionConst;
 import com.hyunu.garagecare.reservation.dto.ReservationCreateRequest;
 import com.hyunu.garagecare.reservation.dto.ReservationListResponse;
+import com.hyunu.garagecare.reservation.exception.InvalidReservationDateTimeException;
 import com.hyunu.garagecare.reservation.service.ReservationService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -32,18 +33,30 @@ public class ReservationController {
         Long memberId = getLonginMemberId(session);
 
         if (bindingResult.hasErrors()) {
-            addReservationOptions(
-                    memberId,
-                    model
-            );
+            addReservationOptions(memberId, model);
             return "reservation/create-form";
         }
-        Long reservationId =
-                reservationService.createReservation(
-                        memberId,
-                        request
-                );
-        return "redirect:/reservations/" + reservationId;
+
+        try {
+            Long reservationId =
+                    reservationService.createReservation(
+                            memberId,
+                            request
+                    );
+
+            return "redirect:/reservations/" + reservationId;
+
+        } catch (InvalidReservationDateTimeException exception) {
+            bindingResult.rejectValue(
+                    "reservationTime",
+                    "invalidReservationDateTime",
+                    exception.getMessage()
+            );
+
+            addReservationOptions(memberId, model);
+
+            return "reservation/create-form";
+        }
     }
 
     @PostMapping("/{reservationId}/cancel")
