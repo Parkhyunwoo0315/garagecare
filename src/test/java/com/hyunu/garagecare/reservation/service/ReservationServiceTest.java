@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -32,6 +33,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 class ReservationServiceTest {
 
@@ -1262,5 +1264,464 @@ class ReservationServiceTest {
                 .isInstanceOf(
                         InvalidReservationStatusException.class
                 );
+    }
+
+    @Test
+    @DisplayName("현재 시각보다 과거 시간으로 예약 불가능")
+    void cannotCreateReservationInThePast() {
+
+        // given
+        Member member = memberRepository.save(
+                Member.create(
+                        "과거예약테스트",
+                        "past-reservation@test.com",
+                        "encoded-password"
+                )
+        );
+
+        Vehicle vehicle = vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        "11가1111",
+                        "현대",
+                        "아반떼",
+                        2022
+                )
+        );
+
+        MaintenanceItem maintenanceItem = maintenanceItemRepository.save(
+                MaintenanceItem.create(
+                        "엔진오일 교환",
+                        "엔진오일 교환 작업",
+                        50000L
+                )
+        );
+
+        ReservationCreateRequest request = new ReservationCreateRequest();
+
+        request.setVehicleId(vehicle.getId());
+        request.setReservationDate(LocalDate.now().minusDays(1));
+        request.setReservationTime(LocalTime.of(10, 0));
+        request.setMaintenanceItemIds(List.of(maintenanceItem.getId()));
+
+        // when & then
+        assertThatThrownBy(() ->
+                reservationService.createReservation(
+                        member.getId(),
+                        request
+                )
+        ).isInstanceOf(
+                InvalidReservationDateTimeException.class
+        );
+    }
+
+    @Test
+    @DisplayName("동일 차량은 같은 날짜와 시간에 중복 예약 불가능")
+    void cannotCreateDuplicateVehicleReservation() {
+
+        // given
+        Member member = createTestMember(
+                "중복예약회원",
+                "duplicate-reservation@test.com"
+        );
+
+        Vehicle vehicle = createTestVehicle(
+                member,
+                "22나2222"
+        );
+
+        MaintenanceItem item = createTestMaintenanceItem();
+
+        ReservationCreateRequest request = createRequest(
+                vehicle.getId(),
+                List.of(item.getId())
+        );
+
+        // 첫 번째 예약
+        reservationService.createReservation(
+                member.getId(),
+                request
+        );
+
+        // when & then
+        assertThatThrownBy(() ->
+                reservationService.createReservation(
+                        member.getId(),
+                        request
+                )
+        ).isInstanceOf(
+                DuplicateVehicleReservationException.class
+        );
+    }
+
+    @Test
+    @DisplayName("동일 차량이라도 예약 시간이 다르면 예약 가능")
+    void canCreateReservationAtDifferentTime() {
+
+        // given
+        Member member = createTestMember(
+                "다른시간회원",
+                "different-time@test.com"
+        );
+
+        Vehicle vehicle = createTestVehicle(
+                member,
+                "33다3333"
+        );
+
+        MaintenanceItem item = createTestMaintenanceItem();
+
+        ReservationCreateRequest firstRequest = createRequest(
+                vehicle.getId(),
+                List.of(item.getId())
+        );
+
+        ReservationCreateRequest secondRequest = createRequest(
+                vehicle.getId(),
+                List.of(item.getId())
+        );
+
+        secondRequest.setReservationTime(LocalTime.of(16, 0));
+
+        // when
+        Long firstReservationId =
+                reservationService.createReservation(
+                        member.getId(),
+                        firstRequest
+                );
+
+        Long secondReservationId =
+                reservationService.createReservation(
+                        member.getId(),
+                        secondRequest
+                );
+
+        // then
+        assertThat(firstReservationId)
+                .isNotEqualTo(secondReservationId);
+    }
+
+    @Test
+    @DisplayName("다른 차량은 같은 날짜와 시간에 예약 가능")
+    void canCreateReservationForDifferentVehicles() {
+
+        // given
+        Member member = createTestMember(
+                "다른차량회원",
+                "different-vehicle@test.com"
+        );
+
+        Vehicle vehicle1 = createTestVehicle(
+                member,
+                "44라4444"
+        );
+
+        Vehicle vehicle2 = createTestVehicle(
+                member,
+                "55마5555"
+        );
+
+        MaintenanceItem item = createTestMaintenanceItem();
+
+        ReservationCreateRequest request1 = createRequest(
+                vehicle1.getId(),
+                List.of(item.getId())
+        );
+
+        ReservationCreateRequest request2 = createRequest(
+                vehicle2.getId(),
+                List.of(item.getId())
+        );
+
+        // when
+        Long reservationId1 =
+                reservationService.createReservation(
+                        member.getId(),
+                        request1
+                );
+
+        Long reservationId2 =
+                reservationService.createReservation(
+                        member.getId(),
+                        request2
+                );
+
+        // then
+        assertThat(reservationId1)
+                .isNotEqualTo(reservationId2);
+    }
+
+    @Test
+    @DisplayName("취소된 예약은 동일 날짜와 시간에 다시 예약 가능")
+    void canCreateReservationAfterCancellation() {
+
+        // give능
+        Member member = createTestMember(
+                "재예약회원",
+                "rebooking@test.com"
+        );
+
+        Vehicle vehicle = createTestVehicle(
+                member,
+                "66바6666"
+        );
+
+        MaintenanceItem item = createTestMaintenanceItem();
+
+        ReservationCreateRequest request = createRequest(
+                vehicle.getId(),
+                List.of(item.getId())
+        );
+
+        Long firstReservationId =
+                reservationService.createReservation(
+                        member.getId(),
+                        request
+                );
+
+        // when
+        reservationService.cancelReservation(
+                member.getId(),
+                firstReservationId
+        );
+
+        Long secondReservationId =
+                reservationService.createReservation(
+                        member.getId(),
+                        request
+                );
+
+        // then
+        assertThat(secondReservationId)
+                .isNotEqualTo(firstReservationId);
+
+        Reservation firstReservation = reservationRepository
+                .findById(firstReservationId)
+                .orElseThrow();
+
+        assertThat(firstReservation.getStatus())
+                .isEqualTo(ReservationStatus.CANCELED);
+    }
+
+    @Test
+    @DisplayName("동일 차량은 같은 날짜와 시간에 중복 예약 불가능")
+    void cannotCreateDuplicateVehicleReservation2() {
+
+        //given
+        Member member = createDuplicateTestMember();
+        Vehicle vehicle = createDuplicateTestVehicle(member, "89하4343");
+        MaintenanceItem item = createDuplicateTestItem();
+
+        ReservationCreateRequest request = duplicateTestRequest(
+                vehicle.getId(),
+                item.getId(),
+                LocalDate.now().plusDays(2),
+                LocalTime.of(14, 0)
+        );
+
+        reservationService.createReservation(member.getId(), request);
+
+        //when & then
+        assertThatThrownBy(() -> reservationService.createReservation(member.getId(), request))
+                .isInstanceOf(DuplicateVehicleReservationException.class);
+    }
+
+    @Test
+    @DisplayName("동일 차량이라도 예약 시간이 다르면 예약 가능")
+    void canReservationSameVehicleAtDifferentTime() {
+
+        //given
+        Member member = createDuplicateTestMember();
+        Vehicle vehicle = createDuplicateTestVehicle(member, "85나0423");
+        MaintenanceItem item = createDuplicateTestItem();
+
+        LocalDate date = LocalDate.now().plusDays(2);
+
+        ReservationCreateRequest first = duplicateTestRequest(
+                vehicle.getId(),
+                item.getId(),
+                date,
+                LocalTime.of(14, 0)
+        );
+
+        ReservationCreateRequest second = duplicateTestRequest(
+                vehicle.getId(),
+                item.getId(),
+                date,
+                LocalTime.of(15, 0)
+        );
+
+        //when
+        Long firstId = reservationService.createReservation(
+                member.getId(), first
+        );
+
+        Long secondId = reservationService.createReservation(
+                member.getId(), second
+        );
+
+        //then
+        assertThat(firstId).isNotEqualTo(secondId);
+    }
+
+    @Test
+    @DisplayName("다른 차량은 동일 날짜와 시간에 예약할 수 있다")
+    void canReserveDifferentVehiclesAtSameTime() {
+
+        // given
+        Member member = createDuplicateTestMember();
+
+        Vehicle vehicle1 = createDuplicateTestVehicle(member, "31다0954");
+        Vehicle vehicle2 = createDuplicateTestVehicle(member, "48라3759");
+
+        MaintenanceItem item = createDuplicateTestItem();
+
+        LocalDate date = LocalDate.now().plusDays(2);
+        LocalTime time = LocalTime.of(14, 0);
+
+        ReservationCreateRequest first = duplicateTestRequest(
+                vehicle1.getId(), item.getId(), date, time
+        );
+
+        ReservationCreateRequest second = duplicateTestRequest(
+                vehicle2.getId(), item.getId(), date, time
+        );
+
+        // when
+        Long firstId = reservationService.createReservation(
+                member.getId(), first
+        );
+
+        Long secondId = reservationService.createReservation(
+                member.getId(), second
+        );
+
+        // then
+        assertThat(firstId).isNotEqualTo(secondId);
+    }
+
+    @Test
+    @DisplayName("기존 예약 취소 후 동일 날짜와 시간에 재예약할 수 있다")
+    void canReserveAgainAfterCancellation() {
+
+        // given
+        Member member = createDuplicateTestMember();
+        Vehicle vehicle = createDuplicateTestVehicle(member, "55마5555");
+        MaintenanceItem item = createDuplicateTestItem();
+
+        ReservationCreateRequest request = duplicateTestRequest(
+                vehicle.getId(),
+                item.getId(),
+                LocalDate.now().plusDays(2),
+                LocalTime.of(14, 0)
+        );
+
+        Long firstId = reservationService.createReservation(
+                member.getId(), request
+        );
+
+        // when
+        reservationService.cancelReservation(member.getId(), firstId);
+
+        Long secondId = reservationService.createReservation(
+                member.getId(), request
+        );
+
+        // then
+        assertThat(secondId).isNotEqualTo(firstId);
+
+        Reservation cancelled = reservationRepository
+                .findById(firstId)
+                .orElseThrow();
+
+        assertThat(cancelled.getStatus())
+                .isEqualTo(ReservationStatus.CANCELED);
+    }
+
+    private Member createTestMember(
+            String name,
+            String email
+    ) {
+        return memberRepository.save(
+                Member.create(
+                        name,
+                        email,
+                        "encoded-password"
+                )
+        );
+    }
+
+    private Vehicle createTestVehicle(
+            Member member,
+            String vehicleNumber
+    ) {
+        return vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        vehicleNumber,
+                        "BMW",
+                        "i8",
+                        2024
+                )
+        );
+    }
+
+    private MaintenanceItem createTestMaintenanceItem() {
+        return maintenanceItemRepository.save(
+                MaintenanceItem.create(
+                        "엔진오일 교환",
+                        "엔진오일 교환 작업",
+                        50000L
+                )
+        );
+    }
+
+    private Member createDuplicateTestMember() {
+        return memberRepository.save(
+                Member.create(
+                        "중복예약테스트",
+                        "duplicate-test@example.com",
+                        "encoded-password"
+                )
+        );
+    }
+
+    private Vehicle createDuplicateTestVehicle(
+            Member member,
+            String vehicleNumber
+    ) {
+        return vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        vehicleNumber,
+                        "BMW",
+                        "i8",
+                        2024
+                )
+        );
+    }
+
+    private ReservationCreateRequest duplicateTestRequest(
+            Long vehicleId,
+            Long itemId,
+            LocalDate date,
+            LocalTime time
+    ) {
+        ReservationCreateRequest request = createRequest(vehicleId, List.of(itemId));
+
+        request.setReservationDate(date);
+        request.setReservationTime(time);
+
+        return request;
+    }
+
+    private MaintenanceItem createDuplicateTestItem() {
+        return maintenanceItemRepository.save(
+                MaintenanceItem.create(
+                        "중복예약 테스트 정비",
+                        "중복예약 테스트용 정비 항목",
+                        50000L
+                )
+        );
     }
 }

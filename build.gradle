@@ -53,14 +53,21 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-webmvc-test'
 	testImplementation 'org.springframework.boot:spring-boot-data-jpa-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Database Migration
+	implementation 'org.springframework.boot:spring-boot-starter-flyway'
+	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 	maxParallelForks = 1
 
+	systemProperty 'spring.flyway.enabled', 'false'
+
 	// H2 인덱스 실행계획 성능 실험 테스트는 일반 회귀 테스트에서 제외
 	exclude '**/ReservationIndexPerformanceTest.class'
+	exclude '**/ReservationPostgreSqlConcurrencyTest.class'
 }
 
 // CI 전용 Gradle Task
@@ -78,16 +85,37 @@ tasks.register('ciTest', Test) {
 	// CI 환경의 테스트 실행 안정성
 	maxParallelForks = 1
 
+	systemProperty 'spring.flyway.enabled', 'false'
+
 	// CI에서 실행하지 않을 DB 및 성능 실험 테스트
 	exclude '**/PostgreSqlSchemaTest.class'
 	exclude '**/ReservationPostgreSqlIndexPerformanceTest.class'
 	exclude '**/ReservationPaginationPerformanceTest.class'
 	exclude '**/ReservationIndexPerformanceTest.class'
+	exclude '**/ReservationPostgreSqlConcurrencyTest.class'
 
 	// 테스트 결과를 로그에 표시
 	testLogging {
 		events 'passed', 'skipped', 'failed'
 
+		exceptionFormat = 'full'
+	}
+}
+
+tasks.register('pgConcurrencyTest', Test) {
+	description = 'Runs PostgreSQL reservation concurrency tests.'
+	group = 'verification'
+
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+
+	useJUnitPlatform()
+	maxParallelForks = 1
+
+	include '**/ReservationPostgreSqlConcurrencyTest.class'
+
+	testLogging {
+		events 'passed', 'skipped', 'failed'
 		exceptionFormat = 'full'
 	}
 }

@@ -10,6 +10,7 @@ import com.hyunu.garagecare.member.exception.MemberNotFoundException;
 import com.hyunu.garagecare.member.repository.MemberRepository;
 import com.hyunu.garagecare.reservation.domain.Reservation;
 import com.hyunu.garagecare.reservation.domain.ReservationItem;
+import com.hyunu.garagecare.reservation.domain.ReservationStatus;
 import com.hyunu.garagecare.reservation.dto.ReservationCreateRequest;
 import com.hyunu.garagecare.reservation.dto.ReservationDetailResponse;
 import com.hyunu.garagecare.reservation.dto.ReservationListResponse;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -50,10 +52,14 @@ public class ReservationService {
     ) {
 
         Member member = findMember(memberId);
-
         Vehicle vehicle = findVehicle(request.getVehicleId());
 
         validateVehicleOwnership(member, vehicle);
+        validateReservationDateTime(request);
+        validateDuplicateVehicleReservation(
+                vehicle.getId(),
+                request
+        );
 
         List<Long> maintenanceItemIds =
                 request.getMaintenanceItemIds();
@@ -77,7 +83,7 @@ public class ReservationService {
                 maintenanceItems
         );
 
-        Reservation savedReservation = reservationRepository.save(reservation);
+        Reservation savedReservation = reservationRepository.saveAndFlush(reservation);
 
         return savedReservation.getId();
     }
@@ -280,6 +286,41 @@ public class ReservationService {
                 .equals(memberId)) {
 
             throw new UnauthorizedReservationAccessException();
+        }
+    }
+
+    private void validateReservationDateTime(
+            ReservationCreateRequest request
+    ) {
+        if (request.getReservationDate() == null
+                || request.getReservationTime() == null) {
+            throw new InvalidReservationDateTimeException();
+        }
+
+        LocalDateTime requestedDateTime = LocalDateTime.of(
+                request.getReservationDate(),
+                request.getReservationTime()
+        );
+
+        if (requestedDateTime.isBefore(LocalDateTime.now())) {
+            throw new InvalidReservationDateTimeException();
+        }
+    }
+
+    private void validateDuplicateVehicleReservation(
+            Long vehicleId,
+            ReservationCreateRequest request
+    ) {
+        boolean exists = reservationRepository
+                .existsByVehicleIdAndReservationDateAndReservationTimeAndStatusNot(
+                        vehicleId,
+                        request.getReservationDate(),
+                        request.getReservationTime(),
+                        ReservationStatus.CANCELED
+                );
+
+        if (exists) {
+            throw new DuplicateVehicleReservationException();
         }
     }
 }
