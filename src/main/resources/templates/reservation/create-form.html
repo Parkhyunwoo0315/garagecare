@@ -126,6 +126,16 @@
         th:object="${form}"
         method="post">
 
+    <div class="field-error"
+         role="alert"
+         th:if="${#fields.hasGlobalErrors()}">
+
+      <p th:each="error : ${#fields.globalErrors()}"
+         th:text="${error}">
+      </p>
+
+    </div>
+
     <div class="form-group">
 
       <label for="vehicle">

@@ -10,6 +10,7 @@ import com.hyunu.garagecare.member.exception.MemberNotFoundException;
 import com.hyunu.garagecare.member.repository.MemberRepository;
 import com.hyunu.garagecare.reservation.domain.Reservation;
 import com.hyunu.garagecare.reservation.domain.ReservationItem;
+import com.hyunu.garagecare.reservation.domain.ReservationStatus;
 import com.hyunu.garagecare.reservation.dto.ReservationCreateRequest;
 import com.hyunu.garagecare.reservation.dto.ReservationDetailResponse;
 import com.hyunu.garagecare.reservation.dto.ReservationListResponse;
@@ -51,12 +52,14 @@ public class ReservationService {
     ) {
 
         Member member = findMember(memberId);
-
-        validateReservationDateTime(request);
-
         Vehicle vehicle = findVehicle(request.getVehicleId());
 
         validateVehicleOwnership(member, vehicle);
+        validateReservationDateTime(request);
+        validateDuplicateVehicleReservation(
+                vehicle.getId(),
+                request
+        );
 
         List<Long> maintenanceItemIds =
                 request.getMaintenanceItemIds();
@@ -80,7 +83,7 @@ public class ReservationService {
                 maintenanceItems
         );
 
-        Reservation savedReservation = reservationRepository.save(reservation);
+        Reservation savedReservation = reservationRepository.saveAndFlush(reservation);
 
         return savedReservation.getId();
     }
@@ -301,6 +304,23 @@ public class ReservationService {
 
         if (requestedDateTime.isBefore(LocalDateTime.now())) {
             throw new InvalidReservationDateTimeException();
+        }
+    }
+
+    private void validateDuplicateVehicleReservation(
+            Long vehicleId,
+            ReservationCreateRequest request
+    ) {
+        boolean exists = reservationRepository
+                .existsByVehicleIdAndReservationDateAndReservationTimeAndStatusNot(
+                        vehicleId,
+                        request.getReservationDate(),
+                        request.getReservationTime(),
+                        ReservationStatus.CANCELED
+                );
+
+        if (exists) {
+            throw new DuplicateVehicleReservationException();
         }
     }
 }

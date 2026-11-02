@@ -2,6 +2,7 @@ package com.hyunu.garagecare.reservation.repository;
 
 import com.hyunu.garagecare.reservation.domain.Reservation;
 import com.hyunu.garagecare.reservation.domain.ReservationStatus;
+import com.hyunu.garagecare.reservation.service.ReservationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -9,6 +10,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +47,13 @@ public interface ReservationRepository
     Optional<Reservation> findDetailById(
             @Param("reservationId")
             Long reservationId
+    );
+
+    boolean existsByVehicleIdAndReservationDateAndReservationTimeAndStatusNot(
+            Long vehicleId,
+            LocalDate reservationDate,
+            LocalTime reservationTime,
+            ReservationStatus reservationStatus
     );
 
     Long countByStatus(ReservationStatus status);

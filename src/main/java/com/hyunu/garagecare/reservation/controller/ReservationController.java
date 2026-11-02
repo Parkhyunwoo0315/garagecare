@@ -3,11 +3,14 @@ package com.hyunu.garagecare.reservation.controller;
 import com.hyunu.garagecare.member.session.SessionConst;
 import com.hyunu.garagecare.reservation.dto.ReservationCreateRequest;
 import com.hyunu.garagecare.reservation.dto.ReservationListResponse;
+import com.hyunu.garagecare.reservation.exception.DuplicateVehicleReservationException;
 import com.hyunu.garagecare.reservation.exception.InvalidReservationDateTimeException;
+import com.hyunu.garagecare.reservation.exception.ReservationConstraintMatcher;
 import com.hyunu.garagecare.reservation.service.ReservationService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,25 +41,35 @@ public class ReservationController {
         }
 
         try {
-            Long reservationId =
-                    reservationService.createReservation(
-                            memberId,
-                            request
-                    );
+            Long reservationId = reservationService.createReservation(
+                    memberId,
+                    request
+            );
 
             return "redirect:/reservations/" + reservationId;
 
-        } catch (InvalidReservationDateTimeException exception) {
-            bindingResult.rejectValue(
-                    "reservationTime",
-                    "invalidReservationDateTime",
+        } catch (DuplicateVehicleReservationException exception) {
+
+            bindingResult.reject(
+                    "duplicateReservation",
                     exception.getMessage()
             );
 
-            addReservationOptions(memberId, model);
+        } catch (DataIntegrityViolationException exception) {
 
-            return "reservation/create-form";
+            if (!ReservationConstraintMatcher
+                    .isDuplicateVehicleSlot(exception)) {
+
+                throw exception;
+            }
+
+            bindingResult.reject(
+                    "duplicateReservation",
+                    "해당 차량은 선택한 날짜와 시간에 이미 예약되어 있습니다."
+            );
         }
+
+        return "reservation/create-form";
     }
 
     @PostMapping("/{reservationId}/cancel")
@@ -141,6 +154,21 @@ public class ReservationController {
     private void addReservationOptions(
             Long memberId,
             Model model
+    ) {
+        model.addAttribute(
+                "vehicles",
+                reservationService.getMemberVehicles(memberId)
+        );
+
+        model.addAttribute(
+                "maintenanceItems",
+                reservationService.getActiveMaintenanceItems()
+        );
+    }
+
+    private void populateReservationForm(
+            Model model,
+            Long memberId
     ) {
         model.addAttribute(
                 "vehicles",
