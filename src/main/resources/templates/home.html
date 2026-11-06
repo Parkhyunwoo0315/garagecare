@@ -1,136 +1,143 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="UTF-8">
-
   <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+        content="width=device-width, initial-scale=1">
 
   <meta name="description"
-        content="GarageCare 자동차 정비 예약 서비스">
+        content="동부자동차공업사 자동차 정비 및 점검 안내. 온라인 정비 예약 신청, 전화 상담 및 방문 정보를 확인하세요.">
 
-  <title>GarageCare | 자동차 정비 예약</title>
+  <title>동부자동차공업사 | 자동차 정비 예약</title>
 
-  <link rel="stylesheet"
-        th:href="@{/css/common.css}">
-
-  <link rel="stylesheet"
-        th:href="@{/css/home.css}">
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/home.css}">
 </head>
 
 <body>
 
-<a class="skip-link" href="#main-content">
-  본문 바로가기
-</a>
+<a class="skip-link" href="#main-content">본문 바로가기</a>
 
-<header class="site-header">
-  <div class="container header-inner">
-
-    <a class="brand"
-       th:href="@{/}">
-      GarageCare
-    </a>
-
-    <nav aria-label="주 메뉴">
-      <ul class="nav-list">
-        <li><a href="#services">정비 서비스</a></li>
-        <li><a href="#notices">공지사항</a></li>
-        <li><a href="#location">오시는 길</a></li>
-        <li>
-          <a th:href="@{/reservations}">
-            내 예약
-          </a>
-        </li>
-      </ul>
-    </nav>
-
-    <div class="header-actions">
-      <a th:href="@{/members/login}">
-        로그인
-      </a>
-      <a th:href="@{/members/signup}">
-        회원가입
-      </a>
-    </div>
-
-  </div>
-</header>
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
 <main id="main-content">
 
-  <section class="hero"
-           aria-labelledby="hero-title">
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero-inner">
 
-    <div class="container hero-content">
+      <div class="hero-content">
+        <span class="hero-eyebrow">동부자동차공업사</span>
 
-      <p class="eyebrow">
-        GARAGECARE AUTO SERVICE
-      </p>
+        <h1 id="hero-title">
+          차량 정비,<br>
+          예약부터 방문까지<br>
+          <em>편리하게.</em>
+        </h1>
 
-      <h1 id="hero-title">
-        빠른 예약,<br>
-        효율적인 시스템,<br>
-        만족스러운 서비스.
-      </h1>
+        <p class="hero-description">
+          차량 정보를 등록하고 필요한 정비를 예약하세요.
+          전화 상담과 방문 안내도 편리하게 확인할 수 있습니다.
+        </p>
 
-      <p class="hero-description">
-        차량 등록부터 정비 예약까지
-        GarageCare에서 편리하게 관리하세요.
-      </p>
+        <div class="hero-actions">
+          <a class="button button-accent"
+             th:href="@{/reservations/new}">
+            정비 예약 신청
+          </a>
 
-      <div class="hero-actions">
+          <a class="button button-light"
+             href="tel:01052738889">
+            전화 상담
+          </a>
 
-        <a class="button button-primary"
-           th:href="@{/reservations/new}">
-          정비 예약하기
-        </a>
+          <a class="button button-outline-light"
+             href="#location">
+            오시는 길
+          </a>
+        </div>
 
-        <a class="button button-secondary"
-           th:href="@{/vehicles/new}">
-          차량 등록하기
-        </a>
-
+        <p class="reservation-note">
+          예약 신청은 로그인과 차량 등록 후 가능하며,
+          정비소 확인을 거쳐 확정됩니다.
+        </p>
       </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-visual-inner">
+          <svg viewBox="0 0 400 190"
+               fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M69 113 L95 60 Q103 45 129 45
+                                 H270 Q292 45 303 62
+                                 L335 113"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  stroke-linecap="round"/>
+            <path d="M66 113 H334 Q350 113 350 130
+                                 V145 H50 V130 Q50 113 66 113Z"
+                  stroke="currentColor"
+                  stroke-width="8"/>
+            <path d="M87 113 H313"
+                  stroke="currentColor"
+                  stroke-width="5"/>
+            <circle cx="105" cy="147" r="17"
+                    fill="#10243D"
+                    stroke="currentColor"
+                    stroke-width="7"/>
+            <circle cx="295" cy="147" r="17"
+                    fill="#10243D"
+                    stroke="currentColor"
+                    stroke-width="7"/>
+            <path d="M118 58 H274 L306 105 H94Z"
+                  stroke="currentColor"
+                  stroke-width="5"/>
+          </svg>
+
+          <div class="hero-visual-caption">
+            <strong>차량 관리의 시작</strong>
+            <span>정비 예약 · 차량 등록 · 예약 내역 확인</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <section id="services"
-           class="section"
+  <!-- Services -->
+  <section id="services" class="section"
            aria-labelledby="services-title">
 
     <div class="container">
-
       <div class="section-heading">
-        <p class="eyebrow">OUR SERVICES</p>
+        <span class="eyebrow">SERVICES</span>
         <h2 id="services-title">주요 정비 서비스</h2>
-        <p>
-          차량 관리에 필요한 대표적인 정비 항목을
-          안내합니다.
-        </p>
+        <p>대표적인 차량 점검 및 정비 항목을 안내합니다.</p>
       </div>
 
       <div class="service-grid">
 
         <article class="service-card">
+          <span class="service-symbol" aria-hidden="true">01</span>
           <h3>엔진오일 교환</h3>
           <p>
-            엔진오일 및 오일필터 교환으로
-            차량의 기본적인 엔진 관리를 돕습니다.
+            엔진오일과 오일필터 교환으로
+            엔진의 기본적인 관리를 돕습니다.
           </p>
         </article>
 
         <article class="service-card">
+          <span class="service-symbol" aria-hidden="true">02</span>
           <h3>브레이크 점검</h3>
           <p>
-            브레이크 패드와 디스크의 상태를
+            브레이크 패드와 디스크 상태를
             점검합니다.
           </p>
         </article>
 
         <article class="service-card">
+          <span class="service-symbol" aria-hidden="true">03</span>
           <h3>타이어 점검</h3>
           <p>
             타이어 마모 상태와 공기압 등을
@@ -138,30 +145,64 @@
           </p>
         </article>
 
-      </div>
+        <article class="service-card">
+          <span class="service-symbol" aria-hidden="true">04</span>
+          <h3>배터리 점검</h3>
+          <p>
+            배터리 상태를 확인하고
+            필요한 정비를 안내합니다.
+          </p>
+        </article>
 
+      </div>
     </div>
   </section>
 
-  <section id="notices"
-           class="section section-muted"
-           aria-labelledby="notices-title">
+  <!-- Reservation process -->
+  <section id="process"
+           class="section section-tinted"
+           aria-labelledby="process-title">
 
     <div class="container">
-
       <div class="section-heading">
-        <p class="eyebrow">NOTICE</p>
-        <h2 id="notices-title">공지사항</h2>
+        <span class="eyebrow">HOW TO BOOK</span>
+        <h2 id="process-title">처음 이용하시나요?</h2>
+        <p>네 단계로 정비 예약을 신청할 수 있습니다.</p>
       </div>
 
-      <p>
-        정비소의 운영 안내 및 공지사항은
-        추후 이곳에서 확인할 수 있습니다.
-      </p>
+      <ol class="process-grid">
+        <li class="process-step">
+          <span class="step-number">1</span>
+          <h3>회원가입 · 로그인</h3>
+          <p>계정을 생성하고 로그인합니다.</p>
+        </li>
 
+        <li class="process-step">
+          <span class="step-number">2</span>
+          <h3>내 차량 등록</h3>
+          <p>예약할 차량의 정보를 등록합니다.</p>
+        </li>
+
+        <li class="process-step">
+          <span class="step-number">3</span>
+          <h3>정비 예약 신청</h3>
+          <p>원하는 정비 항목과 날짜·시간을 선택합니다.</p>
+        </li>
+
+        <li class="process-step">
+          <span class="step-number">4</span>
+          <h3>정비소 확인 · 확정</h3>
+          <p>예약 상태를 확인한 뒤 방문합니다.</p>
+        </li>
+      </ol>
+
+      <a class="text-link" th:href="@{/vehicles/new}">
+        차량 등록부터 시작하기
+      </a>
     </div>
   </section>
 
+  <!-- Visit and contact -->
   <section id="location"
            class="section"
            aria-labelledby="location-title">
@@ -169,35 +210,86 @@
     <div class="container">
 
       <div class="section-heading">
-        <p class="eyebrow">LOCATION</p>
-        <h2 id="location-title">오시는 길</h2>
+        <span class="eyebrow">VISIT & CONTACT</span>
+        <h2 id="location-title">방문 및 문의</h2>
+        <p>방문 위치와 연락 방법을 확인해 주세요.</p>
       </div>
 
-      <p>
-        정비소 위치, 연락처 및 영업시간은
-        운영 정보 확인 후 안내할 예정입니다.
-      </p>
+      <div class="information-grid">
+
+        <article class="information-card">
+          <h3>동부자동차공업사</h3>
+
+          <dl class="contact-list">
+            <div>
+              <dt>주소</dt>
+              <dd>서울 구로구 고척로 31</dd>
+            </div>
+            <div>
+              <dt>가게 전화</dt>
+              <dd>
+                <a href="tel:0226826264">02-2682-6264</a>
+              </dd>
+            </div>
+            <div>
+              <dt>상담 전화</dt>
+              <dd>
+                <a href="tel:01052738889">010-5273-8889</a>
+              </dd>
+            </div>
+          </dl>
+
+          <div class="information-actions">
+            <a class="button button-primary"
+               href="tel:0226826264">
+              정비소 전화하기
+            </a>
+
+            <a class="button button-secondary"
+               href="https://www.google.com/maps/search/?api=1&amp;query=서울+구로구+고척로+31"
+               target="_blank"
+               rel="noopener noreferrer">
+              지도에서 보기
+            </a>
+          </div>
+        </article>
+
+        <article id="notices"
+                 class="information-card notice-card"
+                 aria-labelledby="notices-title">
+
+          <span class="eyebrow">NOTICE</span>
+          <h3 id="notices-title">공지사항</h3>
+
+          <div class="empty-notice">
+            <p>공지사항 서비스를 준비하고 있습니다.</p>
+            <small>
+              운영 관련 문의는 정비소에 전화해 주세요.
+            </small>
+          </div>
+        </article>
+
+      </div>
 
     </div>
   </section>
 
 </main>
 
-<footer class="site-footer">
-  <div class="container">
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
 
-    <p class="footer-brand">GarageCare</p>
+<!-- Mobile fixed actions -->
+<div class="mobile-action-bar" aria-label="빠른 이용 메뉴">
+  <a href="tel:01052738889"
+     class="mobile-action-call">
+    전화 상담
+  </a>
 
-    <p>
-      자동차 정비 예약 및 관리 서비스
-    </p>
-
-    <small>
-      &copy; GarageCare. All rights reserved.
-    </small>
-
-  </div>
-</footer>
+  <a th:href="@{/reservations/new}"
+     class="mobile-action-booking">
+    정비 예약 신청
+  </a>
+</div>
 
 </body>
 </html>
