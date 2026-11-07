@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  <meta name="description"
+        content="동부자동차공업사 자동차 정비 및 점검 안내. 온라인 정비 예약 신청, 전화 상담 및 방문 정보를 확인하세요.">
+
+  <title>동부자동차공업사 | 자동차 정비 예약</title>
+
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+
+<body>
+
+<a class="skip-link" href="#main-content">본문 바로가기</a>
+
+<div th:replace="~{fragments/header :: siteHeader}"></div>
+
+<main id="main-content">
+
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero-inner">
+
+      <div class="hero-content">
+        <span class="hero-eyebrow">동부자동차공업사</span>
+
+        <h1 id="hero-title">
+          차량 정비,<br>
+          예약부터 방문까지<br>
+          <em>편리하게.</em>
+        </h1>
+
+        <p class="hero-description">
+          차량 정보를 등록하고 필요한 정비를 예약하세요.
+          전화 상담과 방문 안내도 편리하게 확인할 수 있습니다.
+        </p>
+
+        <div class="hero-actions">
+          <a class="button button-accent"
+             th:href="@{/reservations/new}">
+            정비 예약 신청
+          </a>
+
+          <a class="button button-light"
+             href="tel:01052738889">
+            전화 상담
+          </a>
+
+          <a class="button button-outline-light"
+             href="#location">
+            오시는 길
+          </a>
+        </div>
+
+        <p class="reservation-note">
+          예약 신청은 로그인과 차량 등록 후 가능하며,
+          정비소 확인을 거쳐 확정됩니다.
+        </p>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-visual-inner">
+          <svg viewBox="0 0 400 190"
+               fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M69 113 L95 60 Q103 45 129 45
+                                 H270 Q292 45 303 62
+                                 L335 113"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  stroke-linecap="round"/>
+            <path d="M66 113 H334 Q350 113 350 130
+                                 V145 H50 V130 Q50 113 66 113Z"
+                  stroke="currentColor"
+                  stroke-width="8"/>
+            <path d="M87 113 H313"
+                  stroke="currentColor"
+                  stroke-width="5"/>
+            <circle cx="105" cy="147" r="17"
+                    fill="#10243D"
+                    stroke="currentColor"
+                    stroke-width="7"/>
+            <circle cx="295" cy="147" r="17"
+                    fill="#10243D"
+                    stroke="currentColor"
+                    stroke-width="7"/>
+            <path d="M118 58 H274 L306 105 H94Z"
+                  stroke="currentColor"
+                  stroke-width="5"/>
+          </svg>
+
+          <div class="hero-visual-caption">
+            <strong>차량 관리의 시작</strong>
+            <span>정비 예약 · 차량 등록 · 예약 내역 확인</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section id="services" class="section"
+           aria-labelledby="services-title">
+
+    <div class="container">
+      <div class="section-heading">
+        <span class="eyebrow">SERVICES</span>
+        <h2 id="services-title">주요 정비 서비스</h2>
+        <p>대표적인 차량 점검 및 정비 항목을 안내합니다.</p>
+      </div>
+
+      <div class="service-grid">
+
+        <article class="service-card">
+          <span class="service-symbol" aria-hidden="true">01</span>
+          <h3>엔진오일 교환</h3>
+          <p>
+            엔진오일과 오일필터 교환으로
+            엔진의 기본적인 관리를 돕습니다.
+          </p>
+        </article>
+
+        <article class="service-card">
+          <span class="service-symbol" aria-hidden="true">02</span>
+          <h3>브레이크 점검</h3>
+          <p>
+            브레이크 패드와 디스크 상태를
+            점검합니다.
+          </p>
+        </article>
+
+        <article class="service-card">
+          <span class="service-symbol" aria-hidden="true">03</span>
+          <h3>타이어 점검</h3>
+          <p>
+            타이어 마모 상태와 공기압 등을
+            점검합니다.
+          </p>
+        </article>
+
+        <article class="service-card">
+          <span class="service-symbol" aria-hidden="true">04</span>
+          <h3>배터리 점검</h3>
+          <p>
+            배터리 상태를 확인하고
+            필요한 정비를 안내합니다.
+          </p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Reservation process -->
+  <section id="process"
+           class="section section-tinted"
+           aria-labelledby="process-title">
+
+    <div class="container">
+      <div class="section-heading">
+        <span class="eyebrow">HOW TO BOOK</span>
+        <h2 id="process-title">처음 이용하시나요?</h2>
+        <p>네 단계로 정비 예약을 신청할 수 있습니다.</p>
+      </div>
+
+      <ol class="process-grid">
+        <li class="process-step">
+          <span class="step-number">1</span>
+          <h3>회원가입 · 로그인</h3>
+          <p>계정을 생성하고 로그인합니다.</p>
+        </li>
+
+        <li class="process-step">
+          <span class="step-number">2</span>
+          <h3>내 차량 등록</h3>
+          <p>예약할 차량의 정보를 등록합니다.</p>
+        </li>
+
+        <li class="process-step">
+          <span class="step-number">3</span>
+          <h3>정비 예약 신청</h3>
+          <p>원하는 정비 항목과 날짜·시간을 선택합니다.</p>
+        </li>
+
+        <li class="process-step">
+          <span class="step-number">4</span>
+          <h3>정비소 확인 · 확정</h3>
+          <p>예약 상태를 확인한 뒤 방문합니다.</p>
+        </li>
+      </ol>
+
+      <a class="text-link" th:href="@{/vehicles/new}">
+        차량 등록부터 시작하기
+      </a>
+    </div>
+  </section>
+
+  <!-- Notice & Contact -->
+  <section id="notices"
+           class="section"
+           aria-labelledby="notices-section-title">
+
+    <div class="container">
+
+      <div class="section-heading">
+        <span class="eyebrow">NOTICE & CONTACT</span>
+
+        <h2 id="notices-section-title">
+          공지사항 및 문의
+        </h2>
+
+        <p>
+          정비소 연락처와 운영 안내를 확인해 주세요.
+        </p>
+      </div>
+
+      <div class="information-grid">
+
+        <!-- 정비소 연락처 -->
+        <article class="information-card">
+
+          <h3>동부자동차공업사</h3>
+
+          <dl class="contact-list">
+            <div>
+              <dt>주소</dt>
+              <dd>서울 구로구 고척로 31</dd>
+            </div>
+
+            <div>
+              <dt>가게 전화</dt>
+              <dd>
+                <a href="tel:0226826264">
+                  02-2682-6264
+                </a>
+              </dd>
+            </div>
+
+            <div>
+              <dt>상담 전화</dt>
+              <dd>
+                <a href="tel:01052738889">
+                  010-5273-8889
+                </a>
+              </dd>
+            </div>
+          </dl>
+
+          <div class="information-actions">
+
+            <a class="button button-primary"
+               href="tel:0226826264">
+              정비소 전화하기
+            </a>
+
+            <a class="button button-secondary"
+               href="#location">
+              오시는 길
+            </a>
+
+          </div>
+        </article>
+
+        <!-- 공지사항: 기존 디자인 유지 -->
+        <article class="information-card notice-card"
+                 aria-labelledby="notice-card-title">
+
+          <span class="eyebrow">NOTICE</span>
+
+          <h3 id="notice-card-title">공지사항</h3>
+
+          <div class="empty-notice">
+            <p>
+              공지사항 서비스를 준비하고 있습니다.
+            </p>
+
+            <small>
+              운영 관련 문의는 정비소에 전화해 주세요.
+            </small>
+          </div>
+
+        </article>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- Location: 별도 섹션 -->
+  <section id="location"
+           class="section section-tinted"
+           aria-labelledby="location-title">
+
+    <div class="container">
+
+      <div class="section-heading">
+        <span class="eyebrow">LOCATION</span>
+
+        <h2 id="location-title">오시는 길</h2>
+
+        <p>
+          동부자동차공업사의 위치를 지도에서 확인하세요.
+        </p>
+      </div>
+
+      <div class="location-map-card">
+
+        <div class="location-map-header">
+
+          <div>
+            <h3>동부자동차공업사 위치</h3>
+
+            <p>
+              서울 구로구 고척로 31
+            </p>
+          </div>
+
+          <a class="button button-secondary"
+             href="https://map.naver.com/p/search/서울%20구로구%20고척로%2031"
+             target="_blank"
+             rel="noopener noreferrer">
+            네이버 지도에서 위치 확인
+          </a>
+
+        </div>
+
+        <!-- 네이버 지도 표시 -->
+        <div id="naver-map"
+             class="map-frame"
+             role="region"
+             aria-label="동부자동차공업사 위치 지도"
+             style="width: 100%; height: 400px; min-height: 400px;">
+        </div>
+
+        <p id="map-message"
+           class="map-caption"
+           role="status">
+
+                <span th:if="${naverMapEnabled}">
+                    지도를 불러오는 중입니다.
+                </span>
+
+          <span th:unless="${naverMapEnabled}">
+                    현재 지도를 표시할 수 없습니다.
+                    네이버 지도에서 위치를 확인해 주세요.
+                </span>
+
+        </p>
+
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+<!-- Mobile fixed actions -->
+<div class="mobile-action-bar" aria-label="빠른 이용 메뉴">
+  <a href="tel:01052738889"
+     class="mobile-action-call">
+    전화 상담
+  </a>
+
+  <a th:href="@{/reservations/new}"
+     class="mobile-action-booking">
+    정비 예약 신청
+  </a>
+</div>
+
+<!-- 네이버 지도 초기화 -->
+<script th:src="@{/js/naver-map.js}" defer></script>
+
+<!-- Client ID가 설정된 경우에만 네이버 SDK 로드 -->
+<script th:if="${naverMapEnabled}"
+        th:src="@{https://oapi.map.naver.com/openapi/v3/maps.js(ncpKeyId=${naverMapsClientId},submodules='geocoder',callback='initDongbuMap')}"
+        defer>
+</script>
+
+</body>
+</html>
