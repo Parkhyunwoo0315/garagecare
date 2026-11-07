@@ -6,9 +6,13 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.beans.factory.annotation.Value;
 
 @Controller
 public class HomeController {
+
+    @Value("${garagecare.maps.naver.client-id:}")
+    private String naverMapsClientId;
 
     @GetMapping("/")
     public String home(
@@ -23,6 +27,12 @@ public class HomeController {
         ) != null;
 
         model.addAttribute("loggedIn", loggedIn);
+
+        model.addAttribute("naverMapsClientId", naverMapsClientId);
+        model.addAttribute(
+                "naverMapEnabled",
+                !naverMapsClientId.isBlank()
+        );
 
         return "home";
     }

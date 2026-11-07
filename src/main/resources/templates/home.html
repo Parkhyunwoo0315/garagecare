@@ -202,22 +202,30 @@
     </div>
   </section>
 
-  <!-- Visit and contact -->
-  <section id="location"
+  <!-- Notice & Contact -->
+  <section id="notices"
            class="section"
-           aria-labelledby="location-title">
+           aria-labelledby="notices-section-title">
 
     <div class="container">
 
       <div class="section-heading">
-        <span class="eyebrow">VISIT & CONTACT</span>
-        <h2 id="location-title">방문 및 문의</h2>
-        <p>방문 위치와 연락 방법을 확인해 주세요.</p>
+        <span class="eyebrow">NOTICE & CONTACT</span>
+
+        <h2 id="notices-section-title">
+          공지사항 및 문의
+        </h2>
+
+        <p>
+          정비소 연락처와 운영 안내를 확인해 주세요.
+        </p>
       </div>
 
       <div class="information-grid">
 
+        <!-- 정비소 연락처 -->
         <article class="information-card">
+
           <h3>동부자동차공업사</h3>
 
           <dl class="contact-list">
@@ -225,49 +233,127 @@
               <dt>주소</dt>
               <dd>서울 구로구 고척로 31</dd>
             </div>
+
             <div>
               <dt>가게 전화</dt>
               <dd>
-                <a href="tel:0226826264">02-2682-6264</a>
+                <a href="tel:0226826264">
+                  02-2682-6264
+                </a>
               </dd>
             </div>
+
             <div>
               <dt>상담 전화</dt>
               <dd>
-                <a href="tel:01052738889">010-5273-8889</a>
+                <a href="tel:01052738889">
+                  010-5273-8889
+                </a>
               </dd>
             </div>
           </dl>
 
           <div class="information-actions">
+
             <a class="button button-primary"
                href="tel:0226826264">
               정비소 전화하기
             </a>
 
             <a class="button button-secondary"
-               href="https://www.google.com/maps/search/?api=1&amp;query=서울+구로구+고척로+31"
-               target="_blank"
-               rel="noopener noreferrer">
-              지도에서 보기
+               href="#location">
+              오시는 길
             </a>
+
           </div>
         </article>
 
-        <article id="notices"
-                 class="information-card notice-card"
-                 aria-labelledby="notices-title">
+        <!-- 공지사항: 기존 디자인 유지 -->
+        <article class="information-card notice-card"
+                 aria-labelledby="notice-card-title">
 
           <span class="eyebrow">NOTICE</span>
-          <h3 id="notices-title">공지사항</h3>
+
+          <h3 id="notice-card-title">공지사항</h3>
 
           <div class="empty-notice">
-            <p>공지사항 서비스를 준비하고 있습니다.</p>
+            <p>
+              공지사항 서비스를 준비하고 있습니다.
+            </p>
+
             <small>
               운영 관련 문의는 정비소에 전화해 주세요.
             </small>
           </div>
+
         </article>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- Location: 별도 섹션 -->
+  <section id="location"
+           class="section section-tinted"
+           aria-labelledby="location-title">
+
+    <div class="container">
+
+      <div class="section-heading">
+        <span class="eyebrow">LOCATION</span>
+
+        <h2 id="location-title">오시는 길</h2>
+
+        <p>
+          동부자동차공업사의 위치를 지도에서 확인하세요.
+        </p>
+      </div>
+
+      <div class="location-map-card">
+
+        <div class="location-map-header">
+
+          <div>
+            <h3>동부자동차공업사 위치</h3>
+
+            <p>
+              서울 구로구 고척로 31
+            </p>
+          </div>
+
+          <a class="button button-secondary"
+             href="https://map.naver.com/p/search/서울%20구로구%20고척로%2031"
+             target="_blank"
+             rel="noopener noreferrer">
+            네이버 지도에서 위치 확인
+          </a>
+
+        </div>
+
+        <!-- 네이버 지도 표시 -->
+        <div id="naver-map"
+             class="map-frame"
+             role="region"
+             aria-label="동부자동차공업사 위치 지도"
+             style="width: 100%; height: 400px; min-height: 400px;">
+        </div>
+
+        <p id="map-message"
+           class="map-caption"
+           role="status">
+
+                <span th:if="${naverMapEnabled}">
+                    지도를 불러오는 중입니다.
+                </span>
+
+          <span th:unless="${naverMapEnabled}">
+                    현재 지도를 표시할 수 없습니다.
+                    네이버 지도에서 위치를 확인해 주세요.
+                </span>
+
+        </p>
 
       </div>
 
@@ -290,6 +376,15 @@
     정비 예약 신청
   </a>
 </div>
+
+<!-- 네이버 지도 초기화 -->
+<script th:src="@{/js/naver-map.js}" defer></script>
+
+<!-- Client ID가 설정된 경우에만 네이버 SDK 로드 -->
+<script th:if="${naverMapEnabled}"
+        th:src="@{https://oapi.map.naver.com/openapi/v3/maps.js(ncpKeyId=${naverMapsClientId},submodules='geocoder',callback='initDongbuMap')}"
+        defer>
+</script>
 
 </body>
 </html>

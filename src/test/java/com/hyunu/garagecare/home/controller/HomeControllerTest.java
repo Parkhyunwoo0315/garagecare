@@ -132,4 +132,27 @@ class HomeControllerTest {
                         containsString("href=\"/reservations/new\"")
                 ));
     }
+
+    @Test
+    @DisplayName("공지사항과 별도의 오시는 길 섹션이 표시")
+    void homeDisplaysNoticesAndLocation() throws Exception {
+
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(
+                        containsString("공지사항 및 문의")
+                ))
+                .andExpect(content().string(
+                        containsString("공지사항 서비스를 준비하고 있습니다.")
+                ))
+                .andExpect(content().string(
+                        containsString("id=\"location\"")
+                ))
+                .andExpect(content().string(
+                        containsString("id=\"naver-map\"")
+                ))
+                .andExpect(content().string(
+                        containsString("네이버 지도에서 위치 확인")
+                ));
+    }
 }
