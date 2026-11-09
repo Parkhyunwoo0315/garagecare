@@ -1,5 +1,6 @@
 package com.hyunu.garagecare.member.controller;
 
+import com.hyunu.garagecare.global.auth.LoginRedirectPolicy;
 import com.hyunu.garagecare.member.dto.MemberLoginRequest;
 import com.hyunu.garagecare.member.exception.LoginFailedException;
 import com.hyunu.garagecare.member.service.MemberService;
@@ -71,35 +72,45 @@ public class MemberController {
 
     @PostMapping("/login")
     public String login(
-            @Valid
-            @ModelAttribute("form")
+            @Valid @ModelAttribute("form")
             MemberLoginRequest request,
             BindingResult bindingResult,
             @RequestParam(
                     name = "redirectURL",
                     required = false
-            ) String  redirectURL,
-            HttpServletRequest httpRequest
-            ) {
-        if(bindingResult.hasErrors()) {
+            ) String redirectURL,
+            HttpServletRequest httpRequest,
+            Model model
+    ) {
+
+        model.addAttribute(
+                "redirectURL",
+                LoginRedirectPolicy.resolve(redirectURL)
+        );
+
+        if (bindingResult.hasErrors()) {
             return "member/login-form";
         }
+
         try {
             Long memberId = memberService.login(request);
+
             HttpSession session = httpRequest.getSession();
             session.setAttribute(
                     SessionConst.LOGIN_MEMBER_ID,
                     memberId
             );
-            return "redirect:" + resolveRedirectURL(redirectURL);
+
+            return "redirect:" +
+                    LoginRedirectPolicy.resolve(redirectURL);
 
         } catch (LoginFailedException exception) {
             bindingResult.reject(
                     "loginFailed",
                     exception.getMessage()
             );
-            return "member/login-form";
 
+            return "member/login-form";
         }
     }
 
@@ -117,16 +128,7 @@ public class MemberController {
         return "redirect:/members/login";
     }
 
-    private String resolveRedirectURL(
-            String redirectURL
-    ) {
-        if (redirectURL == null || redirectURL.isBlank()) {
-            return "/vehicles";
-        }
-        if (!redirectURL.startsWith("/")
-                || redirectURL.startsWith("//")) {
-            return "/vehicles";
-        }
-        return redirectURL;
+    private String resolveRedirectURL(String redirectURL) {
+        return LoginRedirectPolicy.resolve(redirectURL);
     }
 }

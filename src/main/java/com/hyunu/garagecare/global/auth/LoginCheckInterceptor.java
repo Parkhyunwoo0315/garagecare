@@ -24,16 +24,17 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
 
         if (session == null || session.getAttribute(SessionConst.LOGIN_MEMBER_ID) == null) {
 
-            String requestURI = getRequestURI(request);
-
-            String encodedRequestURI = URLEncoder.encode(
-                    requestURI,
-                    StandardCharsets.UTF_8
-            );
+            String redirectURL =
+                    LoginRedirectPolicy.fromRequest(request);
 
             response.sendRedirect(
-                    "/members/login?redirectURL=" + encodedRequestURI
+                    "/members/login?redirectURL=" +
+                            URLEncoder.encode(
+                                    redirectURL,
+                                    StandardCharsets.UTF_8
+                            )
             );
+
             return false;
         }
         return true;
