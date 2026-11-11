@@ -1,12 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
 
 <header th:fragment="siteHeader" class="site-header">
 
+    <!-- 1. 상단 안내 바 -->
     <div class="topbar">
         <div class="container topbar-inner">
-            <span>동부자동차공업사 · 자동차 정비 및 점검</span>
+
+            <span>
+                동부자동차공업사 · 자동차 정비 및 점검
+            </span>
 
             <div class="topbar-contact">
                 <a href="tel:0226826264">
@@ -16,53 +21,198 @@
                     상담 전화 010-5273-8889
                 </a>
             </div>
+
         </div>
     </div>
 
-    <div class="container header-inner">
+    <!-- 2. 브랜드와 로그인 버튼 -->
+    <div class="container header-main">
 
-        <a class="brand" th:href="@{/}" aria-label="동부자동차공업사 홈">
-            <span class="brand-symbol" aria-hidden="true">⚙</span>
+        <a class="shop-brand"
+           th:href="@{/}"
+           aria-label="동부자동차공업사 홈페이지로 이동">
+
+            <!-- 배경 없는 곤색 자동차 정비 아이콘 -->
+            <span class="shop-brand-icon" aria-hidden="true">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     viewBox="0 0 80 80"
+                     width="68"
+                     height="68"
+                     style="display:block;width:68px;height:68px;max-width:68px;max-height:68px"
+                     fill="none">
+
+                    <!-- 자동차 차체 -->
+                    <path
+                            d="M12 30 L17 19
+                           Q19 15 23 15 H43
+                           Q48 15 50 19 L55 30
+                           Q59 31 59 36 V48
+                           Q59 51 56 51 H13
+                           Q10 51 10 48 V36
+                           Q10 32 12 30Z"
+                            fill="#142640"/>
+
+                    <!-- 앞유리 -->
+                    <path
+                            d="M20 20 Q21 19 24 19
+                           H42 Q45 19 46 22
+                           L49 30 H16Z"
+                            fill="#FFFFFF"/>
+
+                    <!-- 전조등 -->
+                    <rect x="15" y="36"
+                          width="12" height="7"
+                          rx="3.5"
+                          fill="#FFFFFF"/>
+
+                    <rect x="42" y="36"
+                          width="12" height="7"
+                          rx="3.5"
+                          fill="#FFFFFF"/>
+
+                    <!-- 그릴 -->
+                    <rect x="29" y="40"
+                          width="11" height="3"
+                          rx="1.5"
+                          fill="#FFFFFF"/>
+
+                    <!-- 바퀴 -->
+                    <path
+                            d="M14 49H23V57
+                           Q23 59 21 59H16
+                           Q14 59 14 57Z"
+                            fill="#142640"/>
+
+                    <path
+                            d="M46 49H55V57
+                           Q55 59 53 59H48
+                           Q46 59 46 57Z"
+                            fill="#142640"/>
+
+                    <!-- 교차 공구 -->
+                    <path
+                            d="M55 48L70 63"
+                            stroke="#FFFFFF"
+                            stroke-width="7"
+                            stroke-linecap="round"/>
+
+                    <path
+                            d="M55 48L70 63"
+                            stroke="#142640"
+                            stroke-width="3"
+                            stroke-linecap="round"/>
+
+                    <!-- 스패너 -->
+                    <path
+                            d="M65 27 L60 36 L66 42 L74 34
+                           Q77 41 73 46
+                           Q68 53 60 50
+                           L43 68
+                           Q39 72 35 68
+                           Q31 64 35 60
+                           L53 43
+                           Q50 36 54 31
+                           Q59 26 65 27Z"
+                            fill="#FFFFFF"
+                            stroke="#142640"
+                            stroke-width="3"
+                            stroke-linejoin="round"/>
+
+                    <circle cx="39" cy="64"
+                            r="2"
+                            fill="#142640"/>
+
+                </svg>
+            </span>
+
+            <!-- 상호명은 아이콘 바로 오른쪽 -->
             <span class="brand-copy">
                 <strong>동부자동차공업사</strong>
                 <small>자동차 정비 · 점검 · 수리</small>
             </span>
+
         </a>
 
-        <nav class="primary-nav" aria-label="주 메뉴">
-            <ul class="nav-list">
-                <li><a th:href="@{/#services}">정비 서비스</a></li>
-                <li><a th:href="@{/#process}">이용 안내</a></li>
-                <li><a th:href="@{/#location}">오시는 길</a></li>
-                <li><a th:href="@{/#notices}">공지사항</a></li>
-                <li th:if="${loggedIn}">
-                    <a th:href="@{/reservations}">내 예약</a>
-                </li>
-            </ul>
-        </nav>
+        <!-- 비로그인 사용자 -->
+        <div class="header-actions"
+             th:unless="${loggedIn}">
 
-        <div class="header-actions" th:unless="${loggedIn}">
-            <a class="header-login" th:href="@{/members/login}">
+            <a class="header-login"
+               th:href="@{/members/login}">
                 로그인
             </a>
-            <a class="header-signup" th:href="@{/members/signup}">
+
+            <a class="header-signup"
+               th:href="@{/members/signup}">
                 회원가입
             </a>
+
         </div>
 
-        <div class="header-actions" th:if="${loggedIn}">
-            <a class="header-login" th:href="@{/vehicles}">
+        <!-- 로그인 사용자 -->
+        <div class="header-actions"
+             th:if="${loggedIn}">
+
+            <a class="header-login"
+               th:href="@{/vehicles}">
                 내 차량
             </a>
 
-            <form th:action="@{/members/logout}" method="post">
-                <button type="submit" class="header-logout">
+            <form th:action="@{/members/logout}"
+                  method="post">
+
+                <button type="submit"
+                        class="header-logout">
                     로그아웃
                 </button>
+
             </form>
+
         </div>
 
     </div>
+
+    <!-- 3. 하단 내비게이션 -->
+    <nav class="primary-nav" aria-label="주 메뉴">
+        <div class="container">
+
+            <ul class="nav-list">
+
+                <li>
+                    <a th:href="@{/#services}">
+                        정비 서비스
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/#process}">
+                        이용 안내
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/#location}">
+                        오시는 길
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/#notices}">
+                        공지사항
+                    </a>
+                </li>
+
+                <li th:if="${loggedIn}">
+                    <a th:href="@{/reservations}">
+                        내 예약
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+    </nav>
 
 </header>
 

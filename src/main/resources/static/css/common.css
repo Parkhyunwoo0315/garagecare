@@ -529,3 +529,427 @@ button:focus-visible {
         transform: none;
     }
 }
+
+/* Header layout */
+
+.site-header .header-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
+.site-header .shop-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+    color: var(--navy, #142640);
+    text-decoration: none;
+}
+
+/* Brand icon */
+
+.site-header .shop-brand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 86px;
+    width: 86px;
+    height: 86px;
+    padding: 0;
+
+    background: none;
+    background-image: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    color: #142640;
+}
+
+.site-header .shop-brand-icon svg {
+    display: block;
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+}
+
+/* Brand text */
+
+.site-header .brand-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.site-header .brand-copy strong {
+    color: var(--navy, #142640);
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.site-header .brand-copy small {
+    color: var(--muted, #64748b);
+    font-size: 14px;
+}
+
+/* Actions and navigation */
+
+.site-header .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.site-header .header-nav-row {
+    padding-top: 8px;
+    padding-bottom: 20px;
+}
+
+.site-header .nav-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+    .site-header .header-main {
+        flex-wrap: wrap;
+        gap: 16px;
+        padding-top: 18px;
+        padding-bottom: 16px;
+    }
+
+    .site-header .shop-brand {
+        gap: 12px;
+    }
+
+    .site-header .shop-brand-icon {
+        flex-basis: 60px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .site-header .shop-brand-icon svg {
+        width: 56px;
+        height: 56px;
+    }
+
+    .site-header .brand-copy strong {
+        font-size: 19px;
+    }
+
+    .site-header .brand-copy small {
+        font-size: 12px;
+    }
+
+    .site-header .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .site-header .nav-list {
+        gap: 16px;
+    }
+}
+
+
+
+/* ========================================
+   DONGBU AUTOMOTIVE - COMMON HEADER
+======================================== */
+
+.site-header {
+    width: 100%;
+    background: #ffffff;
+    color: #142640;
+    border-bottom: 1px solid #e5ebf2;
+}
+
+/* 1. TOP BAR */
+
+.site-header .topbar {
+    background: #142640;
+    color: #ffffff;
+}
+
+.site-header .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 52px;
+}
+
+.site-header .topbar-inner > span {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.site-header .topbar-contact {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.site-header .topbar-contact a {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* 2. MAIN HEADER */
+
+.site-header .header-main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 32px;
+    padding-top: 22px;
+    padding-bottom: 22px;
+}
+
+/* Icon + Business Name */
+
+.site-header .shop-brand {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 18px;
+    min-width: 0;
+    text-decoration: none;
+    color: #142640;
+}
+
+/* Background-free logo */
+
+.site-header .shop-brand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 76px;
+    width: 76px;
+    height: 76px;
+    padding: 0;
+    margin: 0;
+
+    background: transparent;
+    background-image: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    color: #142640;
+}
+
+.site-header .shop-brand-icon svg {
+    display: block;
+    width: 68px;
+    height: 68px;
+    max-width: 68px;
+    max-height: 68px;
+    flex-shrink: 0;
+}
+
+/* Brand text */
+
+.site-header .brand-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+}
+
+.site-header .brand-copy strong {
+    display: block;
+    color: #142640;
+    font-size: 27px;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -0.8px;
+}
+
+.site-header .brand-copy small {
+    display: block;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Login actions */
+
+.site-header .header-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    gap: 12px;
+}
+
+.site-header .header-actions form {
+    margin: 0;
+}
+
+.site-header .header-login,
+.site-header .header-signup,
+.site-header .header-logout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 20px;
+
+    border: 1px solid #d9e2ee;
+    border-radius: 10px;
+    background: #ffffff;
+
+    color: #142640;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.site-header .header-signup {
+    background: #1764c5;
+    border-color: #1764c5;
+    color: #ffffff;
+}
+
+.site-header .header-login:hover,
+.site-header .header-logout:hover {
+    background: #edf3fa;
+}
+
+.site-header .header-signup:hover {
+    background: #1154aa;
+}
+
+/* 3. NAVIGATION */
+
+.site-header .primary-nav {
+    width: 100%;
+    background: #ffffff;
+    border-top: 1px solid #edf1f6;
+}
+
+.site-header .nav-list {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 32px;
+
+    min-height: 62px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.site-header .nav-list li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.site-header .nav-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #142640;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.site-header .nav-list a:hover {
+    color: #1764c5;
+}
+
+.site-header a:focus-visible,
+.site-header button:focus-visible {
+    outline: 2px solid #1764c5;
+    outline-offset: 3px;
+}
+
+/* 4. TABLET & MOBILE */
+
+@media (max-width: 780px) {
+    .site-header .topbar-inner {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .site-header .topbar-contact {
+        gap: 8px 16px;
+    }
+
+    .site-header .header-main {
+        flex-wrap: wrap;
+        gap: 16px;
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
+
+    .site-header .shop-brand {
+        gap: 12px;
+    }
+
+    .site-header .shop-brand-icon {
+        flex-basis: 64px;
+        width: 64px;
+        height: 64px;
+    }
+
+    .site-header .brand-copy strong {
+        font-size: 20px;
+    }
+
+    .site-header .brand-copy small {
+        font-size: 12px;
+    }
+
+    .site-header .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .site-header .nav-list {
+        gap: 12px 22px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+}
+
+@media (max-width: 400px) {
+    .site-header .brand-copy strong {
+        font-size: 18px;
+    }
+
+    .site-header .nav-list {
+        gap: 10px 16px;
+    }
+}
