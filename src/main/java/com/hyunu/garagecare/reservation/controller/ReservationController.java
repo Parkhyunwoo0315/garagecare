@@ -66,8 +66,10 @@ public class ReservationController {
             bindingResult.reject(
                     "duplicateReservation",
                     "해당 차량은 선택한 날짜와 시간에 이미 예약되어 있습니다."
+                    + "기존 예약을 확인하거나 다른 시간을 선택해 주세요."
             );
         }
+        addReservationOptions(memberId, model);
 
         return "reservation/create-form";
     }

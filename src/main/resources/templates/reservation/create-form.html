@@ -109,6 +109,38 @@
         font-weight: 700;
         cursor: pointer;
     }
+
+    .reservation-error {
+      margin-bottom: 24px;
+      padding: 20px 24px;
+
+      background: #fff5f3;
+      border: 1px solid #f0c5bd;
+      border-radius: 10px;
+
+      color: #9b3027;
+    }
+
+    .reservation-error strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .reservation-error p {
+      margin: 0 0 14px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .reservation-error a {
+      color: #142640;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
   </style>
 </head>
 
@@ -121,6 +153,22 @@
   <p class="description">
     차량과 필요한 정비 항목을 선택해 주세요.
   </p>
+
+  <div th:if="${reservationError}"
+       class="reservation-error"
+       role="alert">
+
+    <strong>예약을 완료하지 못했습니다.</strong>
+
+    <p th:text="${reservationError}">
+      중복 예약 안내 메시지
+    </p>
+
+    <a th:href="@{/reservations}">
+      기존 예약 확인하기
+    </a>
+
+  </div>
 
   <form th:action="@{/reservations}"
         th:object="${form}"

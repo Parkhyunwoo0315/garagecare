@@ -20,7 +20,9 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -440,6 +442,139 @@ class ReservationControllerTest {
                         )
                 );
     }
+
+    @Test
+    @Transactional
+    @DisplayName("동일 차량과 시간의 중복 예약은 차단하고 예약 폼에 오류 표시")
+    void duplicateReservationRestoresFormAndShowsError()
+            throws Exception {
+
+        // given
+        Member member = memberRepository.save(
+                Member.create(
+                        "중복 예약 회원",
+                        "controller-duplicate-form@test.com",
+                        "password"
+                )
+        );
+
+        Vehicle vehicle = vehicleRepository.save(
+                Vehicle.create(
+                        member,
+                        "54가5454",
+                        "현대",
+                        "아반떼",
+                        2022
+                )
+        );
+
+        MaintenanceItem maintenanceItem =
+                maintenanceItemRepository.save(
+                        MaintenanceItem.create(
+                                "중복 예약 테스트 정비",
+                                "중복 예약 화면 검증용 정비 항목입니다.",
+                                70000L
+                        )
+                );
+
+        ReservationCreateRequest request = createRequest(
+                vehicle.getId(),
+                List.of(maintenanceItem.getId())
+        );
+
+        reservationService.createReservation(
+                member.getId(),
+                request
+        );
+
+        long countAfterFirstReservation =
+                reservationRepository.count();
+
+        MockHttpSession session = new MockHttpSession();
+
+        session.setAttribute(
+                SessionConst.LOGIN_MEMBER_ID,
+                member.getId()
+        );
+
+        // when
+        MvcResult result = mockMvc.perform(
+                        post("/reservations")
+                                .session(session)
+                                .param(
+                                        "vehicleId",
+                                        vehicle.getId().toString()
+                                )
+                                .param(
+                                        "reservationDate",
+                                        request.getReservationDate()
+                                                .toString()
+                                )
+                                .param(
+                                        "reservationTime",
+                                        request.getReservationTime()
+                                                .toString()
+                                )
+                                .param(
+                                        "maintenanceItemIds",
+                                        maintenanceItem.getId()
+                                                .toString()
+                                )
+                )
+
+                // then
+                .andExpect(status().isOk())
+                .andExpect(
+                        view().name("reservation/create-form")
+                )
+
+                .andExpect(
+                        model().attributeExists("form")
+                )
+                .andExpect(
+                        model().attributeHasErrors("form")
+                )
+
+                .andExpect(
+                        model().attributeExists(
+                                "vehicles",
+                                "maintenanceItems"
+                        )
+                )
+                .andReturn();
+
+        BindingResult errors = (BindingResult) result
+                .getModelAndView()
+                .getModel()
+                .get(
+                        BindingResult.MODEL_KEY_PREFIX + "form"
+                );
+
+        assertThat(errors).isNotNull();
+
+        assertThat(errors.hasGlobalErrors())
+                .isTrue();
+
+        assertThat(errors.getGlobalError())
+                .isNotNull();
+
+        assertThat(errors.getGlobalError().getCode())
+                .isEqualTo("duplicateReservation");
+
+        String errorMessage = errors
+                .getGlobalError()
+                .getDefaultMessage();
+
+        assertThat(errorMessage).isNotBlank();
+
+        assertThat(
+                result.getResponse().getContentAsString()
+        ).contains(errorMessage);
+
+        assertThat(reservationRepository.count())
+                .isEqualTo(countAfterFirstReservation);
+    }
+
 
     private ReservationCreateRequest createRequest(
             Long vehicleId,

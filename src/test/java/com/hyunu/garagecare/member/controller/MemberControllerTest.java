@@ -75,7 +75,7 @@ class MemberControllerTest {
                         status().is3xxRedirection()
                 )
                 .andExpect(
-                        redirectedUrl("/vehicles")
+                        redirectedUrl("/mypage")
                 )
                 .andExpect(
                         request().sessionAttribute(
@@ -153,7 +153,7 @@ class MemberControllerTest {
                         status().is3xxRedirection()
                 )
                 .andExpect(
-                        redirectedUrl("/vehicles")
+                        redirectedUrl("/mypage")
                 );
     }
 

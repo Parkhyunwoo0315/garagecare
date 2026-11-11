@@ -155,8 +155,8 @@
              th:if="${loggedIn}">
 
             <a class="header-login"
-               th:href="@{/vehicles}">
-                내 차량
+               th:href="@{/mypage}">
+                마이페이지
             </a>
 
             <form th:action="@{/members/logout}"
@@ -201,6 +201,10 @@
                     <a th:href="@{/#notices}">
                         공지사항
                     </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/mypage}">마이페이지</a>
                 </li>
 
                 <li th:if="${loggedIn}">

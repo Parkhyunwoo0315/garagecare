@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+          content="동부자동차공업사 고객 마이페이지">
+
+    <title>마이페이지 | 동부자동차공업사</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}">
+
+    <link rel="stylesheet"
+          th:href="@{/css/mypage.css}">
+</head>
+
+<body>
+
+<!-- 기존 공통 Header -->
+<div th:replace="~{fragments/header :: siteHeader}"></div>
+
+<main id="main-content">
+
+    <section class="mypage-section">
+        <div class="container">
+
+            <div class="mypage-heading">
+                <span class="mypage-eyebrow">
+                    MY PAGE
+                </span>
+
+                <h1>마이페이지</h1>
+
+                <p>
+                    등록한 차량과 정비 예약을
+                    한곳에서 관리하세요.
+                </p>
+            </div>
+
+            <div class="mypage-grid">
+
+                <!-- 차량 관리 -->
+                <section class="mypage-card"
+                         aria-labelledby="vehicle-title">
+
+                    <div class="mypage-card-header">
+                        <span class="mypage-card-number">
+                            01
+                        </span>
+
+                        <h2 id="vehicle-title">
+                            내 차량 관리
+                        </h2>
+                    </div>
+
+                    <p>
+                        등록한 차량을 확인하거나
+                        새로운 차량을 등록할 수 있습니다.
+                    </p>
+
+                    <div class="mypage-card-actions">
+                        <a class="mypage-button primary"
+                           th:href="@{/vehicles}">
+                            내 차량 보기
+                        </a>
+
+                        <a class="mypage-button secondary"
+                           th:href="@{/vehicles/new}">
+                            차량 등록
+                        </a>
+                    </div>
+                </section>
+
+                <!-- 예약 관리 -->
+                <section class="mypage-card"
+                         aria-labelledby="reservation-title">
+
+                    <div class="mypage-card-header">
+                        <span class="mypage-card-number">
+                            02
+                        </span>
+
+                        <h2 id="reservation-title">
+                            정비 예약 관리
+                        </h2>
+                    </div>
+
+                    <p>
+                        정비 예약을 신청하고
+                        기존 예약의 진행 상태를 확인하세요.
+                    </p>
+
+                    <div class="mypage-card-actions">
+                        <a class="mypage-button primary"
+                           th:href="@{/reservations}">
+                            내 예약 보기
+                        </a>
+
+                        <a class="mypage-button secondary"
+                           th:href="@{/reservations/new}">
+                            정비 예약 신청
+                        </a>
+                    </div>
+                </section>
+
+            </div>
+
+            <div class="mypage-bottom">
+                <a th:href="@{/}">
+                    ← 메인 페이지로 돌아가기
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<!-- Footer는 home.html에서 사용 중인
+     기존 th:replace 구문을 그대로 복사하여 연결 -->
+
+</body>
+</html>

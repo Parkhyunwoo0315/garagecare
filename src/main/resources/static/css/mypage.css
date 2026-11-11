@@ -1,0 +1,176 @@
+
+/* ========================================
+   MYPAGE
+======================================== */
+
+.mypage-section {
+    min-height: 65vh;
+    padding: 72px 0 96px;
+    background: #eef4fb;
+}
+
+.mypage-heading {
+    margin-bottom: 36px;
+}
+
+.mypage-eyebrow {
+    color: var(--blue, #1764c5);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.mypage-heading h1 {
+    margin: 12px 0;
+    color: var(--navy, #142640);
+    font-size: clamp(30px, 3.5vw, 42px);
+    letter-spacing: -1px;
+}
+
+.mypage-heading p {
+    margin: 0;
+    color: var(--muted, #64748b);
+    font-size: 15px;
+}
+
+/* Dashboard cards */
+
+.mypage-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.mypage-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 32px;
+    border: 1px solid var(--border, #dce5ef);
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+.mypage-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.mypage-card-number {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #e8f1ff;
+    color: #1764c5;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.mypage-card h2 {
+    margin: 0;
+    color: #142640;
+    font-size: 22px;
+}
+
+.mypage-card > p {
+    flex-grow: 1;
+    margin: 0 0 28px;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+/* Actions */
+
+.mypage-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.mypage-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.mypage-button.primary {
+    background: #1764c5;
+    color: #ffffff;
+}
+
+.mypage-button.secondary {
+    background: #ffffff;
+    border-color: #dce5ef;
+    color: #142640;
+}
+
+.mypage-button.primary:hover {
+    background: #1154aa;
+}
+
+.mypage-button.secondary:hover {
+    background: #eef4fb;
+}
+
+.mypage-button:focus-visible {
+    outline: 2px solid #1764c5;
+    outline-offset: 3px;
+}
+
+/* Back link */
+
+.mypage-bottom {
+    margin-top: 32px;
+}
+
+.mypage-bottom a {
+    color: #1764c5;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.mypage-bottom a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+    .mypage-section {
+        padding: 48px 0 72px;
+    }
+
+    .mypage-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mypage-card {
+        padding: 24px;
+    }
+
+    .mypage-card h2 {
+        font-size: 19px;
+    }
+
+    .mypage-card-actions {
+        flex-direction: column;
+    }
+
+    .mypage-button {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}

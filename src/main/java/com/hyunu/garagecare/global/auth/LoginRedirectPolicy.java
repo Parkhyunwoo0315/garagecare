@@ -8,7 +8,7 @@ import java.util.Locale;
 
 public final class LoginRedirectPolicy {
 
-    private static final String DEFAULT_URL = "/vehicles";
+    private static final String DEFAULT_URL = "/mypage";
 
     private LoginRedirectPolicy() {
     }
