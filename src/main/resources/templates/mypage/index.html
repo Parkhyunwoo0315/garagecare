@@ -22,7 +22,6 @@
 
 <body>
 
-<!-- 기존 공통 Header -->
 <div th:replace="~{fragments/header :: siteHeader}"></div>
 
 <main id="main-content">
@@ -43,9 +42,47 @@
                 </p>
             </div>
 
+            <section class="mypage-summary"
+                     aria-label="나의 이용 현황">
+
+                <div class="mypage-stat">
+
+                    <span class="mypage-stat-label">
+                        등록된 차량
+                    </span>
+
+                    <div class="mypage-stat-value">
+                        <strong th:text="${vehicleCount}">0</strong>
+                        <span>대</span>
+                    </div>
+
+                    <a th:href="@{/vehicles}">
+                        내 차량 관리
+                    </a>
+
+                </div>
+
+                <div class="mypage-stat">
+
+                    <span class="mypage-stat-label">
+                        총 정비 예약
+                    </span>
+
+                    <div class="mypage-stat-value">
+                        <strong th:text="${reservationCount}">0</strong>
+                        <span>건</span>
+                    </div>
+
+                    <a th:href="@{/reservations}">
+                        예약 내역 확인
+                    </a>
+
+                </div>
+
+            </section>
+
             <div class="mypage-grid">
 
-                <!-- 차량 관리 -->
                 <section class="mypage-card"
                          aria-labelledby="vehicle-title">
 
@@ -77,7 +114,6 @@
                     </div>
                 </section>
 
-                <!-- 예약 관리 -->
                 <section class="mypage-card"
                          aria-labelledby="reservation-title">
 
@@ -121,9 +157,6 @@
     </section>
 
 </main>
-
-<!-- Footer는 home.html에서 사용 중인
-     기존 th:replace 구문을 그대로 복사하여 연결 -->
 
 </body>
 </html>
