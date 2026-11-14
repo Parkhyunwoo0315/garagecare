@@ -1,0 +1,581 @@
+
+/* ========================================
+   VEHICLE REGISTRATION PAGE
+======================================== */
+
+.vehicle-registration-layout {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(260px, 320px);
+    align-items: start;
+    gap: 24px;
+}
+
+/* ========================================
+   REGISTRATION CARD
+======================================== */
+
+.vehicle-registration-card {
+    min-width: 0;
+    padding: 36px;
+    border: 1px solid #dce5ef;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 5px 18px rgba(20, 37, 61, 0.035);
+}
+
+.vehicle-registration-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 26px;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.vehicle-registration-step {
+    display: grid;
+    place-items: center;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #e8f1ff;
+    color: #1764c5;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.vehicle-registration-card-header h2 {
+    margin: 0 0 6px;
+    color: #142640;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.vehicle-registration-card-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ========================================
+   FORM FIELDS
+======================================== */
+
+.vehicle-registration-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.vehicle-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.vehicle-field label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #142640;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.vehicle-required {
+    color: #d44848;
+    font-weight: 800;
+}
+
+.vehicle-optional {
+    margin-left: 4px;
+    color: #8593a6;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.vehicle-field input {
+    display: block;
+    width: 100%;
+    height: 50px;
+    padding: 0 15px;
+    box-sizing: border-box;
+
+    border: 1px solid #d6e0eb;
+    border-radius: 10px;
+    background: #ffffff;
+
+    color: #142640;
+    font: inherit;
+    font-size: 14px;
+
+    transition:
+            border-color 0.15s ease,
+            box-shadow 0.15s ease;
+}
+
+.vehicle-field input::placeholder {
+    color: #9aa8b8;
+}
+
+.vehicle-field input:hover {
+    border-color: #aebfd1;
+}
+
+.vehicle-field input:focus {
+    outline: none;
+    border-color: #1764c5;
+    box-shadow: 0 0 0 3px rgba(23, 100, 197, 0.12);
+}
+
+/* Validation */
+
+.vehicle-field input.vehicle-input-invalid {
+    border-color: #d44848;
+    background: #fffafa;
+}
+
+.vehicle-field-help {
+    color: #7b8a9b;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.vehicle-field-error {
+    margin: 0;
+    color: #b42318;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+}
+
+.vehicle-form-alert {
+    padding: 18px 20px;
+    border: 1px solid #f0c5bd;
+    border-radius: 10px;
+    background: #fff5f3;
+    color: #9b3027;
+}
+
+.vehicle-form-alert strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.vehicle-form-alert p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.vehicle-form-alert p + p {
+    margin-top: 6px;
+}
+
+/* ========================================
+   FORM ACTIONS
+======================================== */
+
+.vehicle-registration-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 26px;
+    border-top: 1px solid #edf1f6;
+}
+
+.vehicle-registration-actions .vehicle-button {
+    min-width: 130px;
+}
+
+/* ========================================
+   REGISTRATION GUIDE
+======================================== */
+
+.vehicle-registration-guide {
+    padding: 28px;
+    border: 1px solid #dce5ef;
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+.vehicle-guide-icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 22px;
+    border-radius: 14px;
+    background: #e8f1ff;
+    color: #1764c5;
+}
+
+.vehicle-guide-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.vehicle-registration-guide h2 {
+    margin: 0 0 12px;
+    color: #142640;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.vehicle-registration-guide > p {
+    margin: 0 0 24px;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.vehicle-guide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.vehicle-guide-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #142640;
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.6;
+}
+
+.vehicle-guide-list li span {
+    display: grid;
+    place-items: center;
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #e8f1ff;
+    color: #1764c5;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.vehicle-guide-note {
+    margin-top: 28px;
+    padding: 16px;
+    border-radius: 10px;
+    background: #f3f7fc;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 980px) {
+    .vehicle-registration-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .vehicle-registration-guide {
+        max-width: none;
+    }
+}
+
+@media (max-width: 700px) {
+    .vehicle-registration-card {
+        padding: 24px 20px;
+    }
+
+    .vehicle-registration-card-header {
+        gap: 12px;
+        margin-bottom: 26px;
+        padding-bottom: 22px;
+    }
+
+    .vehicle-registration-card-header h2 {
+        font-size: 19px;
+    }
+
+    .vehicle-registration-step {
+        flex-basis: 42px;
+        width: 42px;
+        height: 42px;
+    }
+
+    .vehicle-registration-form {
+        gap: 22px;
+    }
+
+    .vehicle-registration-actions {
+        flex-direction: column-reverse;
+    }
+
+    .vehicle-registration-actions .vehicle-button {
+        width: 100%;
+    }
+
+    .vehicle-registration-guide {
+        padding: 24px 20px;
+    }
+}
+
+/* ========================================
+       VEHICLE REGISTRATION - UI REFINEMENT
+    ======================================== */
+
+/* 1. Page introduction */
+
+.vehicle-registration-page .vehicle-registration-intro {
+    margin-bottom: 32px;
+}
+
+.vehicle-registration-page .vehicle-registration-trail {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 22px;
+    font-size: 13px;
+}
+
+.vehicle-registration-page .vehicle-registration-trail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.vehicle-registration-page .vehicle-registration-trail-link:hover {
+    color: #1764c5;
+}
+
+.vehicle-registration-page .vehicle-registration-trail-separator {
+    color: #a0aec0;
+}
+
+.vehicle-registration-page .vehicle-registration-trail-current {
+    color: #142640;
+    font-weight: 700;
+}
+
+.vehicle-registration-page .vehicle-registration-intro h1 {
+    margin: 0 0 12px;
+    color: #142640;
+    font-size: clamp(30px, 3.5vw, 40px);
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -1.2px;
+}
+
+.vehicle-registration-page .vehicle-registration-intro > p {
+    margin: 0;
+    color: #64748b;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+
+/* ========================================
+   2. Registration action buttons
+======================================== */
+
+.vehicle-registration-page .vehicle-registration-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 26px;
+    border-top: 1px solid #edf1f6;
+}
+
+.vehicle-registration-page
+.vehicle-registration-actions
+.vehicle-registration-control {
+    -webkit-appearance: none;
+    appearance: none;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 148px;
+    min-height: 48px;
+    padding: 0 24px;
+
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    border-radius: 10px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+
+    cursor: pointer;
+    transition:
+            background-color 0.15s ease,
+            border-color 0.15s ease,
+            box-shadow 0.15s ease;
+}
+
+/* Cancel */
+
+.vehicle-registration-page
+.vehicle-registration-actions
+.vehicle-registration-cancel {
+    background-color: #ffffff;
+    border-color: #d7e1ed;
+    color: #142640;
+}
+
+.vehicle-registration-page
+.vehicle-registration-actions
+.vehicle-registration-cancel:hover {
+    background-color: #f1f5fa;
+    border-color: #b7c6d8;
+    color: #142640;
+}
+
+/* Submit */
+
+.vehicle-registration-page
+.vehicle-registration-actions
+.vehicle-registration-submit {
+    background-color: #1764c5;
+    border-color: #1764c5;
+    color: #ffffff;
+}
+
+.vehicle-registration-page
+.vehicle-registration-actions
+.vehicle-registration-submit:hover {
+    background-color: #1154aa;
+    border-color: #1154aa;
+    color: #ffffff;
+}
+
+/* Focus */
+
+.vehicle-registration-page
+.vehicle-registration-actions
+.vehicle-registration-control:focus-visible {
+    outline: 2px solid #1764c5;
+    outline-offset: 3px;
+}
+
+
+/* ========================================
+   3. Back to vehicle list
+======================================== */
+
+.vehicle-registration-page .vehicle-return-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 28px;
+}
+
+.vehicle-registration-page .vehicle-return-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    min-height: 46px;
+    padding: 0 20px;
+
+    box-sizing: border-box;
+    border: 1px solid #dce5ef;
+    border-radius: 10px;
+
+    background-color: #edf3fa;
+    color: #142640;
+
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-decoration: none;
+
+    transition:
+            background-color 0.15s ease,
+            border-color 0.15s ease;
+}
+
+.vehicle-registration-page .vehicle-return-button:hover {
+    background-color: #e0ebf8;
+    border-color: #bdd0e7;
+    color: #142640;
+}
+
+.vehicle-registration-page .vehicle-return-button:focus-visible {
+    outline: 2px solid #1764c5;
+    outline-offset: 3px;
+}
+
+.vehicle-registration-page .vehicle-return-button svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+
+/* ========================================
+   4. Responsive
+======================================== */
+
+@media (max-width: 700px) {
+
+    .vehicle-registration-page .vehicle-registration-intro {
+        margin-bottom: 24px;
+    }
+
+    .vehicle-registration-page .vehicle-registration-trail {
+        gap: 9px;
+        margin-bottom: 18px;
+    }
+
+    .vehicle-registration-page .vehicle-registration-intro h1 {
+        font-size: 30px;
+    }
+
+    .vehicle-registration-page .vehicle-registration-intro > p {
+        font-size: 14px;
+    }
+
+    .vehicle-registration-page .vehicle-registration-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .vehicle-registration-page
+    .vehicle-registration-actions
+    .vehicle-registration-control {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .vehicle-registration-page .vehicle-return-row {
+        justify-content: stretch;
+    }
+
+    .vehicle-registration-page .vehicle-return-button {
+        width: 100%;
+    }
+}
