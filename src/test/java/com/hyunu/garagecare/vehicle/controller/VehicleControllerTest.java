@@ -13,7 +13,9 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.hamcrest.Matchers.not;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -148,6 +150,64 @@ class VehicleControllerTest {
                         )
         ).hasSize(1);
     }
+
+
+    @Test
+    @DisplayName("로그인 회원은 차량 등록 화면에서 마이페이지와 로그아웃 메뉴 표시")
+    void vehicleCreateFormShowsLoggedInHeader()
+            throws Exception {
+
+        // given
+        MockHttpSession session = new MockHttpSession();
+
+        session.setAttribute(
+                SessionConst.LOGIN_MEMBER_ID,
+                1L
+        );
+
+        // when & then
+        mockMvc.perform(
+                        get("/vehicles/new")
+                                .session(session)
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        model().attribute("loggedIn", true)
+                )
+                .andExpect(
+                        content().string(
+                                containsString("header-logout")
+                        )
+                )
+                .andExpect(
+                        content().string(
+                                not(containsString("header-signup"))
+                        )
+                );
+    }
+
+    @Test
+    @DisplayName("비로그인 사용자는 홈페이지에서 로그인과 회원가입 메뉴 표시")
+    void homeShowsLoggedOutHeader()
+            throws Exception {
+
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(
+                        model().attribute("loggedIn", false)
+                )
+                .andExpect(
+                        content().string(
+                                containsString("header-signup")
+                        )
+                )
+                .andExpect(
+                        content().string(
+                                not(containsString("header-logout"))
+                        )
+                );
+    }
+
 
     private Member createMember(String email) {
         return memberRepository.save(

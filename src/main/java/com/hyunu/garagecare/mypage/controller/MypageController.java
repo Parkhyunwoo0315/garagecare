@@ -63,8 +63,6 @@ public class MypageController {
                 reservations.getTotalElements()
         );
 
-        model.addAttribute("loggedIn", true);
-
         return "mypage/index";
     }
 }
