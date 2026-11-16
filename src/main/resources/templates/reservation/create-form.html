@@ -109,31 +109,36 @@
             </a>
           </div>
 
+
+
           <!-- 차량 선택 -->
           <div class="reservation-field">
 
-            <label for="vehicleId">
-              예약 차량
-              <span class="reservation-required">*</span>
+            <label class="reservation-vehicle-label">
+
+        <span>
+            예약 차량
+            <span class="reservation-required">*</span>
+        </span>
+
+              <select th:field="*{vehicleId}"
+                      th:errorclass="reservation-invalid"
+                      th:disabled="${#lists.isEmpty(vehicles)}"
+                      required>
+
+                <option value="">
+                  차량을 선택해 주세요
+                </option>
+
+                <option th:each="vehicle : ${vehicles}"
+                        th:value="${vehicle.id}"
+                        th:text="${vehicle.displayName}">
+                  차량 모델 (차량번호)
+                </option>
+
+              </select>
+
             </label>
-
-            <select id="vehicleId"
-                    th:field="*{vehicleId}"
-                    th:errorclass="reservation-invalid"
-                    th:disabled="${#lists.isEmpty(vehicles)}"
-                    required>
-
-              <option value="">
-                차량을 선택해 주세요
-              </option>
-
-              <option th:each="vehicle : ${vehicles}"
-                      th:value="${vehicle.id}"
-                      th:text="|${vehicle.vehicleNumber} · ${vehicle.model}|">
-                차량번호 · 모델
-              </option>
-
-            </select>
 
             <p class="reservation-field-error"
                th:if="${#fields.hasErrors('vehicleId')}"
@@ -141,6 +146,7 @@
                role="alert">
               차량 선택 오류
             </p>
+
           </div>
 
           <!-- 날짜 및 시간 -->
