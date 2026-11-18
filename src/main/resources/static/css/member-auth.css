@@ -108,22 +108,25 @@ body.auth-body {
 }
 
 .auth-brand-icon {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    flex: 0 0 54px;
-    width: 54px;
-    height: 54px;
+    flex: 0 0 58px;
+    width: 58px;
+    height: 58px;
 
-    border-radius: 14px;
-    background: #e8f1ff;
-    color: var(--auth-navy);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
 }
 
-.auth-brand-icon svg {
+.auth-brand-icon img {
     display: block;
-    width: 37px;
-    height: 37px;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .auth-brand-text {

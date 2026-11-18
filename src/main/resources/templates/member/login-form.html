@@ -1,236 +1,198 @@
+
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="UTF-8">
+
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-  <title>로그인 | GarageCare</title>
+  <meta name="description"
+        content="동부자동차공업사 정비 예약 서비스 로그인">
 
-  <style>
-    * {
-        box-sizing: border-box;
-    }
+  <title>로그인 | 동부자동차공업사</title>
 
-    body {
-        margin: 0;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-        background-color: #f5f6f8;
-        color: #1f2937;
-        font-family: Arial, sans-serif;
-    }
-
-    .login-container {
-        width: 100%;
-        max-width: 440px;
-        padding: 36px;
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-    }
-
-    .page-header {
-        margin-bottom: 28px;
-        text-align: center;
-    }
-
-    .page-header h1 {
-        margin: 0 0 10px;
-        font-size: 28px;
-    }
-
-    .page-header p {
-        margin: 0;
-        color: #6b7280;
-        font-size: 14px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: 8px;
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    .form-input {
-        width: 100%;
-        height: 46px;
-        padding: 0 14px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 15px;
-    }
-
-    .form-input:focus {
-        outline: none;
-        border-color: #111827;
-        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
-    }
-
-    .form-input.field-error {
-        border-color: #dc2626;
-    }
-
-    .field-error-message {
-        margin: 7px 0 0;
-        color: #dc2626;
-        font-size: 13px;
-    }
-
-    .global-error {
-        margin-bottom: 20px;
-        padding: 12px 14px;
-        border: 1px solid #fecaca;
-        border-radius: 8px;
-        background-color: #fef2f2;
-        color: #b91c1c;
-        font-size: 14px;
-    }
-
-    .global-error p {
-        margin: 0;
-    }
-
-    .login-button {
-        width: 100%;
-        height: 48px;
-        border: 0;
-        border-radius: 8px;
-        background-color: #111827;
-        color: #ffffff;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-    .login-button:hover {
-        background-color: #374151;
-    }
-
-    .page-footer {
-        margin-top: 22px;
-        text-align: center;
-        color: #6b7280;
-        font-size: 13px;
-    }
-
-    .page-footer a {
-        color: #111827;
-        font-weight: 700;
-        text-decoration: none;
-    }
-  </style>
+  <link rel="stylesheet"
+        th:href="@{/css/member-auth.css}">
 </head>
 
-<body>
+<body class="auth-body">
 
-<main class="login-container">
+<main id="main-content" class="auth-page">
 
-  <header class="page-header">
-    <h1>GarageCare 로그인</h1>
+  <section class="auth-card"
+           aria-labelledby="login-title">
 
-    <p>
-      등록한 계정으로 로그인해 주세요.
-    </p>
-  </header>
+    <!-- 브랜드 -->
+    <a th:href="@{/}"
+       class="auth-brand"
+       aria-label="동부자동차공업사 홈페이지">
 
-  <form th:action="@{/members/login}"
-        th:object="${form}"
-        method="post"
-        novalidate>
 
-    <input type="hidden"
-           name="redirectURL"
-           th:value="${redirectURL}">
+<span class="auth-brand-icon" aria-hidden="true">
+    <img th:src="@{/images/garagecare-mark.png}"
+         alt=""
+         width="58"
+         height="58">
+</span>
 
-    <div class="global-error"
-         role="alert"
-         th:if="${#fields.hasGlobalErrors()}">
+        <span class="auth-brand-text">
 
-      <p th:each="error : ${#fields.globalErrors()}"
-         th:text="${error}">
-        로그인에 실패했습니다.
-      </p>
+                <strong class="auth-brand-name">
+                    동부자동차공업사
+                </strong>
 
-    </div>
+                <small class="auth-brand-description">
+                    자동차 정비 · 점검 · 수리
+                </small>
 
-    <div class="form-group">
+            </span>
 
-      <label for="email"
-             class="form-label">
-        이메일
-      </label>
-
-      <input type="email"
-             id="email"
-             th:field="*{email}"
-             class="form-input"
-             th:errorclass="field-error"
-             placeholder="example@garagecare.com"
-             autocomplete="email"
-             aria-describedby="email-error">
-
-      <p id="email-error"
-         class="field-error-message"
-         th:if="${#fields.hasErrors('email')}"
-         th:errors="*{email}">
-        이메일 오류
-      </p>
-
-    </div>
-
-    <div class="form-group">
-
-      <label for="password"
-             class="form-label">
-        비밀번호
-      </label>
-
-      <input type="password"
-             id="password"
-             th:field="*{password}"
-             class="form-input"
-             th:errorclass="field-error"
-             placeholder="비밀번호를 입력해 주세요"
-             autocomplete="current-password"
-             aria-describedby="password-error">
-
-      <p id="password-error"
-         class="field-error-message"
-         th:if="${#fields.hasErrors('password')}"
-         th:errors="*{password}">
-        비밀번호 오류
-      </p>
-
-    </div>
-
-    <button type="submit"
-            class="login-button">
-      로그인
-    </button>
-
-  </form>
-
-  <footer class="page-footer">
-
-    아직 회원이 아니신가요?
-
-    <a th:href="@{/members/signup}">
-      회원가입
     </a>
 
-  </footer>
+    <!-- 제목 -->
+    <header class="auth-heading">
+
+      <h1 id="login-title">
+        로그인
+      </h1>
+
+      <p>
+        등록한 계정으로 로그인하고<br>
+        차량과 정비 예약을 관리하세요.
+      </p>
+
+    </header>
+
+    <!-- 로그인 폼 -->
+    <form th:action="@{/members/login}"
+          th:object="${form}"
+          method="post"
+          class="auth-form"
+          novalidate>
+
+      <!-- 로그인 후 복귀 경로 유지 -->
+      <input type="hidden"
+             name="redirectURL"
+             th:value="${redirectURL}">
+
+      <!-- 전역 오류 -->
+      <div class="auth-global-error"
+           th:if="${#fields.hasGlobalErrors()}"
+           role="alert">
+
+        <strong>
+          로그인하지 못했습니다.
+        </strong>
+
+        <p th:each="error : ${#fields.globalErrors()}"
+           th:text="${error}">
+          로그인에 실패했습니다.
+        </p>
+
+      </div>
+
+      <!-- 이메일 -->
+      <div class="auth-field">
+
+        <label class="auth-label">
+
+                    <span class="auth-label-text">
+                        이메일
+                    </span>
+
+          <input type="email"
+                 th:field="*{email}"
+                 class="auth-input"
+                 th:errorclass="is-invalid"
+                 th:attr="aria-invalid=${#fields.hasErrors('email')}"
+                 placeholder="example@garagecare.com"
+                 autocomplete="email">
+
+        </label>
+
+        <p class="auth-field-error"
+           th:if="${#fields.hasErrors('email')}"
+           th:errors="*{email}"
+           role="alert">
+          이메일 오류 메시지
+        </p>
+
+      </div>
+
+      <!-- 비밀번호 -->
+      <div class="auth-field">
+
+        <label class="auth-label">
+
+                    <span class="auth-label-text">
+                        비밀번호
+                    </span>
+
+          <input type="password"
+                 th:field="*{password}"
+                 class="auth-input"
+                 th:errorclass="is-invalid"
+                 th:attr="aria-invalid=${#fields.hasErrors('password')}"
+                 placeholder="비밀번호를 입력해 주세요"
+                 autocomplete="current-password">
+
+        </label>
+
+        <p class="auth-field-error"
+           th:if="${#fields.hasErrors('password')}"
+           th:errors="*{password}"
+           role="alert">
+          비밀번호 오류 메시지
+        </p>
+
+      </div>
+
+      <!-- 로그인 버튼 -->
+      <button type="submit"
+              class="auth-button auth-button-primary">
+
+        로그인
+
+      </button>
+
+    </form>
+
+    <!-- 회원가입 이동 -->
+    <p class="auth-switch">
+
+      아직 회원이 아니신가요?
+
+      <a th:href="@{/members/signup}">
+        회원가입
+      </a>
+
+    </p>
+
+  </section>
+
+  <!-- 홈으로 돌아가기 -->
+  <a th:href="@{/}"
+     class="auth-home-link">
+
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         aria-hidden="true">
+
+      <path d="M19 12H5"/>
+      <path d="M12 19l-7-7 7-7"/>
+
+    </svg>
+
+    홈페이지로 돌아가기
+
+  </a>
 
 </main>
 

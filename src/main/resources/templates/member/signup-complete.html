@@ -1,130 +1,120 @@
+
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>회원가입 완료 | GarageCare</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+    <meta name="description"
+          content="동부자동차공업사 회원가입 완료">
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            background-color: #f5f6f8;
-            color: #1f2937;
-            font-family: Arial, sans-serif;
-        }
+    <title>회원가입 완료 | 동부자동차공업사</title>
 
-        .complete-container {
-            width: 100%;
-            max-width: 460px;
-            padding: 42px 36px;
-            background-color: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-        }
-
-        .complete-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 72px;
-            height: 72px;
-            margin: 0 auto 24px;
-            border-radius: 50%;
-            background-color: #ecfdf5;
-            color: #047857;
-            font-size: 36px;
-            font-weight: 700;
-        }
-
-        .complete-container h1 {
-            margin: 0 0 14px;
-            font-size: 28px;
-        }
-
-        .complete-message {
-            margin: 0 0 30px;
-            color: #6b7280;
-            font-size: 15px;
-            line-height: 1.7;
-        }
-
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .primary-button,
-        .secondary-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 48px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        .primary-button {
-            background-color: #111827;
-            color: #ffffff;
-        }
-
-        .primary-button:hover {
-            background-color: #374151;
-        }
-
-        .secondary-button {
-            border: 1px solid #d1d5db;
-            background-color: #ffffff;
-            color: #374151;
-        }
-
-        .secondary-button:hover {
-            background-color: #f9fafb;
-        }
-    </style>
+    <link rel="stylesheet"
+          th:href="@{/css/member-auth.css}">
 </head>
 
-<body>
-<main class="complete-container">
-    <div class="complete-icon" aria-hidden="true">
-        ✓
-    </div>
+<body class="auth-body">
 
-    <h1>회원가입이 완료되었습니다</h1>
+<main id="main-content" class="auth-page">
 
-    <p class="complete-message">
-        GarageCare 회원이 되신 것을 환영합니다.<br>
-        이제 정비 예약과 차량 관리 서비스를 이용할 수 있습니다.
-    </p>
+    <section class="auth-card auth-complete"
+             aria-labelledby="complete-title">
 
-    <div class="button-group">
-        <a class="primary-button"
-           th:href="@{/members/login}">
-            로그인하기
+        <!-- 브랜드 -->
+        <a th:href="@{/}"
+           class="auth-brand"
+           aria-label="동부자동차공업사 홈페이지">
+
+            <span class="auth-brand-icon" aria-hidden="true">
+                <img th:src="@{/images/garagecare-mark.png}"
+                     alt=""
+                     width="58"
+                     height="58">
+            </span>
+
+            <span class="auth-brand-text">
+
+                <strong class="auth-brand-name">
+                    동부자동차공업사
+                </strong>
+
+                <small class="auth-brand-description">
+                    자동차 정비 · 점검 · 수리
+                </small>
+
+            </span>
+
         </a>
 
-        <a class="secondary-button"
-           th:href="@{/}">
-            홈으로 이동
-        </a>
-    </div>
+        <!-- 가입 완료 아이콘 -->
+        <div class="auth-complete-icon"
+             aria-hidden="true">
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2.2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+
+                <path d="M20 7L10 17L4 11"/>
+
+            </svg>
+
+        </div>
+
+        <!-- 완료 메시지 -->
+        <h1 id="complete-title">
+            회원가입이 완료되었습니다
+        </h1>
+
+        <p class="auth-complete-message">
+            동부자동차공업사에 가입해 주셔서 감사합니다.
+            <br>
+            이제 로그인하여 차량을 등록하고
+            <br>
+            정비 예약 서비스를 이용할 수 있습니다.
+        </p>
+
+        <!-- 이용 안내 -->
+        <div class="auth-complete-note">
+
+            <strong>다음 단계</strong>
+            <br>
+
+            로그인 후 마이페이지에서 차량을 등록하고
+            필요한 정비 항목과 방문 희망 일정을
+            선택해 주세요.
+
+        </div>
+
+        <!-- 이동 버튼 -->
+        <div class="auth-complete-actions">
+
+            <a class="auth-button auth-button-primary"
+               th:href="@{/members/login}">
+
+                로그인하기
+
+            </a>
+
+            <a class="auth-button auth-button-secondary"
+               th:href="@{/}">
+
+                홈페이지로 이동
+
+            </a>
+
+        </div>
+
+    </section>
+
 </main>
+
 </body>
 </html>
