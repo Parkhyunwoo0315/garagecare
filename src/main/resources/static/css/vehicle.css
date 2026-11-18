@@ -582,3 +582,71 @@
         width: 100%;
     }
 }
+
+/* ========================================
+   VEHICLE LIST - FINAL ADJUSTMENTS
+======================================== */
+
+/* 차량 목록 하단 복귀 버튼 */
+
+.vehicle-page .vehicle-return-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 32px;
+}
+
+.vehicle-page .vehicle-return-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    min-height: 46px;
+    padding: 0 20px;
+
+    border: 1px solid #dce5ef;
+    border-radius: 10px;
+
+    background: #edf3fa;
+    color: #142640;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+
+    transition: background-color 0.15s ease;
+}
+
+.vehicle-page .vehicle-return-button:hover {
+    background: #e0ebf8;
+    color: #142640;
+}
+
+.vehicle-page .vehicle-return-button svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+.vehicle-page .vehicle-return-button:focus-visible {
+    outline: 2px solid #1764c5;
+    outline-offset: 3px;
+}
+
+/* Footer 위 여백 확보 */
+
+.vehicle-page {
+    padding-bottom: 96px;
+}
+
+/* 모바일 */
+
+@media (max-width: 700px) {
+
+    .vehicle-page {
+        padding-bottom: 64px;
+    }
+
+    .vehicle-page .vehicle-return-button {
+        width: 100%;
+    }
+}
