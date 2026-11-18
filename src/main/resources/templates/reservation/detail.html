@@ -1,231 +1,258 @@
+
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-  <title>예약 상세 | GarageCare</title>
+    <meta name="description"
+          content="동부자동차공업사 정비 예약 상세">
 
-  <style>
-    * {
-        box-sizing: border-box;
-    }
+    <title>예약 상세 | 동부자동차공업사</title>
 
-    body {
-        margin: 0;
-        padding: 40px 20px;
-        background: #f5f6f8;
-        color: #1f2937;
-        font-family: Arial, sans-serif;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 680px;
-        margin: 0 auto;
-        padding: 34px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: white;
-    }
-
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-    }
-
-    h1 {
-        margin: 0;
-    }
-
-    .back-link {
-        color: #374151;
-        text-decoration: none;
-        font-size: 14px;
-    }
-
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 16px 0;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .label {
-        color: #6b7280;
-    }
-
-    .value {
-        font-weight: 700;
-    }
-
-    .maintenance-section {
-        margin-top: 30px;
-    }
-
-    .maintenance-section h2 {
-        margin: 0 0 16px;
-        font-size: 19px;
-    }
-
-    .maintenance-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 14px;
-        margin-bottom: 10px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-    }
-
-    .price {
-        color: #6b7280;
-        font-size: 14px;
-    }
-
-    .cancel-button {
-        width: 100%;
-        margin-top: 30px;
-        padding: 14px;
-        border: 1px solid #dc2626;
-        border-radius: 8px;
-        background: white;
-        color: #dc2626;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-    .cancel-button:hover {
-        background: #fef2f2;
-    }
-  </style>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/reservation.css}">
 </head>
 
 <body>
 
-<main class="container">
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
-  <div class="header">
+<main id="main-content"
+      class="reservation-page reservation-detail-page">
 
-    <h1>예약 상세</h1>
+    <div class="container">
 
-    <a th:href="@{/reservations}"
-       class="back-link">
-      ← 예약 목록
-    </a>
+        <header class="reservation-intro">
 
-  </div>
+            <nav class="reservation-breadcrumb"
+                 aria-label="현재 위치">
 
-  <div class="info-row">
+                <a th:href="@{/mypage}">마이페이지</a>
+                <span aria-hidden="true">/</span>
+                <a th:href="@{/reservations}">내 예약</a>
+                <span aria-hidden="true">/</span>
 
-        <span class="label">
-            예약 번호
-        </span>
+                <strong aria-current="page">
+                    예약 상세
+                </strong>
 
-    <span class="value"
-          th:text="${reservation.reservationId}">
-            1
-        </span>
+            </nav>
 
-  </div>
+            <h1>예약 상세</h1>
 
-  <div class="info-row">
+            <p>
+                신청한 정비 예약의 상세 정보를 확인하세요.
+            </p>
 
-        <span class="label">
-            차량
-        </span>
+        </header>
 
-    <span class="value"
-          th:text="${reservation.vehicleNumber}">
-            12가3456
-        </span>
+        <div class="reservation-detail-layout">
 
-  </div>
+            <div class="reservation-detail-main">
 
-  <div class="info-row">
+                <!-- 예약 현황 -->
+                <section class="reservation-detail-card"
+                         aria-labelledby="detail-status-title">
 
-        <span class="label">
-            예약 날짜
-        </span>
+                    <div class="reservation-detail-card-heading">
 
-    <span class="value"
-          th:text="${reservation.reservationDate}">
-            2026-08-20
-        </span>
+                        <div>
+                            <span class="reservation-detail-eyebrow">
+                                RESERVATION
+                            </span>
 
-  </div>
+                            <h2 id="detail-status-title">
+                                예약 현황
+                            </h2>
+                        </div>
 
-  <div class="info-row">
+                        <span class="reservation-status"
+                              th:classappend="|reservation-state-${reservation.status.name()}|">
 
-        <span class="label">
-            예약 시간
-        </span>
+                            <span th:switch="${reservation.status.name()}">
+                                <span th:case="'PENDING'">예약 대기</span>
+                                <span th:case="'CONFIRMED'">예약 확정</span>
+                                <span th:case="'COMPLETED'">정비 완료</span>
+                                <span th:case="'CANCELED'">예약 취소</span>
+                                <span th:case="*"
+                                      th:text="${reservation.status}">상태</span>
+                            </span>
 
-    <span class="value"
-          th:text="${reservation.reservationTime}">
-            14:00
-        </span>
+                        </span>
 
-  </div>
+                    </div>
 
-  <div class="info-row">
+                    <dl class="reservation-detail-info">
 
-        <span class="label">
-            상태
-        </span>
+                        <div>
+                            <dt>예약번호</dt>
+                            <dd th:text="${reservation.reservationId}">
+                                1
+                            </dd>
+                        </div>
 
-    <span class="value"
-          th:text="${reservation.status}">
-            PENDING
-        </span>
+                        <div>
+                            <dt>예약 차량번호</dt>
+                            <dd th:text="${reservation.vehicleNumber}">
+                                123가4567
+                            </dd>
+                        </div>
 
-  </div>
+                        <div>
+                            <dt>예약 날짜</dt>
+                            <dd th:text="${#temporals.format(
+                                reservation.reservationDate, 'yyyy.MM.dd'
+                            )}">
+                                2026.11.19
+                            </dd>
+                        </div>
 
-  <section class="maintenance-section">
+                        <div>
+                            <dt>예약 시간</dt>
+                            <dd th:text="${#temporals.format(
+                                reservation.reservationTime, 'HH:mm'
+                            )}">
+                                14:00
+                            </dd>
+                        </div>
 
-    <h2>정비 항목</h2>
+                    </dl>
 
-    <div class="maintenance-item"
-         th:each="item : ${reservation.maintenanceItems}">
+                </section>
 
-            <span th:text="${item.name}">
-                엔진오일 교환
-            </span>
+                <!-- 선택한 정비 항목 -->
+                <section class="reservation-detail-card"
+                         aria-labelledby="detail-items-title">
 
-      <span class="price"
-            th:if="${item.estimatedPrice != null}"
-            th:text="${#numbers.formatInteger(
-                        item.estimatedPrice,
-                        0,
-                        'COMMA'
-                  )} + '원'">
-                70,000원
-            </span>
+                    <div class="reservation-detail-card-heading">
+                        <h2 id="detail-items-title">
+                            신청한 정비 항목
+                        </h2>
+                    </div>
+
+                    <ul class="reservation-detail-items">
+
+                        <li th:each="item : ${reservation.maintenanceItems}">
+
+                            <span class="reservation-detail-item-name"
+                                  th:text="${item.name}">
+                                엔진오일 교환
+                            </span>
+
+                            <span class="reservation-detail-item-price">
+
+                                <span th:if="${item.estimatedPrice != null}"
+                                      th:text="|${#numbers.formatInteger(
+                                          item.estimatedPrice, 1, 'COMMA'
+                                      )}원|">
+                                    70,000원
+                                </span>
+
+                                <span th:unless="${item.estimatedPrice != null}">
+                                    가격 문의
+                                </span>
+
+                            </span>
+
+                        </li>
+
+                    </ul>
+
+                    <p class="reservation-detail-price-note">
+                        표시된 금액은 정비 항목별 예상 비용이며
+                        실제 정비 비용과 다를 수 있습니다.
+                    </p>
+
+                </section>
+
+                <!-- 예약 취소 -->
+                <section class="reservation-detail-card"
+                         th:if="${reservation.status.name() == 'PENDING'
+                              or reservation.status.name() == 'CONFIRMED'}"
+                         aria-labelledby="detail-cancel-title">
+
+                    <div class="reservation-detail-card-heading">
+                        <h2 id="detail-cancel-title">
+                            예약 취소
+                        </h2>
+                    </div>
+
+                    <p class="reservation-detail-description">
+                        예약 취소가 필요한 경우 아래 버튼을
+                        눌러 신청을 취소할 수 있습니다.
+                    </p>
+
+                    <form th:action="@{/reservations/{id}/cancel(
+                              id=${reservation.reservationId}
+                          )}"
+                          method="post"
+                          onsubmit="return confirm('이 예약을 취소하시겠습니까?');">
+
+                        <button type="submit"
+                                class="reservation-cancel-button">
+                            예약 취소하기
+                        </button>
+
+                    </form>
+
+                </section>
+
+            </div>
+
+            <!-- 상세 안내 -->
+            <aside class="reservation-detail-side">
+
+                <div class="reservation-detail-side-icon"
+                     aria-hidden="true">
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="1.8"
+                         stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 11v5M12 7h.01"/>
+                    </svg>
+                </div>
+
+                <h2>예약 안내</h2>
+
+                <p>
+                    예약 상태와 방문 일정에 관한 문의는
+                    정비소로 연락해 주세요.
+                </p>
+
+                <a href="tel:0226826264"
+                   class="reservation-action-primary">
+                    정비소 전화하기
+                </a>
+
+                <a th:href="@{/reservations}"
+                   class="reservation-action-secondary">
+                    내 예약 목록
+                </a>
+
+            </aside>
+
+        </div>
+
+        <div class="reservation-return">
+
+            <a th:href="@{/reservations}">
+                <span aria-hidden="true">←</span>
+                내 예약 목록으로 돌아가기
+            </a>
+
+        </div>
 
     </div>
 
-  </section>
-    <form th:if="${reservation.status.name() == 'PENDING'
-           or reservation.status.name() == 'CONFIRMED'}"
-          th:action="@{/reservations/{id}/cancel(
-          id=${reservation.reservationId}
-      )}"
-          method="post">
-
-        <button type="submit"
-                class="cancel-button"
-                onclick="return confirm('예약을 취소하시겠습니까?');">
-            예약 취소
-        </button>
-
-    </form>
-
 </main>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
 
 </body>
 </html>

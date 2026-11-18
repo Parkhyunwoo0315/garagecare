@@ -30,6 +30,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -118,7 +119,13 @@ class ReservationControllerTest {
                 )
                 .andExpect(
                         model().attributeExists("reservations")
-                );
+                )
+                .andExpect(content().string(
+                containsString("내 정비 예약")
+                ))
+                .andExpect(content().string(
+                        containsString("아직 예약 내역이 없습니다.")
+                ));
     }
 
     @Test
@@ -188,8 +195,16 @@ class ReservationControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(view().name("reservation/detail"))
-                .andExpect(model().attributeExists("reservation"));
-
+                .andExpect(model().attributeExists("reservation"))
+                .andExpect(content().string(
+                        containsString("예약 상세")
+                ))
+                .andExpect(content().string(
+                        containsString("00차0000")
+                ))
+                .andExpect(content().string(
+                        containsString("엔진오일 교환")
+                ));
     }
 
     @Test
