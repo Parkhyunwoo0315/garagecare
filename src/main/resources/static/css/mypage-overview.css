@@ -3,6 +3,10 @@
     margin-top: 40px;
 }
 
+.mypage-section .mypage-status-section {
+    margin-bottom: 36px;
+}
+
 .mypage-overview-heading {
     display: flex;
     align-items: center;
@@ -319,5 +323,9 @@
     .mypage-preview-primary {
         width: 100%;
         box-sizing: border-box;
+    }
+
+    .mypage-section .mypage-status-section {
+        margin-bottom: 24px;
     }
 }
