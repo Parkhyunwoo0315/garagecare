@@ -31,6 +31,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -207,6 +208,18 @@ class MypageControllerTest {
                                 "reservationCount",
                                 1L
                         )
-                );
+                )
+                .andExpect(model().attributeExists(
+                        "vehicleCount",
+                        "reservationCount",
+                        "reservationStatusCounts",
+                        "reservationPreview"
+                ))
+                .andExpect(content().string(
+                        containsString("예약 상태별 현황")
+                ))
+                .andExpect(content().string(
+                        containsString("예약 내역 미리보기")
+                ));
     }
 }

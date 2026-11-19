@@ -57,4 +57,15 @@ public interface ReservationRepository
     );
 
     Long countByStatus(ReservationStatus status);
+
+    @Query("""
+    SELECT r.status AS status,
+           COUNT(r) AS totalCount
+    FROM Reservation r
+    WHERE r.member.id = :memberId
+    GROUP BY r.status
+    """)
+    List<ReservationStatusCountView> countByStatusForMember(
+            @Param("memberId") Long memberId
+    );
 }

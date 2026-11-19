@@ -63,6 +63,22 @@ public class MypageController {
                 reservations.getTotalElements()
         );
 
+        model.addAttribute(
+                "reservationStatusCounts",
+                reservationService.getMemberReservationStatusCounts(memberId)
+        );
+
+        Page<ReservationListResponse> reservationPage =
+                reservationService.getReservations(memberId, 0);
+
+        model.addAttribute(
+                "reservationPreview",
+                reservationPage.getContent()
+                        .stream()
+                        .limit(3)
+                        .toList()
+        );
+
         return "mypage/index";
     }
 }

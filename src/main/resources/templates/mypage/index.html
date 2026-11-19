@@ -18,6 +18,9 @@
 
     <link rel="stylesheet"
           th:href="@{/css/mypage.css}">
+
+    <link rel="stylesheet"
+          th:href="@{/css/mypage-overview.css(v=1)}">
 </head>
 
 <body>
@@ -76,6 +79,66 @@
                     <a th:href="@{/reservations}">
                         예약 내역 확인
                     </a>
+
+                </div>
+
+            </section>
+
+            <section class="mypage-status-section"
+                     aria-labelledby="mypage-status-title">
+
+                <div class="mypage-overview-heading">
+                    <div>
+                        <h2 id="mypage-status-title">
+                            예약 상태별 현황
+                        </h2>
+                        <p>
+                            신청한 예약의 진행 상태를 확인하세요.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mypage-status-grid">
+
+                    <div class="mypage-status-card">
+            <span class="mypage-status-label pending">
+                예약 대기
+            </span>
+                        <strong th:text="${reservationStatusCounts['PENDING']}">
+                            0
+                        </strong>
+                        <small>건</small>
+                    </div>
+
+                    <div class="mypage-status-card">
+            <span class="mypage-status-label confirmed">
+                예약 확정
+            </span>
+                        <strong th:text="${reservationStatusCounts['CONFIRMED']}">
+                            0
+                        </strong>
+                        <small>건</small>
+                    </div>
+
+                    <div class="mypage-status-card">
+            <span class="mypage-status-label completed">
+                정비 완료
+            </span>
+                        <strong th:text="${reservationStatusCounts['COMPLETED']}">
+                            0
+                        </strong>
+                        <small>건</small>
+                    </div>
+
+                    <div class="mypage-status-card">
+            <span class="mypage-status-label canceled">
+                예약 취소
+            </span>
+                        <strong th:text="${reservationStatusCounts['CANCELED']}">
+                            0
+                        </strong>
+                        <small>건</small>
+                    </div>
 
                 </div>
 
@@ -146,6 +209,118 @@
                 </section>
 
             </div>
+
+
+            <!-- 예약 내역 미리보기 -->
+            <section class="mypage-preview-section"
+                     aria-labelledby="mypage-preview-title">
+
+                <div class="mypage-overview-heading">
+
+                    <div>
+                        <h2 id="mypage-preview-title">
+                            예약 내역 미리보기
+                        </h2>
+                        <p>
+                            예약 날짜가 늦은 순서로 최대 3건을 표시합니다.
+                        </p>
+                    </div>
+
+                    <a th:href="@{/reservations}"
+                       class="mypage-preview-all">
+                        전체 예약 보기
+                    </a>
+
+                </div>
+
+                <!-- 예약이 없는 경우 -->
+                <div class="mypage-preview-empty"
+                     th:if="${#lists.isEmpty(reservationPreview)}">
+
+                    <div class="mypage-preview-empty-icon"
+                         aria-hidden="true">
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.8"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <rect x="3" y="5" width="18" height="16" rx="2"/>
+                            <path d="M7 3v4M17 3v4M3 10h18"/>
+                            <path d="M8 15h8"/>
+                        </svg>
+                    </div>
+
+                    <h3>아직 예약 내역이 없습니다.</h3>
+
+                    <p>
+                        정비 예약을 신청하면
+                        이곳에서 예약 정보를 확인할 수 있습니다.
+                    </p>
+
+                    <a th:href="@{/reservations/new}"
+                       class="mypage-preview-primary">
+                        정비 예약 신청
+                    </a>
+
+                </div>
+
+                <div class="mypage-preview-list"
+                     th:unless="${#lists.isEmpty(reservationPreview)}">
+
+                    <article class="mypage-preview-item"
+                             th:each="item : ${reservationPreview}">
+
+                        <div class="mypage-preview-info">
+
+                            <div class="mypage-preview-top">
+
+                                <strong th:text="${item.vehicleNumber}">
+                                    차량번호
+                                </strong>
+
+                                <span class="mypage-preview-status"
+                                      th:classappend="${' status-' + item.status.name().toLowerCase()}">
+
+                        <span th:switch="${item.status.name()}">
+                            <span th:case="'PENDING'">예약 대기</span>
+                            <span th:case="'CONFIRMED'">예약 확정</span>
+                            <span th:case="'COMPLETED'">정비 완료</span>
+                            <span th:case="'CANCELED'">예약 취소</span>
+                        </span>
+
+                    </span>
+
+                            </div>
+
+                            <p>
+                    <span th:text="${#temporals.format(
+                        item.reservationDate, 'yyyy.MM.dd'
+                    )}">
+                        2026.11.20
+                    </span>
+
+                                <span aria-hidden="true"> · </span>
+
+                                <span th:text="${#temporals.format(
+                        item.reservationTime, 'HH:mm'
+                    )}">
+                        14:00
+                    </span>
+                            </p>
+
+                        </div>
+
+                        <a th:href="@{/reservations/{id}(id=${item.reservationId})}"
+                           class="mypage-preview-detail">
+                            상세 보기
+                        </a>
+
+                    </article>
+
+                </div>
+
+            </section>
 
             <div class="mypage-bottom">
                 <a th:href="@{/}">

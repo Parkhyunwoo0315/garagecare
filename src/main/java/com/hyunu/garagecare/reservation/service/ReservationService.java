@@ -18,6 +18,7 @@ import com.hyunu.garagecare.reservation.dto.admin.AdminReservationDetailResponse
 import com.hyunu.garagecare.reservation.dto.admin.AdminReservationListResponse;
 import com.hyunu.garagecare.reservation.exception.*;
 import com.hyunu.garagecare.reservation.repository.ReservationRepository;
+import com.hyunu.garagecare.reservation.repository.ReservationStatusCountView;
 import com.hyunu.garagecare.vehicle.domain.Vehicle;
 import com.hyunu.garagecare.vehicle.dto.VehicleOptionResponse;
 import com.hyunu.garagecare.vehicle.exception.VehicleNotFoundException;
@@ -33,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -104,6 +107,27 @@ public class ReservationService {
         return reservationRepository
                 .findByMemberId(memberId, pageable)
                 .map(ReservationListResponse::from);
+    }
+
+    public Map<String, Long> getMemberReservationStatusCounts(
+            Long memberId
+    ) {
+        Map<String, Long> counts = new LinkedHashMap<>();
+
+        for (ReservationStatus status : ReservationStatus.values()) {
+            counts.put(status.name(), 0L);
+        }
+
+        for (ReservationStatusCountView row :
+                reservationRepository.countByStatusForMember(memberId)) {
+
+            counts.put(
+                    row.getStatus().name(),
+                    row.getTotalCount()
+            );
+        }
+
+        return counts;
     }
 
     public ReservationDetailResponse getReservationDetail(
