@@ -1,0 +1,295 @@
+.admin-dashboard {
+    font-family: -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Malgun Gothic",
+    Arial, sans-serif;
+}
+
+/* Sections */
+
+.admin-dashboard .admin-page-heading {
+    margin-bottom: 36px;
+}
+
+.admin-dashboard-section + .admin-dashboard-section {
+    margin-top: 36px;
+}
+
+.admin-dashboard-section-title {
+    margin: 0 0 20px;
+    color: #142640;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.admin-dashboard .admin-stat-grid {
+    margin-bottom: 0;
+}
+
+.admin-dashboard .admin-stat-card {
+    gap: 16px;
+    padding: 28px;
+    box-shadow: 0 4px 16px rgba(20, 38, 64, 0.03);
+}
+
+.admin-dashboard .admin-stat-card > span {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-dashboard-stat-value {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+}
+
+.admin-dashboard-stat-value strong {
+    font-size: 34px;
+    line-height: 1.2;
+    color: #142640;
+}
+
+.admin-dashboard-stat-value small {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.admin-dashboard-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.admin-dashboard .admin-panel {
+    min-width: 0;
+    padding: 28px;
+}
+
+.admin-dashboard-panel-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.admin-dashboard-panel-heading h3 {
+    margin: 0 0 8px;
+    color: #142640;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.admin-dashboard-panel-heading p {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.admin-dashboard-panel-heading a {
+    flex-shrink: 0;
+    color: #1764c5;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.admin-dashboard-panel-heading a:hover {
+    text-decoration: underline;
+}
+
+/* Status rows */
+
+.admin-dashboard-status-list {
+    margin: 0;
+}
+
+.admin-dashboard-status-list > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 0;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.admin-dashboard-status-list > div:last-child {
+    border-bottom: none;
+}
+
+.admin-dashboard-status-list dt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #475569;
+    font-size: 13px;
+}
+
+.admin-dashboard-status-list dd {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.admin-dashboard-status-list dd strong {
+    color: #142640;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.admin-status-dot {
+    display: inline-block;
+    flex: 0 0 9px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+}
+
+.admin-status-dot.pending {
+    background: #e6aa3d;
+}
+
+.admin-status-dot.confirmed {
+    background: #1764c5;
+}
+
+.admin-status-dot.completed {
+    background: #36a36a;
+}
+
+.admin-status-dot.canceled {
+    background: #94a3b8;
+}
+
+.admin-dashboard-management-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.admin-dashboard-management-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    min-height: 210px;
+    padding: 24px;
+
+    border: 1px solid #dce5ef;
+    border-radius: 14px;
+    background: #ffffff;
+
+    color: #142640;
+    text-decoration: none;
+    transition:
+            border-color 0.15s ease,
+            box-shadow 0.15s ease;
+}
+
+.admin-dashboard-management-card:hover {
+    border-color: #a9c8ef;
+    box-shadow: 0 8px 24px rgba(20, 38, 64, 0.06);
+}
+
+.admin-dashboard-menu-icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 20px;
+
+    border-radius: 12px;
+    background: #e8f1ff;
+    color: #1764c5;
+
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.admin-dashboard-management-card h3 {
+    margin: 0 0 10px;
+    color: #142640;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.admin-dashboard-management-card p {
+    margin: 0 0 20px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.admin-dashboard-menu-link {
+    margin-top: auto;
+    color: #1764c5;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+/* Focus */
+
+.admin-dashboard a:focus-visible {
+    outline: 2px solid #1764c5;
+    outline-offset: 3px;
+}
+
+@media (max-width: 1100px) {
+    .admin-dashboard-management-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 850px) {
+    .admin-dashboard-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .admin-dashboard .admin-page-heading {
+        margin-bottom: 28px;
+    }
+
+    .admin-dashboard-section + .admin-dashboard-section {
+        margin-top: 30px;
+    }
+
+    .admin-dashboard-section-title {
+        font-size: 19px;
+    }
+
+    .admin-dashboard .admin-stat-card {
+        padding: 20px;
+    }
+
+    .admin-dashboard-stat-value strong {
+        font-size: 28px;
+    }
+
+    .admin-dashboard .admin-panel {
+        padding: 22px 18px;
+    }
+
+    .admin-dashboard-management-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-dashboard-management-card {
+        min-height: auto;
+        padding: 22px;
+    }
+
+    .admin-dashboard-panel-heading {
+        flex-wrap: wrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-dashboard-management-card {
+        transition: none;
+    }
+}

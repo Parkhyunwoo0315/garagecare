@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<aside th:fragment="sidebar(activeMenu)"
+       class="admin-sidebar"
+       aria-label="관리자 메뉴">
+
+    <!-- 브랜드 -->
+    <a class="admin-sidebar-brand"
+       th:href="@{/admin}">
+
+        <span class="admin-sidebar-logo">
+            <img th:src="@{/images/garagecare-mark.png}"
+                 alt=""
+                 width="40"
+                 height="40">
+        </span>
+
+        <span class="admin-sidebar-brand-text">
+            <strong>GarageCare</strong>
+            <small>동부자동차공업사 · 관리자</small>
+        </span>
+
+    </a>
+
+    <!-- 메뉴 -->
+    <nav class="admin-sidebar-nav"
+         aria-label="관리자 주요 메뉴">
+
+        <span class="admin-sidebar-caption">
+            MANAGEMENT
+        </span>
+
+        <a th:href="@{/admin}"
+           th:classappend="${activeMenu == 'dashboard'} ? 'is-active' : ''"
+           th:attr="aria-current=${activeMenu == 'dashboard'} ? 'page' : null">
+            <span class="admin-nav-symbol" aria-hidden="true">▦</span>
+            <span>대시보드</span>
+        </a>
+
+        <a th:href="@{/admin/reservations}"
+           th:classappend="${activeMenu == 'reservations'} ? 'is-active' : ''"
+           th:attr="aria-current=${activeMenu == 'reservations'} ? 'page' : null">
+            <span class="admin-nav-symbol" aria-hidden="true">▤</span>
+            <span>예약 관리</span>
+        </a>
+
+        <a th:href="@{/admin/vehicles}"
+           th:classappend="${activeMenu == 'vehicles'} ? 'is-active' : ''"
+           th:attr="aria-current=${activeMenu == 'vehicles'} ? 'page' : null">
+            <span class="admin-nav-symbol" aria-hidden="true">▣</span>
+            <span>차량 관리</span>
+        </a>
+
+        <a th:href="@{/admin/members}"
+           th:classappend="${activeMenu == 'members'} ? 'is-active' : ''"
+           th:attr="aria-current=${activeMenu == 'members'} ? 'page' : null">
+            <span class="admin-nav-symbol" aria-hidden="true">♙</span>
+            <span>회원 관리</span>
+        </a>
+
+        <a th:href="@{/admin/maintenance-items}"
+           th:classappend="${activeMenu == 'maintenance'} ? 'is-active' : ''"
+           th:attr="aria-current=${activeMenu == 'maintenance'} ? 'page' : null">
+            <span class="admin-nav-symbol" aria-hidden="true">⚙</span>
+            <span>정비 항목 관리</span>
+        </a>
+
+    </nav>
+
+    <!-- 하단 -->
+    <div class="admin-sidebar-bottom">
+
+        <a th:href="@{/}">
+            <span aria-hidden="true">←</span>
+            고객 홈페이지
+        </a>
+
+        <form th:action="@{/members/logout}" method="post">
+            <button type="submit" class="admin-logout-button">
+                로그아웃
+            </button>
+        </form>
+
+        <small>GarageCare Admin</small>
+
+    </div>
+
+</aside>
+
+</body>
+</html>
