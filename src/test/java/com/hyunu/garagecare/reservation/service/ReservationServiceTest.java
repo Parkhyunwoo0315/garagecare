@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -1636,6 +1637,33 @@ class ReservationServiceTest {
 
         assertThat(cancelled.getStatus())
                 .isEqualTo(ReservationStatus.CANCELED);
+    }
+
+    @Test
+    @DisplayName("예약이 없는 회원의 상태별 집계는 모두 0건")
+    void reservationStatusCountsAreZeroWhenEmpty() {
+
+        // given
+        Member member = memberRepository.save(
+                Member.create(
+                        "상태 집계 테스트",
+                        "mypage-status-empty@test.com",
+                        "password"
+                )
+        );
+
+        // when
+        Map<String, Long> counts =
+                reservationService.getMemberReservationStatusCounts(
+                        member.getId()
+                );
+
+        // then
+        assertThat(counts)
+                .containsEntry("PENDING", 0L)
+                .containsEntry("CONFIRMED", 0L)
+                .containsEntry("COMPLETED", 0L)
+                .containsEntry("CANCELED", 0L);
     }
 
     private Member createTestMember(

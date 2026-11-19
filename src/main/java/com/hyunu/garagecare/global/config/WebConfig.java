@@ -22,6 +22,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns(
                         "/reservations/**",
                         "/vehicles/**",
+                        "/mypage",
                         "/mypage/**",
                         "/admin/**"
                 );

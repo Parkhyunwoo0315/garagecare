@@ -1,12 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
 
 <header th:fragment="siteHeader" class="site-header">
 
+    <!-- 1. 상단 안내 바 -->
     <div class="topbar">
         <div class="container topbar-inner">
-            <span>동부자동차공업사 · 자동차 정비 및 점검</span>
+
+            <span>
+                동부자동차공업사 · 자동차 정비 및 점검
+            </span>
 
             <div class="topbar-contact">
                 <a href="tel:0226826264">
@@ -16,53 +21,116 @@
                     상담 전화 010-5273-8889
                 </a>
             </div>
+
         </div>
     </div>
 
-    <div class="container header-inner">
+    <!-- 2. 브랜드와 로그인 버튼 -->
+    <div class="container header-main">
 
-        <a class="brand" th:href="@{/}" aria-label="동부자동차공업사 홈">
-            <span class="brand-symbol" aria-hidden="true">⚙</span>
+        <a class="shop-brand"
+           th:href="@{/}"
+           aria-label="동부자동차공업사 홈페이지로 이동">
+
+            <!-- 배경 없는 곤색 자동차 정비 아이콘 -->
+            <div class="shop-brand-icon" aria-hidden="true">
+                <img th:src="@{/images/garagecare-mark.png}"
+                    alt=""
+                    width="72"
+                    height="72">
+            </div>
+
+            <!-- 상호명은 아이콘 바로 오른쪽 -->
             <span class="brand-copy">
                 <strong>동부자동차공업사</strong>
                 <small>자동차 정비 · 점검 · 수리</small>
             </span>
+
         </a>
 
-        <nav class="primary-nav" aria-label="주 메뉴">
-            <ul class="nav-list">
-                <li><a th:href="@{/#services}">정비 서비스</a></li>
-                <li><a th:href="@{/#process}">이용 안내</a></li>
-                <li><a th:href="@{/#location}">오시는 길</a></li>
-                <li><a th:href="@{/#notices}">공지사항</a></li>
-                <li th:if="${loggedIn}">
-                    <a th:href="@{/reservations}">내 예약</a>
-                </li>
-            </ul>
-        </nav>
+        <!-- 비로그인 사용자 -->
+        <div class="header-actions"
+             th:unless="${loggedIn}">
 
-        <div class="header-actions" th:unless="${loggedIn}">
-            <a class="header-login" th:href="@{/members/login}">
+            <a class="header-login"
+               th:href="@{/members/login}">
                 로그인
             </a>
-            <a class="header-signup" th:href="@{/members/signup}">
+
+            <a class="header-signup"
+               th:href="@{/members/signup}">
                 회원가입
             </a>
+
         </div>
 
-        <div class="header-actions" th:if="${loggedIn}">
-            <a class="header-login" th:href="@{/vehicles}">
-                내 차량
+        <!-- 로그인 사용자 -->
+        <div class="header-actions"
+             th:if="${loggedIn}">
+
+            <a class="header-login"
+               th:href="@{/mypage}">
+                마이페이지
             </a>
 
-            <form th:action="@{/members/logout}" method="post">
-                <button type="submit" class="header-logout">
+            <form th:action="@{/members/logout}"
+                  method="post">
+
+                <button type="submit"
+                        class="header-logout">
                     로그아웃
                 </button>
+
             </form>
+
         </div>
 
     </div>
+
+    <!-- 3. 하단 내비게이션 -->
+    <nav class="primary-nav" aria-label="주 메뉴">
+        <div class="container">
+
+            <ul class="nav-list">
+
+                <li>
+                    <a th:href="@{/#services}">
+                        정비 서비스
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/#process}">
+                        이용 안내
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/#location}">
+                        오시는 길
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/#notices}">
+                        공지사항
+                    </a>
+                </li>
+
+                <li>
+                    <a th:href="@{/mypage}">마이페이지</a>
+                </li>
+
+                <li th:if="${loggedIn}">
+                    <a th:href="@{/reservations}">
+                        내 예약
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+    </nav>
 
 </header>
 

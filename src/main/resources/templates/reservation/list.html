@@ -1,220 +1,253 @@
+
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-  <title>내 예약 | GarageCare</title>
+    <meta name="description"
+          content="동부자동차공업사 정비 예약 내역">
 
-  <style>
-    * {
-        box-sizing: border-box;
-    }
+    <title>내 예약 | 동부자동차공업사</title>
 
-    body {
-        margin: 0;
-        padding: 40px 20px;
-        background: #f5f6f8;
-        color: #1f2937;
-        font-family: Arial, sans-serif;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 820px;
-        margin: 0 auto;
-    }
-
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 28px;
-    }
-
-    h1 {
-        margin: 0;
-    }
-
-    .new-button {
-        padding: 11px 18px;
-        border-radius: 8px;
-        background: #111827;
-        color: white;
-        text-decoration: none;
-        font-weight: 700;
-    }
-
-    .reservation-list {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-    }
-
-    .reservation-card {
-        display: block;
-        padding: 22px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: white;
-        color: inherit;
-        text-decoration: none;
-    }
-
-    .reservation-card:hover {
-        border-color: #9ca3af;
-    }
-
-    .card-top {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 14px;
-    }
-
-    .vehicle {
-        font-weight: 700;
-    }
-
-    .status {
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .date {
-        color: #6b7280;
-        font-size: 14px;
-    }
-
-    .empty-state {
-        padding: 50px 20px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: white;
-        text-align: center;
-    }
-
-    .empty-state p {
-        margin: 0 0 20px;
-        color: #6b7280;
-    }
-
-    .reservation-link {
-        color: #111827;
-        text-decoration: none;
-        font-weight: 700;
-    }
-
-    .reservation-link:hover {
-        text-decoration: underline;
-    }
-  </style>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/reservation.css}">
 </head>
 
 <body>
 
-<main class="container">
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
-    <div class="header">
+<main id="main-content"
+      class="reservation-page reservation-history-page">
 
-        <h1>내 예약</h1>
+    <div class="container">
 
-        <a th:href="@{/reservations/new}"
-           class="new-button">
-            새 예약
-        </a>
+        <!-- 페이지 상단 -->
+        <header class="reservation-intro">
 
-    </div>
+            <nav class="reservation-breadcrumb"
+                 aria-label="현재 위치">
 
-    <div class="empty-state"
-         th:if="${reservations.empty}">
+                <a th:href="@{/mypage}">마이페이지</a>
+                <span aria-hidden="true">/</span>
+                <strong aria-current="page">내 예약</strong>
 
-        <p>
-            아직 등록된 예약이 없습니다.
-        </p>
+            </nav>
 
-        <a th:href="@{/reservations/new}"
-           class="new-button">
-            첫 예약 등록하기
-        </a>
+            <div class="reservation-history-heading">
 
-    </div>
+                <div>
+                    <h1>내 정비 예약</h1>
+                    <p>
+                        신청한 정비 예약과 진행 상태를
+                        확인할 수 있습니다.
+                    </p>
+                </div>
 
-    <div class="reservation-list"
-         th:unless="${reservations.empty}">
-
-        <a class="reservation-card"
-           th:each="reservation : ${reservations.content}"
-           th:href="@{/reservations/{id}(id=${reservation.reservationId})}">
-
-            <div class="card-top">
-
-        <span class="vehicle"
-              th:text="${reservation.vehicleNumber}">
-          12가3456
-        </span>
-
-                <span class="status"
-                      th:text="${reservation.status}">
-          PENDING
-        </span>
+                <a th:href="@{/reservations/new}"
+                   class="reservation-action-primary">
+                    + 정비 예약 신청
+                </a>
 
             </div>
 
-            <div class="date">
+        </header>
 
-        <span th:text="${reservation.reservationDate}">
-          2026-08-20
-        </span>
+        <!-- 전체 예약 현황 -->
+        <section class="reservation-history-summary"
+                 aria-label="예약 현황">
 
-                <span th:text="${reservation.reservationTime}">
-          14:00
-        </span>
+            <div class="reservation-history-summary-icon"
+                 aria-hidden="true">
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <rect x="3" y="5"
+                          width="18" height="16" rx="2"/>
+                    <path d="M7 3v4M17 3v4M3 10h18"/>
+                    <path d="m9 16 2 2 4-4"/>
+                </svg>
+            </div>
+
+            <div>
+                <span>전체 예약 내역</span>
+                <strong>
+                    <span th:text="${reservations.totalElements}">0</span>
+                    건
+                </strong>
+            </div>
+
+        </section>
+
+        <!-- 예약이 없는 경우 -->
+        <section class="reservation-history-empty"
+                 th:if="${reservations.totalElements == 0}">
+
+            <div class="reservation-history-empty-icon"
+                 aria-hidden="true">
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <rect x="3" y="5"
+                          width="18" height="16" rx="2"/>
+                    <path d="M7 3v4M17 3v4M3 10h18"/>
+                    <path d="M8 15h8"/>
+                </svg>
+            </div>
+
+            <h2>아직 예약 내역이 없습니다.</h2>
+
+            <p>
+                필요한 정비 항목과 방문 희망 일정을
+                선택하여 첫 예약을 신청해 보세요.
+            </p>
+
+            <a th:href="@{/reservations/new}"
+               class="reservation-action-primary">
+                정비 예약 신청하기
+            </a>
+
+        </section>
+
+        <!-- 예약 목록 -->
+        <section class="reservation-history-section"
+                 th:if="${reservations.totalElements > 0}"
+                 aria-labelledby="history-title">
+
+            <h2 id="history-title">
+                예약 내역
+            </h2>
+
+            <div class="reservation-history-list">
+
+                <article class="reservation-history-card"
+                         th:each="item : ${reservations.content}">
+
+                    <div class="reservation-history-card-top">
+
+                        <span class="reservation-history-number"
+                              th:text="|예약번호 #${item.reservationId}|">
+                            예약번호
+                        </span>
+
+                        <span class="reservation-status"
+                              th:classappend="|reservation-state-${item.status.name()}|">
+
+                            <span th:switch="${item.status.name()}">
+                                <span th:case="'PENDING'">예약 대기</span>
+                                <span th:case="'CONFIRMED'">예약 확정</span>
+                                <span th:case="'COMPLETED'">정비 완료</span>
+                                <span th:case="'CANCELED'">예약 취소</span>
+                                <span th:case="*"
+                                      th:text="${item.status}">상태</span>
+                            </span>
+
+                        </span>
+
+                    </div>
+
+                    <div class="reservation-history-card-body">
+
+                        <h3 th:text="${item.vehicleNumber}">
+                            차량번호
+                        </h3>
+
+                        <dl class="reservation-history-info">
+
+                            <div>
+                                <dt>예약 날짜</dt>
+                                <dd th:text="${#temporals.format(
+                                    item.reservationDate, 'yyyy.MM.dd'
+                                )}">
+                                    2026.11.19
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt>예약 시간</dt>
+                                <dd th:text="${#temporals.format(
+                                    item.reservationTime, 'HH:mm'
+                                )}">
+                                    14:00
+                                </dd>
+                            </div>
+
+                        </dl>
+
+                    </div>
+
+                    <div class="reservation-history-card-bottom">
+
+                        <a th:href="@{/reservations/{id}(
+                                id=${item.reservationId}
+                            )}"
+                           class="reservation-action-secondary">
+                            예약 상세 보기
+                        </a>
+
+                    </div>
+
+                </article>
 
             </div>
 
-        </a>
+            <!-- 조회 페이지 범위를 벗어난 경우 -->
+            <p class="reservation-history-no-page"
+               th:if="${reservations.empty}">
+                해당 페이지에 표시할 예약이 없습니다.
+            </p>
 
-    </div>
+            <!-- 페이지 이동 -->
+            <nav class="reservation-pagination"
+                 th:if="${reservations.totalPages > 1}"
+                 aria-label="예약 내역 페이지">
 
-    <div class="pagination"
-         th:if="${reservations.totalPages > 1}">
+                <a th:if="${reservations.hasPrevious()}"
+                   th:href="@{/reservations(
+                       page=${reservations.number - 1}
+                   )}">
+                    이전
+                </a>
 
-        <a class="page-button"
-           th:if="${reservations.hasPrevious()}"
-           th:href="@{/reservations(page=${reservations.number - 1})}">
-            이전
-        </a>
+                <span>
+                    <strong th:text="${reservations.number + 1}">1</strong>
+                    /
+                    <span th:text="${reservations.totalPages}">1</span>
+                </span>
 
-        <span th:each="pageNumber :
-          ${#numbers.sequence(0, reservations.totalPages - 1)}">
+                <a th:if="${reservations.hasNext()}"
+                   th:href="@{/reservations(
+                       page=${reservations.number + 1}
+                   )}">
+                    다음
+                </a>
 
-      <a class="page-number"
-         th:if="${pageNumber != reservations.number}"
-         th:href="@{/reservations(page=${pageNumber})}"
-         th:text="${pageNumber + 1}">
-        1
-      </a>
+            </nav>
 
-      <span class="page-number active"
-            th:if="${pageNumber == reservations.number}"
-            th:text="${pageNumber + 1}">
-        1
-      </span>
+        </section>
 
-    </span>
-
-        <a class="page-button"
-           th:if="${reservations.hasNext()}"
-           th:href="@{/reservations(page=${reservations.number + 1})}">
-            다음
-        </a>
+        <!-- 마이페이지 복귀 -->
+        <div class="reservation-return">
+            <a th:href="@{/mypage}">
+                <span aria-hidden="true">←</span>
+                마이페이지로 돌아가기
+            </a>
+        </div>
 
     </div>
 
 </main>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
 
 </body>
 </html>

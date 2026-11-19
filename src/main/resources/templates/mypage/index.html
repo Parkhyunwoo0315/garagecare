@@ -1,0 +1,339 @@
+
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+          content="동부자동차공업사 고객 마이페이지">
+
+    <title>마이페이지 | 동부자동차공업사</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}">
+
+    <link rel="stylesheet"
+          th:href="@{/css/mypage.css}">
+
+    <link rel="stylesheet"
+          th:href="@{/css/mypage-overview.css(v=1)}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: siteHeader}"></div>
+
+<main id="main-content">
+
+    <section class="mypage-section">
+        <div class="container">
+
+            <div class="mypage-heading">
+                <span class="mypage-eyebrow">
+                    MY PAGE
+                </span>
+
+                <h1>마이페이지</h1>
+
+                <p>
+                    등록한 차량과 정비 예약을
+                    한곳에서 관리하세요.
+                </p>
+            </div>
+
+            <section class="mypage-summary"
+                     aria-label="나의 이용 현황">
+
+                <div class="mypage-stat">
+
+                    <span class="mypage-stat-label">
+                        등록된 차량
+                    </span>
+
+                    <div class="mypage-stat-value">
+                        <strong th:text="${vehicleCount}">0</strong>
+                        <span>대</span>
+                    </div>
+
+                    <a th:href="@{/vehicles}">
+                        내 차량 관리
+                    </a>
+
+                </div>
+
+                <div class="mypage-stat">
+
+                    <span class="mypage-stat-label">
+                        총 정비 예약
+                    </span>
+
+                    <div class="mypage-stat-value">
+                        <strong th:text="${reservationCount}">0</strong>
+                        <span>건</span>
+                    </div>
+
+                    <a th:href="@{/reservations}">
+                        예약 내역 확인
+                    </a>
+
+                </div>
+
+            </section>
+
+            <section class="mypage-status-section"
+                     aria-labelledby="mypage-status-title">
+
+                <div class="mypage-overview-heading">
+                    <div>
+                        <h2 id="mypage-status-title">
+                            예약 상태별 현황
+                        </h2>
+                        <p>
+                            신청한 예약의 진행 상태를 확인하세요.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mypage-status-grid">
+
+                    <div class="mypage-status-card">
+            <span class="mypage-status-label pending">
+                예약 대기
+            </span>
+                        <strong th:text="${reservationStatusCounts['PENDING']}">
+                            0
+                        </strong>
+                        <small>건</small>
+                    </div>
+
+                    <div class="mypage-status-card">
+            <span class="mypage-status-label confirmed">
+                예약 확정
+            </span>
+                        <strong th:text="${reservationStatusCounts['CONFIRMED']}">
+                            0
+                        </strong>
+                        <small>건</small>
+                    </div>
+
+                    <div class="mypage-status-card">
+            <span class="mypage-status-label completed">
+                정비 완료
+            </span>
+                        <strong th:text="${reservationStatusCounts['COMPLETED']}">
+                            0
+                        </strong>
+                        <small>건</small>
+                    </div>
+
+                    <div class="mypage-status-card">
+            <span class="mypage-status-label canceled">
+                예약 취소
+            </span>
+                        <strong th:text="${reservationStatusCounts['CANCELED']}">
+                            0
+                        </strong>
+                        <small>건</small>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <div class="mypage-grid">
+
+                <section class="mypage-card"
+                         aria-labelledby="vehicle-title">
+
+                    <div class="mypage-card-header">
+                        <span class="mypage-card-number">
+                            01
+                        </span>
+
+                        <h2 id="vehicle-title">
+                            내 차량 관리
+                        </h2>
+                    </div>
+
+                    <p>
+                        등록한 차량을 확인하거나
+                        새로운 차량을 등록할 수 있습니다.
+                    </p>
+
+                    <div class="mypage-card-actions">
+                        <a class="mypage-button primary"
+                           th:href="@{/vehicles}">
+                            내 차량 보기
+                        </a>
+
+                        <a class="mypage-button secondary"
+                           th:href="@{/vehicles/new}">
+                            차량 등록
+                        </a>
+                    </div>
+                </section>
+
+                <section class="mypage-card"
+                         aria-labelledby="reservation-title">
+
+                    <div class="mypage-card-header">
+                        <span class="mypage-card-number">
+                            02
+                        </span>
+
+                        <h2 id="reservation-title">
+                            정비 예약 관리
+                        </h2>
+                    </div>
+
+                    <p>
+                        정비 예약을 신청하고
+                        기존 예약의 진행 상태를 확인하세요.
+                    </p>
+
+                    <div class="mypage-card-actions">
+                        <a class="mypage-button primary"
+                           th:href="@{/reservations}">
+                            내 예약 보기
+                        </a>
+
+                        <a class="mypage-button secondary"
+                           th:href="@{/reservations/new}">
+                            정비 예약 신청
+                        </a>
+                    </div>
+                </section>
+
+            </div>
+
+
+            <!-- 예약 내역 미리보기 -->
+            <section class="mypage-preview-section"
+                     aria-labelledby="mypage-preview-title">
+
+                <div class="mypage-overview-heading">
+
+                    <div>
+                        <h2 id="mypage-preview-title">
+                            예약 내역 미리보기
+                        </h2>
+                        <p>
+                            예약 날짜가 늦은 순서로 최대 3건을 표시합니다.
+                        </p>
+                    </div>
+
+                    <a th:href="@{/reservations}"
+                       class="mypage-preview-all">
+                        전체 예약 보기
+                    </a>
+
+                </div>
+
+                <!-- 예약이 없는 경우 -->
+                <div class="mypage-preview-empty"
+                     th:if="${#lists.isEmpty(reservationPreview)}">
+
+                    <div class="mypage-preview-empty-icon"
+                         aria-hidden="true">
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.8"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <rect x="3" y="5" width="18" height="16" rx="2"/>
+                            <path d="M7 3v4M17 3v4M3 10h18"/>
+                            <path d="M8 15h8"/>
+                        </svg>
+                    </div>
+
+                    <h3>아직 예약 내역이 없습니다.</h3>
+
+                    <p>
+                        정비 예약을 신청하면
+                        이곳에서 예약 정보를 확인할 수 있습니다.
+                    </p>
+
+                    <a th:href="@{/reservations/new}"
+                       class="mypage-preview-primary">
+                        정비 예약 신청
+                    </a>
+
+                </div>
+
+                <div class="mypage-preview-list"
+                     th:unless="${#lists.isEmpty(reservationPreview)}">
+
+                    <article class="mypage-preview-item"
+                             th:each="item : ${reservationPreview}">
+
+                        <div class="mypage-preview-info">
+
+                            <div class="mypage-preview-top">
+
+                                <strong th:text="${item.vehicleNumber}">
+                                    차량번호
+                                </strong>
+
+                                <span class="mypage-preview-status"
+                                      th:classappend="${' status-' + item.status.name().toLowerCase()}">
+
+                        <span th:switch="${item.status.name()}">
+                            <span th:case="'PENDING'">예약 대기</span>
+                            <span th:case="'CONFIRMED'">예약 확정</span>
+                            <span th:case="'COMPLETED'">정비 완료</span>
+                            <span th:case="'CANCELED'">예약 취소</span>
+                        </span>
+
+                    </span>
+
+                            </div>
+
+                            <p>
+                    <span th:text="${#temporals.format(
+                        item.reservationDate, 'yyyy.MM.dd'
+                    )}">
+                        2026.11.20
+                    </span>
+
+                                <span aria-hidden="true"> · </span>
+
+                                <span th:text="${#temporals.format(
+                        item.reservationTime, 'HH:mm'
+                    )}">
+                        14:00
+                    </span>
+                            </p>
+
+                        </div>
+
+                        <a th:href="@{/reservations/{id}(id=${item.reservationId})}"
+                           class="mypage-preview-detail">
+                            상세 보기
+                        </a>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+            <div class="mypage-bottom">
+                <a th:href="@{/}">
+                    ← 메인 페이지로 돌아가기
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+    <div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+</body>
+</html>

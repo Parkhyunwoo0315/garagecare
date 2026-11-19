@@ -1,57 +1,316 @@
+
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
-    <title>내 차량 | GarageCare</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+          content="동부자동차공업사 내 차량 관리">
+
+    <title>내 차량 관리 | 동부자동차공업사</title>
+
+    <!-- 공통 스타일 -->
+    <link rel="stylesheet"
+          th:href="@{/css/common.css}">
+
+    <!-- 차량 관리 스타일 -->
+    <link rel="stylesheet"
+          th:href="@{/css/vehicle-list.css(v=1)}">
 </head>
 
 <body>
 
-<main>
+<!-- 공통 Header -->
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
-    <h1>내 차량</h1>
+<main id="main-content"
+      class="vehicle-page vehicle-list-page">
 
-    <a th:href="@{/vehicles/new}">
-        차량 등록
-    </a>
+    <div class="container">
 
-    <div th:if="${#lists.isEmpty(vehicles)}">
-        <p>등록된 차량이 없습니다.</p>
-    </div>
+        <!-- 현재 위치 -->
+        <nav class="vehicle-breadcrumb"
+             aria-label="현재 위치">
 
-    <div th:unless="${#lists.isEmpty(vehicles)}">
+            <a th:href="@{/mypage}">
+                마이페이지
+            </a>
 
-        <div th:each="vehicle : ${vehicles}">
+            <span aria-hidden="true">/</span>
 
-            <h2 th:text="${vehicle.model}">
-                차량 모델
+            <strong aria-current="page">
+                내 차량
+            </strong>
+
+        </nav>
+
+        <!-- 페이지 제목 -->
+        <header class="vehicle-heading">
+
+            <div class="vehicle-heading-text">
+
+                <span class="vehicle-eyebrow">
+                    MY VEHICLES
+                </span>
+
+                <h1>내 차량 관리</h1>
+
+                <p>
+                    등록된 차량 정보를 확인하고
+                    정비 예약에 사용할 차량을 관리하세요.
+                </p>
+
+            </div>
+
+            <a th:href="@{/vehicles/new}"
+               class="vehicle-button vehicle-button-primary">
+
+                <span aria-hidden="true">＋</span>
+                차량 등록
+
+            </a>
+
+        </header>
+
+        <!-- 차량 등록 현황 -->
+        <section class="vehicle-summary"
+                 aria-label="차량 등록 현황">
+
+            <div class="vehicle-summary-icon"
+                 aria-hidden="true">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M5 17H3v-5l2-5h14l2 5v5h-2"/>
+                    <path d="M5 17h14M5 12h14"/>
+                    <circle cx="7" cy="15" r="1"/>
+                    <circle cx="17" cy="15" r="1"/>
+                    <path d="M5 17v2M19 17v2"/>
+
+                </svg>
+
+            </div>
+
+            <div>
+
+                <span class="vehicle-summary-label">
+                    등록된 차량
+                </span>
+
+                <strong>
+                    <span th:text="${#lists.size(vehicles)}">
+                        0
+                    </span>
+                    대
+                </strong>
+
+            </div>
+
+        </section>
+
+        <!-- 등록 차량이 없는 경우 -->
+        <section class="vehicle-empty"
+                 th:if="${#lists.isEmpty(vehicles)}"
+                 aria-labelledby="vehicle-empty-title">
+
+            <div class="vehicle-empty-icon"
+                 aria-hidden="true">
+
+                <svg viewBox="0 0 64 64"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2.5"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M11 37L17 23
+                             Q19 19 23 19
+                             H41
+                             Q45 19 47 23
+                             L53 37"/>
+
+                    <path d="M11 37H53V47H11Z"/>
+
+                    <path d="M16 47V52H23V47"/>
+                    <path d="M41 47V52H48V47"/>
+
+                    <path d="M17 42H23"/>
+                    <path d="M41 42H47"/>
+
+                </svg>
+
+            </div>
+
+            <h2 id="vehicle-empty-title">
+                아직 등록된 차량이 없습니다.
             </h2>
 
-            <p th:text="${vehicle.vehicleNumber}">
-                차량번호
+            <p>
+                차량을 등록하면 정비 예약 시
+                차량 정보를 다시 입력할 필요 없이
+                편리하게 선택할 수 있습니다.
             </p>
 
-            <p th:if="${vehicle.manufacturer != null}"
-               th:text="${vehicle.manufacturer}">
-                제조사
-            </p>
+            <a th:href="@{/vehicles/new}"
+               class="vehicle-button vehicle-button-primary">
 
-            <p th:if="${vehicle.modelYear != null}"
-               th:text="${vehicle.modelYear}">
-                연식
-            </p>
+                첫 차량 등록하기
+
+            </a>
+
+        </section>
+
+        <!-- 등록 차량이 있는 경우 -->
+        <section class="vehicle-list-section"
+                 th:unless="${#lists.isEmpty(vehicles)}"
+                 aria-labelledby="vehicle-list-title">
+
+            <h2 id="vehicle-list-title"
+                class="vehicle-list-title">
+
+                등록 차량 목록
+
+            </h2>
+
+            <div class="vehicle-grid">
+
+                <!-- 차량 카드 -->
+                <article class="vehicle-card"
+                         th:each="vehicle : ${vehicles}">
+
+                    <!-- 카드 상단 -->
+                    <div class="vehicle-card-top">
+
+                        <div class="vehicle-card-icon"
+                             aria-hidden="true">
+
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.8"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round">
+
+                                <path d="M4 12L6.5 6H17.5L20 12"/>
+                                <path d="M4 12V18H20V12H4Z"/>
+                                <path d="M4 18V20H7V18"/>
+                                <path d="M17 18V20H20V18"/>
+                                <path d="M7 15H9M15 15H17"/>
+
+                            </svg>
+
+                        </div>
+
+                        <span class="vehicle-card-badge">
+                            등록 차량
+                        </span>
+
+                    </div>
+
+                    <!-- 차량 정보 -->
+                    <div class="vehicle-card-body">
+
+                        <span class="vehicle-manufacturer"
+                              th:if="${vehicle.manufacturer != null}"
+                              th:text="${vehicle.manufacturer}">
+
+                            제조사
+
+                        </span>
+
+                        <h3 th:text="${vehicle.model}">
+                            차량 모델
+                        </h3>
+
+                        <dl class="vehicle-details">
+
+                            <div>
+                                <dt>차량번호</dt>
+
+                                <dd th:text="${vehicle.vehicleNumber}">
+                                    123가4567
+                                </dd>
+                            </div>
+
+                            <div th:if="${vehicle.modelYear != null}">
+
+                                <dt>연식</dt>
+
+                                <dd>
+                                    <span th:text="${vehicle.modelYear}">
+                                        2022
+                                    </span>년
+                                </dd>
+
+                            </div>
+
+                        </dl>
+
+                    </div>
+
+                    <!-- 차량별 예약 버튼 -->
+                    <div class="vehicle-card-actions">
+
+                        <a th:href="@{/reservations/new}"
+                           class="vehicle-button vehicle-button-primary">
+
+                            정비 예약하기
+
+                        </a>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- 하단 복귀 -->
+        <div class="vehicle-return-row">
+
+            <a th:href="@{/mypage}"
+               class="vehicle-return-button">
+
+                <svg viewBox="0 0 24 24"
+                     width="18"
+                     height="18"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     aria-hidden="true">
+
+                    <path d="M19 12H5"/>
+                    <path d="M12 19l-7-7 7-7"/>
+
+                </svg>
+
+                <span>
+                    마이페이지로 돌아가기
+                </span>
+
+            </a>
 
         </div>
 
     </div>
 
-    <a th:href="@{/reservations/new}">
-        예약하기
-    </a>
-
 </main>
+
+<!-- 공통 Footer -->
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
 
 </body>
 </html>

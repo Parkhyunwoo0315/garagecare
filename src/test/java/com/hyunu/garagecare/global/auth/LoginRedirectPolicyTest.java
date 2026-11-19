@@ -29,23 +29,23 @@ class LoginRedirectPolicyTest {
     }
 
     @Test
-    @DisplayName("외부 절대 URL은 차단")
+    @DisplayName("외부 절대 URL은 차단하고 마이페이지로 이동")
     void externalUrlBlocked() {
         String result = LoginRedirectPolicy.resolve(
                 "https://example.com"
         );
 
-        assertThat(result).isEqualTo("/vehicles");
+        assertThat(result).isEqualTo("/mypage");
     }
 
     @Test
-    @DisplayName("프로토콜 상대 URL은 차단")
+    @DisplayName("프로토콜 상대 URL은 차단하고 마이페이지로 이동")
     void protocolRelativeUrlBlocked() {
         String result = LoginRedirectPolicy.resolve(
                 "//example.com"
         );
 
-        assertThat(result).isEqualTo("/vehicles");
+        assertThat(result).isEqualTo("/mypage");
     }
 
     @Test
@@ -55,7 +55,7 @@ class LoginRedirectPolicyTest {
                 "/\\example.com"
         );
 
-        assertThat(result).isEqualTo("/vehicles");
+        assertThat(result).isEqualTo("/mypage");
     }
 
     @Test
@@ -65,7 +65,7 @@ class LoginRedirectPolicyTest {
                 "/%2Fexample.com"
         );
 
-        assertThat(result).isEqualTo("/vehicles");
+        assertThat(result).isEqualTo("/mypage");
     }
 
     @Test
@@ -75,14 +75,15 @@ class LoginRedirectPolicyTest {
                 "/members/login"
         );
 
-        assertThat(result).isEqualTo("/vehicles");
+        assertThat(result).isEqualTo("/mypage");
     }
 
     @Test
-    @DisplayName("복귀 경로가 없으면 기본 페이지를 사용")
+    @DisplayName("복귀 경로가 없으면 마이페이지로 이동")
     void missingRedirectUrl() {
-        assertThat(LoginRedirectPolicy.resolve(null))
-                .isEqualTo("/vehicles");
+        String result = LoginRedirectPolicy.resolve(null);
+
+        assertThat(result).isEqualTo("/mypage");
     }
 
     @Test
