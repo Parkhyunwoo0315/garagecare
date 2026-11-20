@@ -68,6 +68,12 @@
         <div class="header-actions"
              th:if="${loggedIn}">
 
+            <a th:if="${adminUser}"
+               th:href="@{/admin}"
+               class="admin-entry-link">
+                관리자 페이지
+            </a>
+
             <a class="header-login"
                th:href="@{/mypage}">
                 마이페이지

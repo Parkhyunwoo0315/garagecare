@@ -712,6 +712,36 @@ button:focus-visible {
     white-space: nowrap;
 }
 
+.admin-entry-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 40px;
+    padding: 0 16px;
+
+    border: 1px solid #c8dcf6;
+    border-radius: 10px;
+
+    background: #e8f1ff;
+    color: #1764c5;
+
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.admin-entry-link:hover {
+    background: #d8e9ff;
+    color: #1154aa;
+}
+
+.admin-entry-link:focus-visible {
+    outline: 2px solid #1764c5;
+    outline-offset: 3px;
+}
+
 /* 2. MAIN HEADER */
 
 .site-header .header-main {
