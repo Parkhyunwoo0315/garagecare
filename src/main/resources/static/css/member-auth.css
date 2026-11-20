@@ -482,14 +482,6 @@ body.auth-body {
     gap: 12px;
 }
 
-.member-field-error {
-    margin: 8px 0 0;
-    color: #b42318;
-    font-size: 13px;
-    font-weight: 650;
-    line-height: 1.6;
-}
-
 /* ========================================
    Responsive
 ======================================== */
