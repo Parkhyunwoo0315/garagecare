@@ -2,6 +2,7 @@ package com.hyunu.garagecare.member.controller;
 
 import com.hyunu.garagecare.global.auth.LoginRedirectPolicy;
 import com.hyunu.garagecare.member.dto.MemberLoginRequest;
+import com.hyunu.garagecare.member.exception.DuplicateMemberException;
 import com.hyunu.garagecare.member.exception.LoginFailedException;
 import com.hyunu.garagecare.member.service.MemberService;
 import com.hyunu.garagecare.member.session.SessionConst;
@@ -33,19 +34,34 @@ public class MemberController {
         return "member/signup-form";
     }
 
+
     @PostMapping("/signup")
     public String signUp(
-            @Valid @ModelAttribute("form")
-            MemberSignUpRequest request,
+            @Valid @ModelAttribute("form") MemberSignUpRequest request,
             BindingResult bindingResult
     ) {
-        if(bindingResult.hasErrors()) {
+        // 입력값 검증 오류
+        if (bindingResult.hasErrors()) {
             return "member/signup-form";
         }
 
-        memberService.signUp(request);
+        try {
+            memberService.signUp(request);
+
+        } catch (DuplicateMemberException e) {
+
+            bindingResult.rejectValue(
+                    "email",
+                    "duplicateEmail",
+                    "이미 가입된 이메일입니다. 로그인하거나 다른 이메일을 사용해 주세요."
+            );
+
+            return "member/signup-form";
+        }
+
         return "redirect:/members/signup/complete";
     }
+
 
     @GetMapping("/signup/complete")
     public String signUpComplete() {

@@ -144,6 +144,14 @@
 
             </div>
 
+            <!-- 중복 이메일 및 이메일 입력 오류 -->
+            <p class="member-field-error"
+               th:if="${#fields.hasErrors('email')}"
+               th:errors="*{email}"
+               role="alert">
+                이메일 오류 메시지
+            </p>
+
             <!-- 비밀번호 -->
             <div class="auth-field">
 
