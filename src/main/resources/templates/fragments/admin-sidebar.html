@@ -1,89 +1,146 @@
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org">
-
 <body>
 
 <aside th:fragment="sidebar(activeMenu)"
        class="admin-sidebar"
        aria-label="관리자 메뉴">
 
-    <!-- 브랜드 -->
-    <a class="admin-sidebar-brand"
+    <a class="admin-brand"
        th:href="@{/admin}">
 
-        <span class="admin-sidebar-logo">
+        <span class="admin-brand-logo">
             <img th:src="@{/images/garagecare-mark.png}"
-                 alt=""
-                 width="40"
-                 height="40">
+                 width="44"
+                 height="44"
+                 alt="">
         </span>
 
-        <span class="admin-sidebar-brand-text">
+        <span class="admin-brand-copy">
             <strong>GarageCare</strong>
-            <small>동부자동차공업사 · 관리자</small>
+            <small>동부자동차공업사</small>
         </span>
 
     </a>
 
-    <!-- 메뉴 -->
-    <nav class="admin-sidebar-nav"
+
+    <nav class="admin-navigation"
          aria-label="관리자 주요 메뉴">
 
-        <span class="admin-sidebar-caption">
-            MANAGEMENT
-        </span>
+    <span class="admin-navigation-label">
+        MANAGEMENT
+    </span>
 
+        <!-- Dashboard -->
         <a th:href="@{/admin}"
-           th:classappend="${activeMenu == 'dashboard'} ? 'is-active' : ''"
-           th:attr="aria-current=${activeMenu == 'dashboard'} ? 'page' : null">
-            <span class="admin-nav-symbol" aria-hidden="true">▦</span>
-            <span>대시보드</span>
+           th:classappend="${activeMenu == 'dashboard' ? 'is-active' : ''}"
+           th:attr="aria-current=${activeMenu == 'dashboard' ? 'page' : null}">
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+
+            대시보드
         </a>
 
+        <!-- Reservations -->
         <a th:href="@{/admin/reservations}"
-           th:classappend="${activeMenu == 'reservations'} ? 'is-active' : ''"
-           th:attr="aria-current=${activeMenu == 'reservations'} ? 'page' : null">
-            <span class="admin-nav-symbol" aria-hidden="true">▤</span>
-            <span>예약 관리</span>
+           th:classappend="${activeMenu == 'reservations' ? 'is-active' : ''}"
+           th:attr="aria-current=${activeMenu == 'reservations' ? 'page' : null}">
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M8 3v4M16 3v4M3 10h18"/>
+            </svg>
+
+            예약 관리
         </a>
 
+        <!-- Vehicles -->
         <a th:href="@{/admin/vehicles}"
-           th:classappend="${activeMenu == 'vehicles'} ? 'is-active' : ''"
-           th:attr="aria-current=${activeMenu == 'vehicles'} ? 'page' : null">
-            <span class="admin-nav-symbol" aria-hidden="true">▣</span>
-            <span>차량 관리</span>
+           th:classappend="${activeMenu == 'vehicles' ? 'is-active' : ''}"
+           th:attr="aria-current=${activeMenu == 'vehicles' ? 'page' : null}">
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 aria-hidden="true">
+                <path d="M5 17H3v-5l2-5h14l2 5v5h-2"/>
+                <path d="M5 17h14M5 12h14"/>
+                <path d="M5 17v2M19 17v2"/>
+                <circle cx="7" cy="15" r="1"/>
+                <circle cx="17" cy="15" r="1"/>
+            </svg>
+
+            차량 관리
         </a>
 
+        <!-- Members -->
         <a th:href="@{/admin/members}"
-           th:classappend="${activeMenu == 'members'} ? 'is-active' : ''"
-           th:attr="aria-current=${activeMenu == 'members'} ? 'page' : null">
-            <span class="admin-nav-symbol" aria-hidden="true">♙</span>
-            <span>회원 관리</span>
+           th:classappend="${activeMenu == 'members' ? 'is-active' : ''}"
+           th:attr="aria-current=${activeMenu == 'members' ? 'page' : null}">
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 aria-hidden="true">
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            </svg>
+
+            회원 관리
         </a>
 
+        <!-- Maintenance items -->
         <a th:href="@{/admin/maintenance-items}"
-           th:classappend="${activeMenu == 'maintenance'} ? 'is-active' : ''"
-           th:attr="aria-current=${activeMenu == 'maintenance'} ? 'page' : null">
-            <span class="admin-nav-symbol" aria-hidden="true">⚙</span>
-            <span>정비 항목 관리</span>
+           th:classappend="${activeMenu == 'maintenance' ? 'is-active' : ''}"
+           th:attr="aria-current=${activeMenu == 'maintenance' ? 'page' : null}">
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 aria-hidden="true">
+                <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6.6 6.6a2 2 0 0 0 2.8 2.8l6.6-6.6a4 4 0 0 0 5.4-5.4L15 11l-3-3z"/>
+            </svg>
+
+            정비 항목 관리
         </a>
 
     </nav>
 
-    <!-- 하단 -->
     <div class="admin-sidebar-bottom">
 
         <a th:href="@{/}">
             <span aria-hidden="true">←</span>
             고객 홈페이지
         </a>
-
-        <form th:action="@{/members/logout}" method="post">
-            <button type="submit" class="admin-logout-button">
-                로그아웃
-            </button>
-        </form>
 
         <small>GarageCare Admin</small>
 
