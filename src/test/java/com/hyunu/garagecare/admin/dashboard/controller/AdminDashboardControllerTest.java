@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -64,7 +65,25 @@ public class AdminDashboardControllerTest {
 
                     assertThat(dashboard.memberCount())
                             .isGreaterThanOrEqualTo(1L);
-                });
+                })
+                .andExpect(
+                        content().string(containsString("서비스 운영 현황"))
+                )
+                .andExpect(
+                        content().string(containsString("예약 현황"))
+                )
+                .andExpect(
+                        content().string(containsString("정비 항목 현황"))
+                )
+                .andExpect(
+                        content().string(containsString("주요 관리 기능"))
+                )
+                .andExpect(
+                        content().string(containsString("관리자 주요 메뉴"))
+                )
+                .andExpect(
+                        content().string(containsString("/admin/reservations"))
+                );
     }
 
     @Test
